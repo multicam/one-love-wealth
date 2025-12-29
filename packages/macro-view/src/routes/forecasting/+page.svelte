@@ -98,10 +98,11 @@
 			<h3 class="text-lg font-bold text-white mb-4">Assumptions</h3>
 			
 			<div>
-				<label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
+				<label for="liquidity-growth" class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
 					Liquidity Growth (YoY %)
 				</label>
 				<input 
+					id="liquidity-growth"
 					type="range" min="-10" max="30" step="0.5" 
 					bind:value={liquidityGrowth}
 					class="w-full h-2 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-blue-500"
@@ -114,10 +115,11 @@
 			</div>
 
 			<div>
-				<label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
+				<label for="horizon" class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
 					Horizon (Months)
 				</label>
 				<select 
+					id="horizon"
 					bind:value={horizon}
 					class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-sm outline-none focus:ring-2 focus:ring-blue-500"
 				>
@@ -129,10 +131,11 @@
 			</div>
 
 			<div class="pt-6 border-t border-slate-800">
-				<label class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
+				<label for="scenario-name" class="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">
 					Scenario Name
 				</label>
 				<input 
+					id="scenario-name"
 					type="text" 
 					bind:value={scenarioName}
 					class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2 text-sm outline-none mb-4"

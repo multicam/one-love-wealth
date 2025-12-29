@@ -2,7 +2,7 @@ import Dexie, { type Table } from 'dexie';
 
 export interface EconomicSeries {
 	id: string; // e.g., 'FRED:M2SL'
-	source: 'FRED' | 'COINGECKO' | 'CALCULATED';
+	source: 'FRED' | 'COINGECKO' | 'YAHOO' | 'CALCULATED';
 	lastUpdated: number; // timestamp
 	data: DataPoint[]; // Time series data
 	meta: any; // Frequency, units, etc.

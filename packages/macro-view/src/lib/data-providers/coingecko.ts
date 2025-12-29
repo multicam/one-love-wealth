@@ -1,6 +1,42 @@
 import { DataProvider } from './base';
 import type { CoinGeckoDataSourceConfig } from '../types/providers/coingecko';
 import type { DataPoint } from '../db';
+import {
+	CoinGeckoProvider as SharedCoinGeckoProvider,
+	type CoinGeckoConfig as SharedCoinGeckoConfig,
+	MemoryAdapter,
+	ProxyRequestAdapter,
+	type DataPoint as SharedDataPoint,
+} from '@one-love-wealth/data-layer';
+
+// Create shared provider instance for reusing transformation logic
+const sharedCache = new MemoryAdapter();
+const sharedRequest = new ProxyRequestAdapter('/api/proxy');
+const sharedProvider = new SharedCoinGeckoProvider(sharedCache, sharedRequest);
+
+/**
+ * Convert macro-view config to shared data-layer config
+ */
+function toSharedConfig(config: CoinGeckoDataSourceConfig): SharedCoinGeckoConfig {
+	return {
+		coinId: config.coinId,
+		vsCurrency: config.vsCurrency || 'usd',
+		days: config.days,
+		interval: config.interval === '5m' ? 'hourly' : config.interval,
+		precision: typeof config.precision === 'number' ? config.precision : undefined,
+		endpoint: 'market_chart',
+	};
+}
+
+/**
+ * Convert shared DataPoint (time: number) to macro-view DataPoint (date: string)
+ */
+function toMacroViewDataPoint(point: SharedDataPoint): DataPoint {
+	return {
+		date: new Date(point.time).toISOString().split('T')[0],
+		value: point.value ?? point.close ?? 0,
+	};
+}
 
 export class CoinGeckoProvider extends DataProvider<CoinGeckoDataSourceConfig> {
 	readonly name = 'CoinGecko';
@@ -22,33 +58,18 @@ export class CoinGeckoProvider extends DataProvider<CoinGeckoDataSourceConfig> {
 		return `/api/proxy/coingecko?${params.toString()}`;
 	}
 
-	protected transformResponse(json: any, config: CoinGeckoDataSourceConfig): DataPoint[] {
-		if (!json.prices) {
-			throw new Error('Invalid CoinGecko response format');
-		}
-
-		return json.prices.map((p: [number, number]) => ({
-			date: new Date(p[0]).toISOString().split('T')[0],
-			value: p[1]
-		}));
+	protected transformResponse(json: unknown, config: CoinGeckoDataSourceConfig): DataPoint[] {
+		// Delegate to shared provider's transformation logic
+		const sharedConfig = toSharedConfig(config);
+		const sharedPoints = (sharedProvider as any).transformResponse(json, sharedConfig) as SharedDataPoint[];
+		return sharedPoints.map(toMacroViewDataPoint);
 	}
 
 	protected generateMockData(config: CoinGeckoDataSourceConfig): DataPoint[] {
-		const data: DataPoint[] = [];
-		const now = new Date();
-		let price = config.coinId === 'bitcoin' ? 50000 : 3000;
-
-		for (let i = 365; i >= 0; i--) {
-			const d = new Date(now);
-			d.setDate(d.getDate() - i);
-			price = price * (1 + (Math.random() - 0.45) * 0.05); // Random walk
-			data.push({
-				date: d.toISOString().split('T')[0],
-				value: price
-			});
-		}
-
-		return data;
+		// Delegate to shared provider's mock data generation
+		const sharedConfig = toSharedConfig(config);
+		const sharedPoints = (sharedProvider as any).generateMockData(sharedConfig) as SharedDataPoint[];
+		return sharedPoints.map(toMacroViewDataPoint);
 	}
 }
 

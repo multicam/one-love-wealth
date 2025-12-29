@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { page } from '$app/state';
+	import type { MouseEventHandler } from 'svelte/elements';
 
-	let { onNavigate = () => {} } = $props();
+	let { onNavigate }: { onNavigate?: MouseEventHandler<HTMLAnchorElement> } = $props();
 
 	const navItems = [
 		{ name: 'Dashboard', path: '/', icon: '📊' },
@@ -21,7 +22,7 @@
 		{#each navItems as item}
 			<a
 				href={item.path}
-				onclick={onNavigate}
+				onclick={onNavigate ?? (() => {})}
 				class="flex items-center px-4 py-3 text-xs font-black uppercase tracking-widest rounded-xl transition-all group
           {page.url.pathname === item.path
 					? 'bg-blue-600 text-white shadow-lg shadow-blue-900/40'

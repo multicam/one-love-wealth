@@ -1,5 +1,5 @@
 import { json, error } from '@sveltejs/kit';
-import { BLS_API_KEY } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { RequestHandler } from './$types';
 
 /**
@@ -27,6 +27,7 @@ export const GET: RequestHandler = async ({ url }) => {
 
 	try {
 		// Determine which API version to use based on API key availability
+		const BLS_API_KEY = env.BLS_API_KEY;
 		const hasApiKey = BLS_API_KEY && BLS_API_KEY.length > 0;
 		const apiUrl = hasApiKey
 			? 'https://api.bls.gov/publicAPI/v2/timeseries/data/'
