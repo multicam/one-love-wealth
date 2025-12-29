@@ -1,7 +1,23 @@
 <script lang="ts">
-	import { fredClient } from '$lib/logic/api-clients';
+	import { fredProvider } from '$lib/data-providers';
+	import { TimeUtils } from '@one-love-wealth/data-layer';
 	import LineChart from '$lib/components/charts/LineChart.svelte';
 	import type { DataPoint } from '$lib/db';
+
+	async function searchFredSeries(query: string): Promise<any[]> {
+		const url = `/api/proxy/fred/search?text=${encodeURIComponent(query)}`;
+		try {
+			const response = await fetch(url);
+			if (!response.ok) {
+				throw new Error(`FRED Search Error: ${response.statusText}`);
+			}
+			const json = await response.json();
+			return json.seriess || [];
+		} catch (e) {
+			console.warn('FRED Search failed:', e);
+			return [];
+		}
+	}
 
 	let query = $state('');
 	let results = $state<any[]>([]);
@@ -15,7 +31,7 @@
 		loading = true;
 		results = [];
 		try {
-			results = await fredClient.searchSeries(query);
+			results = await searchFredSeries(query);
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -28,8 +44,8 @@
 		chartLoading = true;
 		chartData = [];
 		try {
-			const data = await fredClient.fetchSeries(series.id);
-			chartData = data.data;
+			const result = await fredProvider.fetch({ type: 'fred', seriesId: series.id, id: series.id, name: series.title || series.id });
+			chartData = result.series.data;
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -41,7 +57,7 @@
 		if (!chartData.length) return;
 		const csvContent = "data:text/csv;charset=utf-8," 
 			+ "Date,Value\n"
-			+ chartData.map(e => `${e.date},${e.value}`).join("\n");
+			+ chartData.map(e => `${TimeUtils.toISO(e).split('T')[0]},${e.value}`).join("\n");
 		
 		const encodedUri = encodeURI(csvContent);
 		const link = document.createElement("a");
@@ -138,10 +154,10 @@
 						</div>
 					{:else if chartData.length > 0}
 						<LineChart 
-							labels={chartData.map(d => d.date)}
+							labels={chartData.map(d => TimeUtils.toISO(d).split('T')[0])}
 							datasets={[{
 								label: selectedSeries.title,
-								data: chartData.map(d => d.value),
+								data: chartData.map(d => d.value ?? null),
 								borderColor: '#3b82f6',
 								backgroundColor: 'rgba(59, 130, 246, 0.1)',
 								fill: true,

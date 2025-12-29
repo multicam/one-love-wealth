@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import LineChart from '../charts/LineChart.svelte';
 	import Skeleton from '../common/Skeleton.svelte';
-	import { fredClient, coinGeckoClient } from '$lib/logic/api-clients';
+	import { fredProvider, coinGeckoProvider } from '$lib/data-providers';
+	import { TimeUtils } from '@one-love-wealth/data-layer';
 	import type { DataPoint } from '$lib/db';
 
 	let m2Data = $state<DataPoint[]>([]);
@@ -15,11 +16,11 @@
 		loading = true;
 		error = '';
 		try {
-			const m2Series = await fredClient.fetchSeries('M2SL');
-			m2Data = m2Series.data;
+			const m2Result = await fredProvider.fetch({ type: 'fred', seriesId: 'M2SL', id: 'M2SL', name: 'M2 Money Supply' });
+			m2Data = m2Result.series.data;
 
-			const btcSeries = await coinGeckoClient.fetchMarketChart('bitcoin');
-			btcData = btcSeries.data;
+			const btcResult = await coinGeckoProvider.fetch({ type: 'coingecko', coinId: 'bitcoin', id: 'bitcoin', name: 'Bitcoin' });
+			btcData = btcResult.series.data;
 		} catch (e: any) {
 			error = e.message;
 		} finally {
@@ -34,13 +35,14 @@
 	let chartData = $derived.by(() => {
 		if (!m2Data.length || !btcData.length) return { labels: [], datasets: [] };
 
-		const labels = m2Data.map((d) => d.date);
-		const m2Values = m2Data.map(d => d.value);
+		const labels = m2Data.map((d) => TimeUtils.toISO(d).split('T')[0]);
+		const m2Values = m2Data.map(d => d.value ?? null);
 		
 		const btcValues = labels.map(date => {
-			const btcPoint = btcData.find(d => d.date === date) || 
-                       btcData.find(d => d.date >= date);
-			return btcPoint ? btcPoint.value : null;
+			const dateTs = new Date(date).getTime();
+			const btcPoint = btcData.find(d => d.time === dateTs) || 
+                       btcData.find(d => d.time >= dateTs);
+			return btcPoint ? (btcPoint.value ?? null) : null;
 		});
 
         let shiftedM2 = m2Values;

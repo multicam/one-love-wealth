@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { fredClient, coinGeckoClient } from '$lib/logic/api-clients';
+	import { fredProvider, coinGeckoProvider } from '$lib/data-providers';
 	import { generateBtcForecast, type ForecastResult } from '$lib/logic/projections';
 	import LineChart from '$lib/components/charts/LineChart.svelte';
 	import { db, type DataPoint } from '$lib/db';
@@ -15,10 +15,10 @@
 
 	onMount(async () => {
 		try {
-			const m2 = await fredClient.fetchSeries('M2SL');
-			const btc = await coinGeckoClient.fetchMarketChart('bitcoin');
-			m2Data = m2.data;
-			btcData = btc.data;
+			const m2Result = await fredProvider.fetch({ type: 'fred', seriesId: 'M2SL', id: 'M2SL', name: 'M2 Money Supply' });
+			const btcResult = await coinGeckoProvider.fetch({ type: 'coingecko', coinId: 'bitcoin', id: 'bitcoin', name: 'Bitcoin' });
+			m2Data = m2Result.series.data;
+			btcData = btcResult.series.data;
 		} catch (e) {
 			console.error(e);
 		} finally {

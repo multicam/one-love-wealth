@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import LineChart from '../charts/LineChart.svelte';
 	import Skeleton from '../common/Skeleton.svelte';
-	import { fredClient } from '$lib/logic/api-clients';
+	import { fredProvider } from '$lib/data-providers';
+	import { TimeUtils } from '@one-love-wealth/data-layer';
 	import type { DataPoint } from '$lib/db';
 
 	let debtData = $state<DataPoint[]>([]);
@@ -12,11 +13,11 @@
 
 	onMount(async () => {
 		try {
-			const debtSeries = await fredClient.fetchSeries('GFDEGDQ188S');
-			debtData = debtSeries.data;
+			const debtResult = await fredProvider.fetch({ type: 'fred', seriesId: 'GFDEGDQ188S', id: 'GFDEGDQ188S', name: 'Debt to GDP' });
+			debtData = debtResult.series.data;
 
-			const interestSeries = await fredClient.fetchSeries('A091RC1Q027SBEA');
-			interestData = interestSeries.data;
+			const interestResult = await fredProvider.fetch({ type: 'fred', seriesId: 'A091RC1Q027SBEA', id: 'A091RC1Q027SBEA', name: 'Interest Payments' });
+			interestData = interestResult.series.data;
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -28,8 +29,8 @@
 		const data = view === 'debt' ? debtData : interestData;
 		if (!data.length) return { labels: [], datasets: [] };
 
-		const labels = data.slice(-40).map(d => d.date); 
-		const values = data.slice(-40).map(d => d.value);
+		const labels = data.slice(-40).map(d => TimeUtils.toISO(d).split('T')[0]); 
+		const values = data.slice(-40).map(d => d.value ?? null);
 
 		return {
 			labels,

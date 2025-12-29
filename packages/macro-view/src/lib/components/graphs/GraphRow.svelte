@@ -1,7 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { GraphDefinition } from '$lib/logic/graphs-config';
-	import { fredClient, coinGeckoClient, yahooClient } from '$lib/logic/api-clients';
+	import { fredProvider, coinGeckoProvider, yahooProvider } from '$lib/data-providers';
+	import { TimeUtils } from '@one-love-wealth/data-layer';
 	import LineChart from '../charts/LineChart.svelte';
 	import Skeleton from '../common/Skeleton.svelte';
 	import type { DataPoint } from '$lib/db';
@@ -28,14 +29,14 @@
 			const promises = graph.dataSources.map(async (source) => {
 				let data: DataPoint[] = [];
 				if (source.type === 'fred') {
-					const res = await fredClient.fetchSeries(source.id);
-					data = res.data;
+					const res = await fredProvider.fetch({ type: 'fred', seriesId: source.id, id: source.id, name: source.name });
+					data = res.series.data;
 				} else if (source.type === 'coingecko') {
-					const res = await coinGeckoClient.fetchMarketChart(source.id);
-					data = res.data;
+					const res = await coinGeckoProvider.fetch({ type: 'coingecko', coinId: source.id, id: source.id, name: source.name });
+					data = res.series.data;
 				} else if (source.type === 'yahoo') {
-					const res = await yahooClient.fetchHistorical(source.id);
-					data = res.data;
+					const res = await yahooProvider.fetch({ type: 'yahoo', symbol: source.id, id: source.id, name: source.name });
+					data = res.series.data;
 				}
 				return { ...source, data };
 			});
@@ -52,7 +53,7 @@
             const recentData = baseData.slice(-120); // ~10 years monthly or ~4m daily. 
             // Better: Slice by date. Let's just take last 200 points for performance
             
-			const labels = recentData.map(d => d.date);
+			const labels = recentData.map(d => TimeUtils.toISO(d).split('T')[0]);
 
 			const datasets = results.map((res, index) => {
 				// Apply time shift if configured (shift values forward/backward relative to labels)
@@ -64,9 +65,10 @@
                 
                 // Map values to base labels
 				let values = labels.map(date => {
-					const point = seriesData.find(d => d.date === date) || 
-                                  seriesData.find(d => d.date >= date);
-					return point ? point.value : null;
+					const dateTs = new Date(date).getTime();
+					const point = seriesData.find(d => d.time === dateTs) || 
+                                  seriesData.find(d => d.time >= dateTs);
+					return point ? (point.value ?? null) : null;
 				});
 
                 if (shiftMonths !== 0 && index === 1) { // Apply to the second series typically? Or specific series?

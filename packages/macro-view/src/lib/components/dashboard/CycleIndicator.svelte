@@ -2,7 +2,8 @@
 	import { onMount } from 'svelte';
 	import LineChart from '../charts/LineChart.svelte';
 	import Skeleton from '../common/Skeleton.svelte';
-	import { fredClient } from '$lib/logic/api-clients';
+	import { fredProvider } from '$lib/data-providers';
+	import { TimeUtils } from '@one-love-wealth/data-layer';
 	import type { DataPoint } from '$lib/db';
 
 	let ismData = $state<DataPoint[]>([]);
@@ -11,8 +12,8 @@
 
 	onMount(async () => {
 		try {
-			const series = await fredClient.fetchSeries('IPMAN');
-			ismData = series.data;
+			const result = await fredProvider.fetch({ type: 'fred', seriesId: 'IPMAN', id: 'IPMAN', name: 'ISM Manufacturing' });
+			ismData = result.series.data;
 		} catch (e) {
 			console.error(e);
 		} finally {
@@ -23,8 +24,8 @@
 	let chartData = $derived.by(() => {
 		if (!ismData.length) return { labels: [], datasets: [] };
 
-		const labels = ismData.slice(-60).map(d => d.date); // Last 5 years
-		const values = ismData.slice(-60).map(d => d.value);
+		const labels = ismData.slice(-60).map(d => TimeUtils.toISO(d).split('T')[0]); // Last 5 years
+		const values = ismData.slice(-60).map(d => d.value ?? null);
 
 		const datasets: any[] = [{
 			label: 'ISM Manufacturing PMI',
@@ -57,9 +58,9 @@
 	});
 
 	let currentPhase = $derived.by(() => {
-		if (!ismData.length) return 'Unknown';
-		const last = ismData[ismData.length - 1].value;
-		const prev = ismData[ismData.length - 2].value;
+		if (ismData.length < 2) return 'Unknown';
+		const last = ismData[ismData.length - 1].value ?? 0;
+		const prev = ismData[ismData.length - 2].value ?? 0;
 		
 		if (last > 50 && last > prev) return 'Expansion';
 		if (last > 50 && last < prev) return 'Slowdown';
