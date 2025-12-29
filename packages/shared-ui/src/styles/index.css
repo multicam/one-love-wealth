@@ -1,0 +1,7 @@
+/* Shared UI Styles Index */
+/* Use this file if you only want the theme without base styles */
+/* For full setup including base styles, import base.css instead */
+
+@import './theme.css';
+@import './animations.css';
+@import './utilities.css';

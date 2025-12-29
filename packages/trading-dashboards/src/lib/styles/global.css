@@ -1,66 +1,83 @@
+/* Trading Dashboards - Global Styles */
 @import 'tailwindcss';
-@import './theme.css';
+@import '@one-love-wealth/shared-ui/styles/theme.css';
+@import '@one-love-wealth/shared-ui/styles/animations.css';
+@import '@one-love-wealth/shared-ui/styles/utilities.css';
+
+/* Trading-specific overrides */
+/* Legacy CSS variables for backward compatibility */
+:root {
+	/* Background Colors - mapped to shared theme */
+	--bg-primary: var(--color-background);
+	--bg-secondary: var(--color-background-alt);
+	--bg-tertiary: var(--color-surface-light);
+	--card-bg: var(--color-card);
+
+	/* Text Colors - mapped to shared theme */
+	--text-primary: var(--color-text-primary);
+	--text-secondary: var(--color-text-secondary);
+	--text-muted: var(--color-text-muted);
+
+	/* Accent Colors - mapped to shared theme */
+	--accent-primary: var(--color-accent);
+	--accent-secondary: var(--color-accent-secondary);
+
+	/* Trading Colors - mapped to shared theme */
+	--bid-color: var(--color-bid);
+	--ask-color: var(--color-ask);
+	--green: var(--color-success);
+	--red: var(--color-danger);
+	--support-color: var(--color-support);
+	--resistance-color: var(--color-resistance);
+
+	/* Border & Divider - mapped to shared theme */
+	--border-color: var(--color-border-light);
+	--divider-color: var(--color-divider);
+
+	/* Transitions - using shared theme values */
+	--transition-fast: 150ms ease;
+	--transition-normal: 250ms ease;
+	--transition-slow: 400ms ease;
+
+	/* Spacing */
+	--spacing-xs: 0.25rem;
+	--spacing-sm: 0.5rem;
+	--spacing-md: 1rem;
+	--spacing-lg: 1.5rem;
+	--spacing-xl: 2rem;
+
+	/* Border Radius */
+	--radius-sm: 4px;
+	--radius-md: 8px;
+	--radius-lg: 12px;
+
+	/* Shadows */
+	--shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
 
 * {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
 }
 
 body {
-  font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Menlo', 'Monaco', 'Courier New', monospace;
-  background-color: var(--bg-primary);
-  color: var(--text-primary);
-  line-height: 1.6;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	font-family: 'JetBrains Mono', 'SF Mono', 'Fira Code', 'Menlo', 'Monaco', 'Courier New', monospace;
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
 a {
-  color: var(--accent-primary);
-  text-decoration: none;
-  transition: color var(--transition-fast);
+	color: var(--color-accent);
+	text-decoration: none;
+	transition: color var(--transition-fast);
 }
 
 a:hover {
-  color: var(--accent-secondary);
-}
-
-/* Custom Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: var(--bg-secondary);
-}
-
-::-webkit-scrollbar-thumb {
-  background: var(--text-muted);
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-secondary);
-}
-
-/* Utility Classes */
-.text-green {
-  color: var(--green);
-}
-
-.text-red {
-  color: var(--red);
-}
-
-.text-muted {
-  color: var(--text-muted);
-}
-
-.card {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-md);
-  padding: var(--spacing-md);
+	color: var(--color-accent-secondary);
 }

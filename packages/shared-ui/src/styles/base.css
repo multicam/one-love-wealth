@@ -1,43 +1,57 @@
+/* Shared UI Base Styles */
+/* This file provides the complete Tailwind setup for all packages */
+/* Import this file in your app's main CSS file */
+
 @import 'tailwindcss';
+@import './theme.css';
+@import './animations.css';
+@import './utilities.css';
 
-/* Shared UI Component Library Base Styles */
-/* Consuming apps should import this file or have their own Tailwind setup */
-
-/* Animation keyframes used by components */
-@keyframes spin {
-	from {
-		transform: rotate(0deg);
-	}
-	to {
-		transform: rotate(360deg);
-	}
+/* Base Reset & Defaults */
+*, *::before, *::after {
+	box-sizing: border-box;
 }
 
-@keyframes shimmer {
-	0% {
-		background-position: 200% 0;
-	}
-	100% {
-		background-position: -200% 0;
-	}
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
 }
 
-@keyframes fadeIn {
-	from {
-		opacity: 0;
-	}
-	to {
-		opacity: 1;
-	}
+body {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
+	line-height: 1.6;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }
 
-@keyframes scaleIn {
-	from {
-		opacity: 0;
-		transform: scale(0.95);
-	}
-	to {
-		opacity: 1;
-		transform: scale(1);
-	}
+a {
+	color: var(--color-accent);
+	text-decoration: none;
+	transition: color var(--transition-fast);
+}
+
+a:hover {
+	color: var(--color-accent-hover);
+}
+
+/* Default scrollbar for the entire app */
+::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+::-webkit-scrollbar-track {
+	background: var(--color-background-alt);
+}
+
+::-webkit-scrollbar-thumb {
+	background: var(--color-text-muted);
+	border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+	background: var(--color-text-secondary);
 }

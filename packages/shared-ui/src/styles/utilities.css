@@ -1,0 +1,106 @@
+/* Shared Utility Classes */
+
+/* Text Colors */
+.text-green {
+	color: var(--color-success);
+}
+
+.text-red {
+	color: var(--color-danger);
+}
+
+.text-muted {
+	color: var(--color-text-muted);
+}
+
+.text-bid {
+	color: var(--color-bid);
+}
+
+.text-ask {
+	color: var(--color-ask);
+}
+
+/* Card Styles */
+.card {
+	background: var(--color-card);
+	border: 1px solid var(--color-border-light);
+	border-radius: var(--radius-md);
+	padding: 1rem;
+}
+
+.card-hover:hover {
+	background: var(--color-card-hover);
+}
+
+/* Scrollbar Styles */
+.custom-scrollbar::-webkit-scrollbar {
+	width: 8px;
+	height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+	background: var(--color-background-alt);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+	background: var(--color-text-muted);
+	border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+	background: var(--color-text-secondary);
+}
+
+/* Animation Utilities */
+.animate-spin {
+	animation: spin 1s linear infinite;
+}
+
+.animate-shimmer {
+	animation: shimmer 2s linear infinite;
+}
+
+.animate-fade-in {
+	animation: fadeIn 200ms ease-out;
+}
+
+.animate-scale-in {
+	animation: scaleIn 200ms ease-out;
+}
+
+.animate-slide-up {
+	animation: slideInUp 200ms ease-out;
+}
+
+.animate-slide-down {
+	animation: slideInDown 200ms ease-out;
+}
+
+.animate-pulse {
+	animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Focus Ring */
+.focus-ring:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+.focus-ring:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px var(--color-accent);
+}
+
+/* Transitions */
+.transition-fast {
+	transition: all var(--transition-fast);
+}
+
+.transition-normal {
+	transition: all var(--transition-normal);
+}
+
+.transition-slow {
+	transition: all var(--transition-slow);
+}
