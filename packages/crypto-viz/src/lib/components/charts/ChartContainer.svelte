@@ -17,6 +17,7 @@
         loadCryptoData();
     });
 
+    /** @param {MouseEvent} e */
     function handleResizeStart(e) {
         isDragging = true;
         startY = e.clientY;
@@ -26,6 +27,7 @@
         e.preventDefault();
     }
 
+    /** @param {MouseEvent} e */
     function handleResizeMove(e) {
         if (!isDragging) return;
         const deltaY = e.clientY - startY;

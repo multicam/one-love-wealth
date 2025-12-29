@@ -4,14 +4,26 @@
     import { crosshairPosition, visibleTimeRange } from '$lib/stores/ui.js';
     import { chartMarkers } from '$lib/stores/events.js';
 
+    /**
+     * @typedef {import('lightweight-charts').IChartApi} IChartApi
+     * @typedef {import('lightweight-charts').ISeriesApi<'Candlestick'>} ICandlestickSeriesApi
+     * @typedef {import('lightweight-charts').Time} Time
+     */
+
     let { data = [], height = 400 } = $props();
 
+    /** @type {HTMLDivElement | undefined} */
     let chartContainer;
+    /** @type {IChartApi | null} */
     let chart = null;
+    /** @type {ICandlestickSeriesApi | null} */
     let candlestickSeries = null;
+    /** @type {ResizeObserver | null} */
     let resizeObserver = null;
     let initialized = false;
+    /** @type {(() => void) | null} */
     let unsubscribeTimeRange = null;
+    /** @type {(() => void) | null} */
     let unsubscribeCrosshair = null;
     let isUpdatingTimeRange = false;
 
@@ -55,8 +67,8 @@
         });
 
         chart.subscribeCrosshairMove((param) => {
-            if (param.time) {
-                crosshairPosition.set({ time: param.time, price: param.point?.y });
+            if (param.time !== undefined) {
+                crosshairPosition.set({ time: /** @type {number} */ (param.time), price: param.point?.y ?? null });
             }
         });
 
@@ -64,7 +76,7 @@
         unsubscribeCrosshair = crosshairPosition.subscribe((pos) => {
             if (pos && pos.time && chart && candlestickSeries) {
                 try {
-                    chart.setCrosshairPosition(pos.price || 0, pos.time, candlestickSeries);
+                    chart.setCrosshairPosition(pos.price ?? 0, /** @type {Time} */ (pos.time), candlestickSeries);
                 } catch (e) {
                     // Ignore errors when time is not in visible range
                 }
@@ -74,7 +86,7 @@
         // Publish time range changes to sync other charts
         chart.timeScale().subscribeVisibleTimeRangeChange((range) => {
             if (range && !isUpdatingTimeRange) {
-                visibleTimeRange.set(range);
+                visibleTimeRange.set({ from: /** @type {number} */ (range.from), to: /** @type {number} */ (range.to) });
             }
         });
 
@@ -83,7 +95,7 @@
             if (range && chart && !isUpdatingTimeRange) {
                 isUpdatingTimeRange = true;
                 try {
-                    chart.timeScale().setVisibleRange(range);
+                    chart.timeScale().setVisibleRange({ from: /** @type {Time} */ (range.from), to: /** @type {Time} */ (range.to) });
                 } catch (e) {
                     // Ignore errors from invalid ranges
                 }
@@ -126,7 +138,7 @@
     // Svelte 5: Update markers reactively
     $effect(() => {
         if (candlestickSeries && $chartMarkers) {
-            candlestickSeries.setMarkers($chartMarkers);
+            candlestickSeries.setMarkers(/** @type {import('lightweight-charts').SeriesMarker<Time>[]} */ ($chartMarkers));
         }
     });
 

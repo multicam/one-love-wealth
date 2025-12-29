@@ -3,6 +3,7 @@
     import { loadCryptoData } from '$lib/stores/crypto.js';
     import { DATA_SOURCES_LIST, getDefaultInterval } from '$lib/utils/constants.js';
 
+    /** @param {string} sourceId */
     function selectSource(sourceId) {
         const defaultInterval = getDefaultInterval(sourceId, $settings.timeframe);
         settings.update(s => ({ ...s, dataSource: sourceId, interval: defaultInterval?.id || null }));

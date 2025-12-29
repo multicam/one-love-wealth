@@ -2,6 +2,7 @@
     import { selectedCrypto, loadCryptoData } from '$lib/stores/crypto.js';
     import { SUPPORTED_CRYPTOS } from '$lib/utils/constants.js';
 
+    /** @param {string} id */
     function selectCrypto(id) {
         selectedCrypto.set(id);
         loadCryptoData();

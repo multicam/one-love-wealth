@@ -3,15 +3,28 @@
     import { createChart } from 'lightweight-charts';
     import { crosshairPosition, visibleTimeRange } from '$lib/stores/ui.js';
 
+    /**
+     * @typedef {import('lightweight-charts').IChartApi} IChartApi
+     * @typedef {import('lightweight-charts').ISeriesApi<'Line'>} ILineSeriesApi
+     * @typedef {import('lightweight-charts').Time} Time
+     */
+
     let { data = [], title = '', height = 150 } = $props();
 
+    /** @type {HTMLDivElement | undefined} */
     let chartContainer;
+    /** @type {IChartApi | null} */
     let chart = null;
+    /** @type {ILineSeriesApi | null} */
     let kSeries = null;
+    /** @type {ILineSeriesApi | null} */
     let dSeries = null;
+    /** @type {ResizeObserver | null} */
     let resizeObserver = null;
     let initialized = false;
+    /** @type {(() => void) | null} */
     let unsubscribeCrosshair = null;
+    /** @type {(() => void) | null} */
     let unsubscribeTimeRange = null;
     let isUpdatingTimeRange = false;
 
@@ -80,8 +93,8 @@
         });
 
         chart.subscribeCrosshairMove((param) => {
-            if (param.time) {
-                crosshairPosition.set({ time: param.time, price: param.point?.y });
+            if (param.time !== undefined) {
+                crosshairPosition.set({ time: /** @type {number} */ (param.time), price: param.point?.y ?? null });
             }
         });
 
@@ -89,7 +102,7 @@
         unsubscribeCrosshair = crosshairPosition.subscribe((pos) => {
             if (pos && pos.time && chart && kSeries) {
                 try {
-                    chart.setCrosshairPosition(pos.price || 0, pos.time, kSeries);
+                    chart.setCrosshairPosition(pos.price ?? 0, /** @type {Time} */ (pos.time), kSeries);
                 } catch (e) {
                     // Ignore errors when time is not in visible range or series has no data
                 }
@@ -99,7 +112,7 @@
         // Publish time range changes to sync other charts
         chart.timeScale().subscribeVisibleTimeRangeChange((range) => {
             if (range && !isUpdatingTimeRange) {
-                visibleTimeRange.set(range);
+                visibleTimeRange.set({ from: /** @type {number} */ (range.from), to: /** @type {number} */ (range.to) });
             }
         });
 
@@ -108,7 +121,7 @@
             if (range && chart && !isUpdatingTimeRange) {
                 isUpdatingTimeRange = true;
                 try {
-                    chart.timeScale().setVisibleRange(range);
+                    chart.timeScale().setVisibleRange({ from: /** @type {Time} */ (range.from), to: /** @type {Time} */ (range.to) });
                 } catch (e) {
                     // Ignore errors from invalid ranges
                 }
@@ -130,11 +143,12 @@
         }
     }
 
+    /** @param {Array<{time: number, k: number, d: number}>} newData */
     function updateData(newData) {
         if (!kSeries || !dSeries) return;
         
-        const kData = newData.map(d => ({ time: d.time, value: d.k }));
-        const dData = newData.map(d => ({ time: d.time, value: d.d }));
+        const kData = newData.map((d) => ({ time: /** @type {Time} */ (d.time), value: d.k }));
+        const dData = newData.map((d) => ({ time: /** @type {Time} */ (d.time), value: d.d }));
         
         kSeries.setData(kData);
         dSeries.setData(dData);

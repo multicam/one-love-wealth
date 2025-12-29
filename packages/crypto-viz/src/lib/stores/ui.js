@@ -3,7 +3,7 @@ import { writable } from 'svelte/store';
 /**
  * @typedef {Object} CrosshairData
  * @property {number} time
- * @property {number} price
+ * @property {number | null} price
  */
 
 /**

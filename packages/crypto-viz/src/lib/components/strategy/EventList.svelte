@@ -2,6 +2,7 @@
     import { detectedEvents } from '$lib/stores/events.js';
     import { TrendingUp, TrendingDown } from 'lucide-svelte';
 
+    /** @param {number} timestamp */
     function formatTime(timestamp) {
         return new Date(timestamp * 1000).toLocaleDateString('en-US', {
             month: 'short',

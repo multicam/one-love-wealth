@@ -3,17 +3,32 @@
     import { createChart } from 'lightweight-charts';
     import { crosshairPosition, visibleTimeRange } from '$lib/stores/ui.js';
 
+    /**
+     * @typedef {import('lightweight-charts').IChartApi} IChartApi
+     * @typedef {import('lightweight-charts').ISeriesApi<'Line'>} ILineSeriesApi
+     * @typedef {import('lightweight-charts').Time} Time
+     * @typedef {import('lightweight-charts').SeriesMarker<Time>} SeriesMarker
+     */
+
     let { data = [], height = 200 } = $props();
 
+    /** @type {HTMLDivElement | undefined} */
     let chartContainer;
+    /** @type {IChartApi | null} */
     let chart = null;
+    /** @type {ILineSeriesApi | null} */
     let priceSeries = null;
+    /** @type {ILineSeriesApi | null} */
     let filteredSeries = null;
+    /** @type {ResizeObserver | null} */
     let resizeObserver = null;
     let initialized = false;
+    /** @type {(() => void) | null} */
     let unsubscribeCrosshair = null;
+    /** @type {(() => void) | null} */
     let unsubscribeTimeRange = null;
     let isUpdatingTimeRange = false;
+    /** @type {SeriesMarker[]} */
     let markers = [];
 
     function initChart() {
@@ -66,23 +81,24 @@
         });
 
         chart.subscribeCrosshairMove((param) => {
-            if (param.time) {
-                crosshairPosition.set({ time: param.time, price: param.point?.y });
+            if (param.time !== undefined) {
+                crosshairPosition.set({ time: /** @type {number} */ (param.time), price: param.point?.y ?? null });
             }
         });
 
         unsubscribeCrosshair = crosshairPosition.subscribe((pos) => {
             if (pos && pos.time && chart && priceSeries) {
                 try {
-                    chart.setCrosshairPosition(pos.price || 0, pos.time, priceSeries);
+                    chart.setCrosshairPosition(pos.price ?? 0, /** @type {Time} */ (pos.time), priceSeries);
                 } catch (e) {
+                    // Ignore errors when time is not in visible range
                 }
             }
         });
 
         chart.timeScale().subscribeVisibleTimeRangeChange((range) => {
             if (range && !isUpdatingTimeRange) {
-                visibleTimeRange.set(range);
+                visibleTimeRange.set({ from: /** @type {number} */ (range.from), to: /** @type {number} */ (range.to) });
             }
         });
 
@@ -90,8 +106,9 @@
             if (range && chart && !isUpdatingTimeRange) {
                 isUpdatingTimeRange = true;
                 try {
-                    chart.timeScale().setVisibleRange(range);
+                    chart.timeScale().setVisibleRange({ from: /** @type {Time} */ (range.from), to: /** @type {Time} */ (range.to) });
                 } catch (e) {
+                    // Ignore errors from invalid ranges
                 }
                 isUpdatingTimeRange = false;
             }
@@ -111,11 +128,12 @@
         }
     }
 
+    /** @param {Array<{time: number, price: number, filtered: number, crossover: 'up' | 'down' | null}>} newData */
     function updateData(newData) {
         if (!priceSeries || !filteredSeries) return;
         
-        const priceData = newData.map(d => ({ time: d.time, value: d.price }));
-        const filteredData = newData.map(d => ({ time: d.time, value: d.filtered }));
+        const priceData = newData.map((d) => ({ time: /** @type {Time} */ (d.time), value: d.price }));
+        const filteredData = newData.map((d) => ({ time: /** @type {Time} */ (d.time), value: d.filtered }));
         
         priceSeries.setData(priceData);
         filteredSeries.setData(filteredData);
@@ -123,8 +141,8 @@
         // Add markers for crossovers
         markers = newData
             .filter(d => d.crossover !== null)
-            .map(d => ({
-                time: d.time,
+            .map(d => /** @type {SeriesMarker} */ ({
+                time: /** @type {Time} */ (d.time),
                 position: d.crossover === 'up' ? 'belowBar' : 'aboveBar',
                 color: d.crossover === 'up' ? '#22c55e' : '#ef4444',
                 shape: d.crossover === 'up' ? 'arrowUp' : 'arrowDown',

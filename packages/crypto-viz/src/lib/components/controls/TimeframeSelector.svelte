@@ -3,12 +3,14 @@
     import { loadCryptoData } from '$lib/stores/crypto.js';
     import { TIMEFRAMES, getAvailableIntervals, getDefaultInterval } from '$lib/utils/constants.js';
 
+    /** @param {number} days */
     function selectTimeframe(days) {
         const defaultInterval = getDefaultInterval($settings.dataSource, days);
         settings.update(s => ({ ...s, timeframe: days, interval: defaultInterval?.id || null }));
         loadCryptoData();
     }
 
+    /** @param {string} intervalId */
     function selectInterval(intervalId) {
         settings.update(s => ({ ...s, interval: intervalId }));
         loadCryptoData();

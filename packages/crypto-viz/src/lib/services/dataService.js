@@ -403,7 +403,7 @@ export async function fetchOHLC(cryptoId, days = 30, sourceId = 'coingecko', int
     
     // Check memory cache first
     const cached = cache.get(cacheKey);
-    if (isCacheValid(cached)) {
+    if (isCacheValid(cached) && cached) {
         console.log('fetchOHLC: Using memory cache');
         return cached.data;
     }

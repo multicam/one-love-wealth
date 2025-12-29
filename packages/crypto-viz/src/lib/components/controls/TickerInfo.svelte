@@ -48,6 +48,7 @@
         return crypto ? crypto.name : $selectedCrypto;
     });
 
+    /** @param {number} price */
     function formatPrice(price) {
         if (price >= 1000) {
             return price.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -58,6 +59,7 @@
         }
     }
 
+    /** @param {Date | null} date */
     function formatTime(date) {
         if (!date) return '';
         return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });

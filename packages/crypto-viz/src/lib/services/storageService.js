@@ -6,13 +6,25 @@ const CRYPTO_KEY = 'crypto-viz-selected-crypto';
 const OHLC_KEY_PREFIX = 'crypto-viz-ohlc-';
 
 /**
+ * @typedef {Object} IndicatorSettings
+ * @property {boolean} enabled
+ * @property {number} [kPeriod]
+ * @property {number} [dPeriod]
+ * @property {number} [smooth]
+ * @property {number} [rsiPeriod]
+ * @property {number} [stochPeriod]
+ * @property {number} [processNoise]
+ * @property {number} [measurementNoise]
+ */
+
+/**
  * @typedef {Object} Settings
  * @property {number} timeframe
  * @property {string | null} interval
  * @property {number} refreshInterval
  * @property {number} candlestickHeight
  * @property {string} dataSource
- * @property {Object} indicators
+ * @property {{stochastic: IndicatorSettings, stochasticRSI: IndicatorSettings, kalman: IndicatorSettings}} indicators
  */
 
 /**

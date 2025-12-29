@@ -3,6 +3,7 @@
     import { activePanel } from '$lib/stores/ui.js';
     import { downloadState, importFromFile } from '$lib/services/exportService.js';
 
+    /** @type {HTMLInputElement} */
     let fileInput;
 
     const navItems = [
@@ -10,6 +11,7 @@
         { id: 'settings', icon: Settings, label: 'Settings' }
     ];
 
+    /** @param {string} id */
     function handleClick(id) {
         activePanel.set(id);
     }
@@ -18,8 +20,9 @@
         downloadState();
     }
 
+    /** @param {Event & { currentTarget: HTMLInputElement }} event */
     async function handleImport(event) {
-        const file = event.target.files?.[0];
+        const file = event.currentTarget.files?.[0];
         if (file) {
             const result = await importFromFile(file);
             if (!result.success) {

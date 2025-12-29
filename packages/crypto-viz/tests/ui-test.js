@@ -15,7 +15,9 @@ async function testUI() {
     const page = await context.newPage();
     
     // Collect ALL console messages for debugging
+    /** @type {string[]} */
     const logs = [];
+    /** @type {string[]} */
     const errors = [];
     page.on('console', msg => {
         const text = msg.text();
@@ -45,8 +47,9 @@ async function testUI() {
     
     try {
         // Navigate to app
-        console.log('📍 Navigating to http://localhost:5173...');
-        await page.goto('http://localhost:5173', { waitUntil: 'domcontentloaded' });
+        const port = process.env.PORT || '5173';
+        console.log(`📍 Navigating to http://localhost:${port}...`);
+        await page.goto(`http://localhost:${port}`, { waitUntil: 'domcontentloaded' });
         
         // Wait for hydration and data load
         console.log('⏳ Waiting for data to load...');
@@ -123,7 +126,7 @@ async function testUI() {
         }
         
     } catch (err) {
-        console.error('❌ Test error:', err.message);
+        console.error('❌ Test error:', err instanceof Error ? err.message : String(err));
         const errorScreenshot = join(screenshotDir, 'error-state.png');
         await page.screenshot({ path: errorScreenshot }).catch(() => {});
     } finally {
