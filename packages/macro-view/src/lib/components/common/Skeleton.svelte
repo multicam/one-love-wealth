@@ -1,5 +1,11 @@
 <script lang="ts">
-	let { class: className = '' } = $props();
+	import { Skeleton as SharedSkeleton } from '@one-love-wealth/shared-ui';
+
+	interface Props {
+		class?: string;
+	}
+
+	let { class: className = '' }: Props = $props();
 </script>
 
-<div class="animate-pulse bg-slate-800 rounded-lg {className}"></div>
+<SharedSkeleton class={className} />

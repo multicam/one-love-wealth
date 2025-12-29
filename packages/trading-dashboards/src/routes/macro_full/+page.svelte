@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import TimeSeriesChart from '$lib/components/charts/TimeSeriesChart.svelte';
+	import { RefreshButton } from '@one-love-wealth/shared-ui';
 	import {
 		btcPrice,
 		fearGreed,
@@ -56,8 +57,11 @@
 			<h1 class="dashboard-title">Macro Dashboard - Full View</h1>
 			<p class="dashboard-subtitle">All economic indicators with historical charts</p>
 		</div>
-		<div class="last-updated">
-			Last updated: {formatLastUpdate($lastUpdate)}
+		<div class="header-actions">
+			<div class="last-updated">
+				Last updated: {formatLastUpdate($lastUpdate)}
+			</div>
+			<RefreshButton onRefresh={fetchMacroData} />
 		</div>
 	</div>
 
@@ -167,6 +171,13 @@
 		font-size: 1rem;
 		color: var(--text-secondary);
 		margin: 0;
+	}
+
+	.header-actions {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: var(--spacing-sm);
 	}
 
 	.last-updated {

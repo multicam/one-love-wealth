@@ -2,6 +2,7 @@
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/stores';
 	import '$lib/styles/global.css';
+	import { Toast } from '@one-love-wealth/shared-ui';
 
 	let { children } = $props();
 	const currentPath = $derived($page.url.pathname);
@@ -35,6 +36,8 @@
 	<main class="main-content">
 		{@render children()}
 	</main>
+
+	<Toast position="bottom-right" />
 </div>
 
 <style>

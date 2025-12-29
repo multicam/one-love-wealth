@@ -1,6 +1,18 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+
+/* Custom theme colors for crypto-viz */
+@theme {
+    --color-background: #1a1a2e;
+    --color-surface: #16213e;
+    --color-surface-light: #1f2937;
+    --color-border: #2d2d44;
+    --color-text-primary: #f3f4f6;
+    --color-text-secondary: #9ca3af;
+    --color-accent: #3b82f6;
+    --color-success: #22c55e;
+    --color-danger: #ef4444;
+    --color-warning: #f59e0b;
+}
 
 html, body {
     height: 100%;

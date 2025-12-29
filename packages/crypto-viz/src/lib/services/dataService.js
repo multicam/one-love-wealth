@@ -1,6 +1,28 @@
 import { DATA_SOURCES, SUPPORTED_CRYPTOS, getDefaultInterval } from '$lib/utils/constants.js';
 import { saveOHLCData, loadOHLCData } from './storageService.js';
 
+/**
+ * @typedef {Object} OHLCPoint
+ * @property {number} time
+ * @property {number} open
+ * @property {number} high
+ * @property {number} low
+ * @property {number} close
+ */
+
+/**
+ * @typedef {Object} CacheEntry
+ * @property {OHLCPoint[]} data
+ * @property {number} timestamp
+ */
+
+/**
+ * @typedef {Object} APIError
+ * @property {number} status
+ * @property {string} message
+ */
+
+/** @type {Map<string, CacheEntry>} */
 const cache = new Map();
 const CACHE_TTL = 5 * 60 * 1000; // 5 minutes for memory cache
 const STORAGE_TTL = 30 * 60 * 1000; // 30 minutes before attempting API refresh
@@ -8,31 +30,68 @@ const RETRY_DELAY = 60 * 1000; // 1 minute retry delay after 429
 
 let lastRateLimitTime = 0;
 
+/**
+ * Generate cache key
+ * @param {string} cryptoId
+ * @param {number} days
+ * @param {string} source
+ * @param {string | null} intervalId
+ * @returns {string}
+ */
 function getCacheKey(cryptoId, days, source, intervalId) {
     return `${source}-${cryptoId}-${days}-${intervalId || 'default'}`;
 }
 
+/**
+ * Get data source configuration
+ * @param {string} sourceId
+ * @returns {import('$lib/utils/constants.js').DataSource}
+ */
 function getDataSource(sourceId) {
     return DATA_SOURCES[sourceId] || DATA_SOURCES.coingecko;
 }
 
+/**
+ * Get crypto symbol from ID
+ * @param {string} cryptoId
+ * @returns {string}
+ */
 function getCryptoSymbol(cryptoId) {
     const crypto = SUPPORTED_CRYPTOS.find(c => c.id === cryptoId);
     return crypto ? crypto.symbol : cryptoId.toUpperCase();
 }
 
+/**
+ * Check if cache entry is valid
+ * @param {CacheEntry | undefined} entry
+ * @returns {boolean}
+ */
 function isCacheValid(entry) {
-    return entry && (Date.now() - entry.timestamp) < CACHE_TTL;
+    return !!entry && (Date.now() - entry.timestamp) < CACHE_TTL;
 }
 
+/**
+ * Check if storage data is stale
+ * @param {number | undefined} timestamp
+ * @returns {boolean}
+ */
 function isStorageStale(timestamp) {
     return !timestamp || (Date.now() - timestamp) > STORAGE_TTL;
 }
 
+/**
+ * Check if we're rate limited
+ * @returns {boolean}
+ */
 function isRateLimited() {
     return (Date.now() - lastRateLimitTime) < RETRY_DELAY;
 }
 
+/**
+ * Transform CoinGecko OHLC data
+ * @param {Array<[number, number, number, number, number]>} rawData
+ * @returns {OHLCPoint[]}
+ */
 function transformCoinGeckoData(rawData) {
     return rawData.map(([timestamp, open, high, low, close]) => ({
         time: Math.floor(timestamp / 1000),
@@ -43,9 +102,14 @@ function transformCoinGeckoData(rawData) {
     }));
 }
 
+/**
+ * Transform Binance OHLC data
+ * @param {Array<any[]>} rawData
+ * @returns {OHLCPoint[]}
+ */
 function transformBinanceData(rawData) {
     return rawData.map(candle => ({
-        time: Math.floor(candle[0] / 1000),
+        time: Math.floor(Number(candle[0]) / 1000),
         open: parseFloat(candle[1]),
         high: parseFloat(candle[2]),
         low: parseFloat(candle[3]),
@@ -53,22 +117,36 @@ function transformBinanceData(rawData) {
     }));
 }
 
+/**
+ * Fetch OHLC data from CoinGecko
+ * @param {string} cryptoId
+ * @param {number} days
+ * @param {string | null} intervalId
+ * @returns {Promise<OHLCPoint[]>}
+ */
 async function fetchFromCoinGecko(cryptoId, days, intervalId) {
     const source = getDataSource('coingecko');
     const url = `${source.baseUrl}/coins/${cryptoId}/ohlc?vs_currency=usd&days=${days}`;
     const response = await fetch(url);
     
     if (response.status === 429) {
-        throw { status: 429, message: 'Rate limited (429)' };
+        throw /** @type {APIError} */ ({ status: 429, message: 'Rate limited (429)' });
     }
     if (!response.ok) {
-        throw { status: response.status, message: `API error: ${response.status}` };
+        throw /** @type {APIError} */ ({ status: response.status, message: `API error: ${response.status}` });
     }
     
     const rawData = await response.json();
     return transformCoinGeckoData(rawData);
 }
 
+/**
+ * Fetch OHLC data from Binance
+ * @param {string} cryptoId
+ * @param {number} days
+ * @param {string | null} intervalId
+ * @returns {Promise<OHLCPoint[]>}
+ */
 async function fetchFromBinance(cryptoId, days, intervalId) {
     const source = getDataSource('binance');
     const symbol = getCryptoSymbol(cryptoId) + 'USDT';
@@ -79,27 +157,39 @@ async function fetchFromBinance(cryptoId, days, intervalId) {
     const response = await fetch(url);
     
     if (response.status === 429) {
-        throw { status: 429, message: 'Rate limited (429)' };
+        throw /** @type {APIError} */ ({ status: 429, message: 'Rate limited (429)' });
     }
     if (!response.ok) {
-        throw { status: response.status, message: `API error: ${response.status}` };
+        throw /** @type {APIError} */ ({ status: response.status, message: `API error: ${response.status}` });
     }
     
     const rawData = await response.json();
     return transformBinanceData(rawData);
 }
 
+/** @type {Record<string, string>} */
+const coinbaseSymbolMap = {
+    'bitcoin': 'BTC-USD',
+    'ethereum': 'ETH-USD',
+    'ripple': 'XRP-USD',
+    'solana': 'SOL-USD',
+    'sui': 'SUI-USD'
+};
+
+/**
+ * Get Coinbase symbol
+ * @param {string} cryptoId
+ * @returns {string}
+ */
 function getCoinbaseSymbol(cryptoId) {
-    const symbolMap = {
-        'bitcoin': 'BTC-USD',
-        'ethereum': 'ETH-USD',
-        'ripple': 'XRP-USD',
-        'solana': 'SOL-USD',
-        'sui': 'SUI-USD'
-    };
-    return symbolMap[cryptoId] || `${getCryptoSymbol(cryptoId)}-USD`;
+    return coinbaseSymbolMap[cryptoId] || `${getCryptoSymbol(cryptoId)}-USD`;
 }
 
+/**
+ * Transform Coinbase OHLC data
+ * @param {Array<[number, number, number, number, number, number]>} rawData
+ * @returns {OHLCPoint[]}
+ */
 function transformCoinbaseData(rawData) {
     return rawData.map(candle => ({
         time: candle[0],
@@ -110,38 +200,55 @@ function transformCoinbaseData(rawData) {
     })).reverse();
 }
 
+/**
+ * Fetch OHLC data from Coinbase
+ * @param {string} cryptoId
+ * @param {number} days
+ * @param {string | null} intervalId
+ * @returns {Promise<OHLCPoint[]>}
+ */
 async function fetchFromCoinbase(cryptoId, days, intervalId) {
     const source = getDataSource('coinbase');
     const symbol = getCoinbaseSymbol(cryptoId);
     const granularity = intervalId || getDefaultInterval('coinbase', days)?.id || '21600';
     
-    // Coinbase API returns max 300 candles, so we just use granularity without start/end
-    // The API will return the most recent candles
     const url = `${source.baseUrl}/products/${symbol}/candles?granularity=${granularity}`;
     const response = await fetch(url);
     
     if (response.status === 429) {
-        throw { status: 429, message: 'Rate limited (429)' };
+        throw /** @type {APIError} */ ({ status: 429, message: 'Rate limited (429)' });
     }
     if (!response.ok) {
-        throw { status: response.status, message: `API error: ${response.status}` };
+        throw /** @type {APIError} */ ({ status: response.status, message: `API error: ${response.status}` });
     }
     
     const rawData = await response.json();
     return transformCoinbaseData(rawData);
 }
 
+/** @type {Record<string, string>} */
+const hyperliquidSymbolMap = {
+    'bitcoin': 'BTC',
+    'ethereum': 'ETH',
+    'ripple': 'XRP',
+    'solana': 'SOL',
+    'sui': 'SUI'
+};
+
+/**
+ * Get Hyperliquid symbol
+ * @param {string} cryptoId
+ * @returns {string}
+ */
 function getHyperliquidSymbol(cryptoId) {
-    const symbolMap = {
-        'bitcoin': 'BTC',
-        'ethereum': 'ETH',
-        'ripple': 'XRP',
-        'solana': 'SOL',
-        'sui': 'SUI'
-    };
-    return symbolMap[cryptoId] || getCryptoSymbol(cryptoId);
+    return hyperliquidSymbolMap[cryptoId] || getCryptoSymbol(cryptoId);
 }
 
+/**
+ * Transform Hyperliquid OHLC data
+ * @param {Array<{t: number, o: string, h: string, l: string, c: string}> | null} rawData
+ * @returns {OHLCPoint[]}
+ */
 function transformHyperliquidData(rawData) {
     if (!rawData || !Array.isArray(rawData)) return [];
     return rawData.map(candle => ({
@@ -153,6 +260,13 @@ function transformHyperliquidData(rawData) {
     }));
 }
 
+/**
+ * Fetch OHLC data from Hyperliquid
+ * @param {string} cryptoId
+ * @param {number} days
+ * @param {string | null} intervalId
+ * @returns {Promise<OHLCPoint[]>}
+ */
 async function fetchFromHyperliquid(cryptoId, days, intervalId) {
     const source = getDataSource('hyperliquid');
     const symbol = getHyperliquidSymbol(cryptoId);
@@ -176,27 +290,39 @@ async function fetchFromHyperliquid(cryptoId, days, intervalId) {
     });
     
     if (response.status === 429) {
-        throw { status: 429, message: 'Rate limited (429)' };
+        throw /** @type {APIError} */ ({ status: 429, message: 'Rate limited (429)' });
     }
     if (!response.ok) {
-        throw { status: response.status, message: `API error: ${response.status}` };
+        throw /** @type {APIError} */ ({ status: response.status, message: `API error: ${response.status}` });
     }
     
     const rawData = await response.json();
     return transformHyperliquidData(rawData);
 }
 
+/** @type {Record<string, string>} */
+const yahooSymbolMap = {
+    'bitcoin': 'BTC-USD',
+    'ethereum': 'ETH-USD',
+    'ripple': 'XRP-USD',
+    'solana': 'SOL-USD',
+    'sui': 'SUI-USD'
+};
+
+/**
+ * Get Yahoo symbol
+ * @param {string} cryptoId
+ * @returns {string}
+ */
 function getYahooSymbol(cryptoId) {
-    const symbolMap = {
-        'bitcoin': 'BTC-USD',
-        'ethereum': 'ETH-USD',
-        'ripple': 'XRP-USD',
-        'solana': 'SOL-USD',
-        'sui': 'SUI-USD'
-    };
-    return symbolMap[cryptoId] || `${getCryptoSymbol(cryptoId)}-USD`;
+    return yahooSymbolMap[cryptoId] || `${getCryptoSymbol(cryptoId)}-USD`;
 }
 
+/**
+ * Transform Yahoo OHLC data
+ * @param {{result?: Array<{timestamp?: number[], indicators?: {quote?: Array<{open?: number[], high?: number[], low?: number[], close?: number[]}>}}>}} chart
+ * @returns {OHLCPoint[]}
+ */
 function transformYahooData(chart) {
     const quotes = chart.result?.[0];
     if (!quotes) return [];
@@ -213,6 +339,13 @@ function transformYahooData(chart) {
     })).filter(c => c.open && c.high && c.low && c.close);
 }
 
+/**
+ * Fetch OHLC data from Yahoo
+ * @param {string} cryptoId
+ * @param {number} days
+ * @param {string | null} intervalId
+ * @returns {Promise<OHLCPoint[]>}
+ */
 async function fetchFromYahoo(cryptoId, days, intervalId) {
     const source = getDataSource('yahoo');
     const symbol = getYahooSymbol(cryptoId);
@@ -223,28 +356,30 @@ async function fetchFromYahoo(cryptoId, days, intervalId) {
     const response = await fetch(url);
     
     if (response.status === 429) {
-        throw { status: 429, message: 'Rate limited (429)' };
+        throw /** @type {APIError} */ ({ status: 429, message: 'Rate limited (429)' });
     }
     if (!response.ok) {
-        throw { status: response.status, message: `API error: ${response.status}` };
+        throw /** @type {APIError} */ ({ status: response.status, message: `API error: ${response.status}` });
     }
     
     const data = await response.json();
     return transformYahooData(data.chart);
 }
 
+/**
+ * Merge existing and new OHLC data
+ * @param {OHLCPoint[] | undefined} existingData
+ * @param {OHLCPoint[]} newData
+ * @returns {OHLCPoint[]}
+ */
 function mergeOHLCData(existingData, newData) {
     if (!existingData || existingData.length === 0) return newData;
     if (!newData || newData.length === 0) return existingData;
     
-    // Get the last timestamp from existing data
     const lastExistingTime = existingData[existingData.length - 1].time;
-    
-    // Filter new data to only include points after the last existing point
     const newPoints = newData.filter(point => point.time > lastExistingTime);
     
     if (newPoints.length === 0) {
-        // Update the last candle if times match (it may have updated)
         const lastNewPoint = newData[newData.length - 1];
         if (lastNewPoint && lastNewPoint.time === lastExistingTime) {
             return [...existingData.slice(0, -1), lastNewPoint];
@@ -252,10 +387,17 @@ function mergeOHLCData(existingData, newData) {
         return existingData;
     }
     
-    // Merge existing data with new points
     return [...existingData, ...newPoints];
 }
 
+/**
+ * Fetch OHLC data with caching
+ * @param {string} cryptoId
+ * @param {number} days
+ * @param {string} sourceId
+ * @param {string | null} intervalId
+ * @returns {Promise<OHLCPoint[]>}
+ */
 export async function fetchOHLC(cryptoId, days = 30, sourceId = 'coingecko', intervalId = null) {
     const cacheKey = getCacheKey(cryptoId, days, sourceId, intervalId);
     
@@ -291,6 +433,7 @@ export async function fetchOHLC(cryptoId, days = 30, sourceId = 'coingecko', int
     try {
         console.log(`fetchOHLC: Fetching from ${sourceId} with interval ${intervalId || 'default'}`);
         
+        /** @type {OHLCPoint[]} */
         let newData;
         if (sourceId === 'binance') {
             newData = await fetchFromBinance(cryptoId, days, intervalId);
@@ -305,6 +448,7 @@ export async function fetchOHLC(cryptoId, days = 30, sourceId = 'coingecko', int
         }
         
         // Merge with existing data if we have it (incremental update)
+        /** @type {OHLCPoint[]} */
         let finalData;
         if (stored && stored.data && stored.data.length > 0) {
             finalData = mergeOHLCData(stored.data, newData);
@@ -320,7 +464,8 @@ export async function fetchOHLC(cryptoId, days = 30, sourceId = 'coingecko', int
         
         return finalData;
     } catch (err) {
-        if (err.status === 429) {
+        const apiError = /** @type {APIError} */ (err);
+        if (apiError.status === 429) {
             lastRateLimitTime = Date.now();
             console.warn('fetchOHLC: Rate limited (429)');
         }
@@ -331,10 +476,13 @@ export async function fetchOHLC(cryptoId, days = 30, sourceId = 'coingecko', int
             cache.set(cacheKey, { data: stored.data, timestamp: Date.now() });
             return stored.data;
         }
-        throw err.message ? new Error(err.message) : err;
+        throw apiError.message ? new Error(apiError.message) : err;
     }
 }
 
+/**
+ * Clear the memory cache
+ */
 export function clearCache() {
     cache.clear();
 }

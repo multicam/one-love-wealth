@@ -1,6 +1,7 @@
 import { writable, derived } from 'svelte/store';
 import { fearGreedAPI } from '$lib/services/api/fearGreedAPI';
 import { coinGeckoAPI } from '$lib/services/api/coinGeckoAPI';
+import { toastStore } from '@one-love-wealth/shared-ui';
 
 // Types
 export interface MacroIndicator {
@@ -250,7 +251,9 @@ export const btcGoldRatio = derived(btcGoldData, ($data): MacroIndicator => ({
 }));
 
 // Data fetching
-export async function fetchMacroData() {
+export async function fetchMacroData(): Promise<boolean> {
+	const loadingToastId = toastStore.info('Loading macro data...', 0);
+
 	try {
 		// Fetch real-time data from free APIs
 		const [fearGreedResult, btcPrice, btcGoldRatio, btcHistory, btcGoldHistory] = await Promise.all([
@@ -285,20 +288,15 @@ export async function fetchMacroData() {
 			lastUpdate: btcGoldRatio.lastUpdate
 		});
 
-		// Economic indicators still use mock data
-		// To integrate real data, sign up for FRED API (free): https://fred.stlouisfed.org/docs/api/api_key.html
-		// Then fetch:
-		// - Michigan Consumer Sentiment: UMCSENT
-		// - ISM Manufacturing PMI: MANEMP (or similar)
-		// - M2 Money Supply: M2SL
-		// - VIX: Available from CBOE or Yahoo Finance
-		// - SOFR: SOFR rate from FRED
-
-		console.log('Macro data fetched successfully');
-		console.log('Real data: BTC Price, BTC/Gold Ratio, Fear & Greed Index');
-		console.log('Mock data: Economic indicators (need FRED API key for real data)');
+		toastStore.dismiss(loadingToastId);
+		toastStore.success('Macro data updated successfully');
+		return true;
 	} catch (error) {
+		toastStore.dismiss(loadingToastId);
+		const message = error instanceof Error ? error.message : 'Unknown error';
+		toastStore.error(`Failed to fetch macro data: ${message}`);
 		console.error('Failed to fetch macro data:', error);
+		return false;
 	}
 }
 

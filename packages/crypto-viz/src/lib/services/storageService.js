@@ -5,6 +5,46 @@ const EVENTS_KEY = 'crypto-viz-events';
 const CRYPTO_KEY = 'crypto-viz-selected-crypto';
 const OHLC_KEY_PREFIX = 'crypto-viz-ohlc-';
 
+/**
+ * @typedef {Object} Settings
+ * @property {number} timeframe
+ * @property {string | null} interval
+ * @property {number} refreshInterval
+ * @property {number} candlestickHeight
+ * @property {string} dataSource
+ * @property {Object} indicators
+ */
+
+/**
+ * @typedef {Object} StrategyEvent
+ * @property {string} id
+ * @property {string} type
+ * @property {string} name
+ * @property {Object} condition
+ * @property {number[]} detectedAt
+ * @property {string} createdAt
+ */
+
+/**
+ * @typedef {Object} OHLCPoint
+ * @property {number} time
+ * @property {number} open
+ * @property {number} high
+ * @property {number} low
+ * @property {number} close
+ */
+
+/**
+ * @typedef {Object} OHLCPayload
+ * @property {OHLCPoint[]} data
+ * @property {number} timestamp
+ * @property {number | null} lastDataTime
+ */
+
+/**
+ * Save settings to localStorage
+ * @param {Settings} settings
+ */
 export function saveSettings(settings) {
     try {
         localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -13,6 +53,10 @@ export function saveSettings(settings) {
     }
 }
 
+/**
+ * Load settings from localStorage
+ * @returns {Settings | null}
+ */
 export function loadSettings() {
     try {
         const stored = localStorage.getItem(SETTINGS_KEY);
@@ -23,6 +67,10 @@ export function loadSettings() {
     }
 }
 
+/**
+ * Save events to localStorage
+ * @param {StrategyEvent[]} events
+ */
 export function saveEvents(events) {
     try {
         localStorage.setItem(EVENTS_KEY, JSON.stringify(events));
@@ -31,6 +79,10 @@ export function saveEvents(events) {
     }
 }
 
+/**
+ * Load events from localStorage
+ * @returns {StrategyEvent[]}
+ */
 export function loadEvents() {
     try {
         const stored = localStorage.getItem(EVENTS_KEY);
@@ -41,6 +93,10 @@ export function loadEvents() {
     }
 }
 
+/**
+ * Save selected crypto to localStorage
+ * @param {string} cryptoId
+ */
 export function saveSelectedCrypto(cryptoId) {
     try {
         localStorage.setItem(CRYPTO_KEY, cryptoId);
@@ -49,6 +105,10 @@ export function saveSelectedCrypto(cryptoId) {
     }
 }
 
+/**
+ * Load selected crypto from localStorage
+ * @returns {string}
+ */
 export function loadSelectedCrypto() {
     try {
         return localStorage.getItem(CRYPTO_KEY) || 'bitcoin';
@@ -58,6 +118,9 @@ export function loadSelectedCrypto() {
     }
 }
 
+/**
+ * Clear all storage
+ */
 export function clearAllStorage() {
     localStorage.removeItem(SETTINGS_KEY);
     localStorage.removeItem(EVENTS_KEY);
@@ -68,11 +131,17 @@ export function clearAllStorage() {
         .forEach(key => localStorage.removeItem(key));
 }
 
-// OHLC Data Persistence
+/**
+ * Save OHLC data to localStorage
+ * @param {string} cryptoId
+ * @param {string} timeframe
+ * @param {OHLCPoint[]} data
+ */
 export function saveOHLCData(cryptoId, timeframe, data) {
     if (!browser) return;
     try {
         const key = `${OHLC_KEY_PREFIX}${cryptoId}-${timeframe}`;
+        /** @type {OHLCPayload} */
         const payload = {
             data,
             timestamp: Date.now(),
@@ -82,12 +151,18 @@ export function saveOHLCData(cryptoId, timeframe, data) {
     } catch (e) {
         console.error('Failed to save OHLC data:', e);
         // If storage is full, try to clear old data
-        if (e.name === 'QuotaExceededError') {
+        if (e instanceof Error && e.name === 'QuotaExceededError') {
             clearOldOHLCData();
         }
     }
 }
 
+/**
+ * Load OHLC data from localStorage
+ * @param {string} cryptoId
+ * @param {string} timeframe
+ * @returns {OHLCPayload | null}
+ */
 export function loadOHLCData(cryptoId, timeframe) {
     if (!browser) return null;
     try {
@@ -95,6 +170,7 @@ export function loadOHLCData(cryptoId, timeframe) {
         const stored = localStorage.getItem(key);
         if (!stored) return null;
         
+        /** @type {OHLCPayload} */
         const payload = JSON.parse(stored);
         return {
             data: payload.data,
@@ -107,6 +183,9 @@ export function loadOHLCData(cryptoId, timeframe) {
     }
 }
 
+/**
+ * Clear old OHLC data from localStorage
+ */
 export function clearOldOHLCData() {
     if (!browser) return;
     // Remove OHLC data older than 24 hours
@@ -117,9 +196,13 @@ export function clearOldOHLCData() {
         .filter(key => key.startsWith(OHLC_KEY_PREFIX))
         .forEach(key => {
             try {
-                const payload = JSON.parse(localStorage.getItem(key));
-                if (now - payload.timestamp > maxAge) {
-                    localStorage.removeItem(key);
+                const stored = localStorage.getItem(key);
+                if (stored) {
+                    /** @type {OHLCPayload} */
+                    const payload = JSON.parse(stored);
+                    if (now - payload.timestamp > maxAge) {
+                        localStorage.removeItem(key);
+                    }
                 }
             } catch (e) {
                 localStorage.removeItem(key);

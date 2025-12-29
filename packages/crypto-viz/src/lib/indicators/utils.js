@@ -5,6 +5,7 @@
  * @returns {number[]} SMA values (shorter array, starts at index period-1)
  */
 export function sma(values, period) {
+    /** @type {number[]} */
     const result = [];
     for (let i = period - 1; i < values.length; i++) {
         let sum = 0;

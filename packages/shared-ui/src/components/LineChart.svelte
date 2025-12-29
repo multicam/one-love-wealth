@@ -14,8 +14,6 @@
     yAxisLog?: boolean;
     /** Enable dual Y axes */
     dualAxis?: boolean;
-    /** Chart height in pixels or CSS value */
-    height?: string;
     /** Theme colors override */
     theme?: {
       axis?: string;
@@ -33,16 +31,15 @@
     title = '',
     yAxisLog = false,
     dualAxis = false,
-    height = '100%',
     theme = {}
   }: Props = $props();
 
-  // Default dark theme colors - use $derived for reactivity
+  // Default dark theme colors
   const defaultTheme = $derived({
     axis: theme.axis ?? '#64748b',
     grid: theme.grid ?? '#1e293b',
     text: theme.text ?? '#94a3b8',
-    tooltipBg: theme.tooltipBg ?? '#1e293b',
+    tooltipBg: theme.tooltipBg ?? 'rgba(15, 23, 42, 0.95)',
     tooltipText: theme.tooltipText ?? '#e2e8f0',
     tooltipBorder: theme.tooltipBorder ?? '#334155'
   });
@@ -126,6 +123,6 @@
   });
 </script>
 
-<div class="relative w-full" style:height={height}>
+<div class="relative h-full w-full">
   <canvas bind:this={canvas}></canvas>
 </div>

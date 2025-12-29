@@ -1,3 +1,35 @@
+/**
+ * @typedef {Object} Crypto
+ * @property {string} id
+ * @property {string} symbol
+ * @property {string} name
+ */
+
+/**
+ * @typedef {Object} Timeframe
+ * @property {number} days
+ * @property {string} label
+ */
+
+/**
+ * @typedef {Object} Interval
+ * @property {string} id
+ * @property {string} label
+ * @property {number | null} seconds
+ */
+
+/**
+ * @typedef {Object} DataSource
+ * @property {string} id
+ * @property {string} name
+ * @property {string} baseUrl
+ * @property {Interval[]} intervals
+ * @property {Record<number, Interval[]>} intervalsByTimeframe
+ * @property {number} maxCandles
+ * @property {boolean} hasVolume
+ */
+
+/** @type {Crypto[]} */
 export const SUPPORTED_CRYPTOS = [
     { id: 'bitcoin', symbol: 'BTC', name: 'Bitcoin' },
     { id: 'ethereum', symbol: 'ETH', name: 'Ethereum' },
@@ -6,6 +38,7 @@ export const SUPPORTED_CRYPTOS = [
     { id: 'sui', symbol: 'SUI', name: 'Sui' }
 ];
 
+/** @type {Timeframe[]} */
 export const TIMEFRAMES = [
     { days: 1, label: '1D' },
     { days: 7, label: '7D' },
@@ -17,6 +50,7 @@ export const TIMEFRAMES = [
     { days: 365, label: '1Y' }
 ];
 
+/** @type {Record<string, DataSource>} */
 export const DATA_SOURCES = {
     coingecko: {
         id: 'coingecko',
@@ -261,12 +295,24 @@ export const DATA_SOURCES = {
 
 export const DATA_SOURCES_LIST = Object.values(DATA_SOURCES);
 
+/**
+ * Get available intervals for a data source and timeframe
+ * @param {string} sourceId - The data source ID
+ * @param {number} days - The number of days in the timeframe
+ * @returns {Interval[]}
+ */
 export function getAvailableIntervals(sourceId, days) {
     const source = DATA_SOURCES[sourceId];
     if (!source) return [];
     return source.intervalsByTimeframe[days] || source.intervalsByTimeframe[30] || [];
 }
 
+/**
+ * Get the default interval for a data source and timeframe
+ * @param {string} sourceId - The data source ID
+ * @param {number} days - The number of days in the timeframe
+ * @returns {Interval | null}
+ */
 export function getDefaultInterval(sourceId, days) {
     const intervals = getAvailableIntervals(sourceId, days);
     return intervals[0] || null;

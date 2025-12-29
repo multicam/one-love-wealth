@@ -1,26 +1,49 @@
 import { writable, derived, get } from 'svelte/store';
 import { browser } from '$app/environment';
 import { stochasticData, stochasticRSIData } from './indicators.js';
-import { detectCrossover, detectThreshold, createEvent } from '$lib/services/eventService.js';
+import { detectCrossover, detectThreshold } from '$lib/services/eventService.js';
 import { saveEvents, loadEvents } from '$lib/services/storageService.js';
 
+/**
+ * @typedef {Object} StrategyEvent
+ * @property {string} id
+ * @property {string} type
+ * @property {string} name
+ * @property {Object} condition
+ * @property {number[]} detectedAt
+ * @property {string} createdAt
+ */
+
 function createEventsStore() {
+    /** @type {StrategyEvent[]} */
     const initial = browser ? loadEvents() : [];
     const { subscribe, set, update } = writable(initial);
 
     return {
         subscribe,
+        /**
+         * @param {StrategyEvent[]} value
+         */
         set: (value) => {
             set(value);
             if (browser) saveEvents(value);
         },
+        /**
+         * @param {(events: StrategyEvent[]) => StrategyEvent[]} fn
+         */
         update: (fn) => {
             update(fn);
             if (browser) saveEvents(get({ subscribe }));
         },
+        /**
+         * @param {StrategyEvent} event
+         */
         add: (event) => {
             update(events => [...events, event]);
         },
+        /**
+         * @param {string} id
+         */
         remove: (id) => {
             update(events => events.filter(e => e.id !== id));
         },
@@ -33,10 +56,21 @@ function createEventsStore() {
 
 export const strategyEvents = createEventsStore();
 
+/**
+ * @typedef {Object} DetectedEvent
+ * @property {string} type
+ * @property {string} indicator
+ * @property {string} name
+ * @property {'bullish' | 'bearish'} signal
+ * @property {number[]} timestamps
+ */
+
 // Auto-detect events based on indicator data
+/** @type {import('svelte/store').Readable<DetectedEvent[]>} */
 export const detectedEvents = derived(
     [stochasticData, stochasticRSIData],
     ([$stoch, $stochRSI]) => {
+        /** @type {DetectedEvent[]} */
         const events = [];
 
         if ($stoch.length > 0) {
@@ -119,10 +153,21 @@ export const detectedEvents = derived(
     }
 );
 
+/**
+ * @typedef {Object} ChartMarker
+ * @property {number} time
+ * @property {'belowBar' | 'aboveBar'} position
+ * @property {string} color
+ * @property {'arrowUp' | 'arrowDown'} shape
+ * @property {string} text
+ */
+
 // Flatten all detected events into chart markers
+/** @type {import('svelte/store').Readable<ChartMarker[]>} */
 export const chartMarkers = derived(
     [detectedEvents],
     ([$events]) => {
+        /** @type {ChartMarker[]} */
         const markers = [];
 
         for (const event of $events) {

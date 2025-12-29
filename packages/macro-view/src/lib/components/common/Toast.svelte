@@ -1,29 +1,26 @@
 <!--
-  DEPRECATED: This component has been replaced by @one-love-wealth/shared-ui Toast.
+  DEPRECATED: Use @one-love-wealth/shared-ui Toast directly.
   
-  Migration guide:
-  1. Import from shared-ui: import { Toast, toastStore } from '@one-love-wealth/shared-ui';
+  Migration:
+  1. Import Toast and toastStore from '@one-love-wealth/shared-ui'
   2. Add <Toast /> to your layout
-  3. Use toastStore.success(), toastStore.error(), toastStore.info(), toastStore.warning()
-  
-  This file is kept for backward compatibility. New code should use shared-ui.
+  3. Use toastStore.success(), toastStore.error(), etc.
 -->
 <script lang="ts" module>
 	// Re-export from shared-ui for backward compatibility
-	import { toastStore } from '@one-love-wealth/shared-ui';
+	import { toastStore as sharedToastStore, type ToastType } from '@one-love-wealth/shared-ui';
 
-	export interface Toast {
-		id: string;
-		message: string;
-		type: 'success' | 'error' | 'info';
-	}
+	export const toastStore = sharedToastStore;
+	export type Toast = ToastType;
 
-	// Legacy API - wraps the new store
-	export const toasts = toastStore;
-
-	export function addToast(message: string, type: Toast['type'] = 'info') {
-		toastStore.show(message, type);
+	// Legacy API adapter
+	export function addToast(message: string, type: 'success' | 'error' | 'info' = 'info') {
+		sharedToastStore.show(message, type);
 	}
 </script>
 
-<!-- Component rendering is now handled by shared-ui Toast in +layout.svelte -->
+<script lang="ts">
+	import { Toast as SharedToast } from '@one-love-wealth/shared-ui';
+</script>
+
+<SharedToast position="bottom-right" />

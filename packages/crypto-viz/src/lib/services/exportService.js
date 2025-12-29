@@ -6,8 +6,17 @@ import { strategyEvents } from '$lib/stores/events.js';
 const STATE_VERSION = 1;
 
 /**
+ * @typedef {Object} ExportedState
+ * @property {number} version
+ * @property {string} exportedAt
+ * @property {string} selectedCrypto
+ * @property {import('$lib/stores/settings.js').Settings} settings
+ * @property {import('$lib/stores/events.js').StrategyEvent[]} events
+ */
+
+/**
  * Export current application state to JSON
- * @returns {Object} Exportable state object
+ * @returns {ExportedState}
  */
 export function exportState() {
     return {
@@ -38,20 +47,28 @@ export function downloadState() {
 }
 
 /**
+ * @typedef {Object} ValidationResult
+ * @property {boolean} valid
+ * @property {string} [error]
+ */
+
+/**
  * Validate imported state
- * @param {Object} state - State to validate
- * @returns {{valid: boolean, error?: string}}
+ * @param {unknown} state - State to validate
+ * @returns {ValidationResult}
  */
 export function validateState(state) {
     if (!state || typeof state !== 'object') {
         return { valid: false, error: 'Invalid state format' };
     }
     
-    if (!state.version || state.version > STATE_VERSION) {
+    const stateObj = /** @type {Record<string, unknown>} */ (state);
+    
+    if (!stateObj.version || (typeof stateObj.version === 'number' && stateObj.version > STATE_VERSION)) {
         return { valid: false, error: 'Unsupported state version' };
     }
     
-    if (!state.settings || typeof state.settings !== 'object') {
+    if (!stateObj.settings || typeof stateObj.settings !== 'object') {
         return { valid: false, error: 'Missing or invalid settings' };
     }
     
@@ -59,9 +76,15 @@ export function validateState(state) {
 }
 
 /**
+ * @typedef {Object} ImportResult
+ * @property {boolean} success
+ * @property {string} [error]
+ */
+
+/**
  * Import state from JSON object
- * @param {Object} state - State to import
- * @returns {{success: boolean, error?: string}}
+ * @param {unknown} state - State to import
+ * @returns {ImportResult}
  */
 export function importState(state) {
     const validation = validateState(state);
@@ -70,28 +93,31 @@ export function importState(state) {
     }
     
     try {
-        if (state.selectedCrypto) {
-            selectedCrypto.set(state.selectedCrypto);
+        const stateObj = /** @type {ExportedState} */ (state);
+        
+        if (stateObj.selectedCrypto) {
+            selectedCrypto.set(stateObj.selectedCrypto);
         }
         
-        if (state.settings) {
-            settings.set(state.settings);
+        if (stateObj.settings) {
+            settings.set(stateObj.settings);
         }
         
-        if (state.events) {
-            strategyEvents.set(state.events);
+        if (stateObj.events) {
+            strategyEvents.set(stateObj.events);
         }
         
         return { success: true };
     } catch (e) {
-        return { success: false, error: e.message };
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        return { success: false, error: message };
     }
 }
 
 /**
  * Import state from file
  * @param {File} file - JSON file to import
- * @returns {Promise<{success: boolean, error?: string}>}
+ * @returns {Promise<ImportResult>}
  */
 export async function importFromFile(file) {
     try {
@@ -99,6 +125,7 @@ export async function importFromFile(file) {
         const state = JSON.parse(text);
         return importState(state);
     } catch (e) {
-        return { success: false, error: 'Failed to parse file: ' + e.message };
+        const message = e instanceof Error ? e.message : 'Unknown error';
+        return { success: false, error: 'Failed to parse file: ' + message };
     }
 }

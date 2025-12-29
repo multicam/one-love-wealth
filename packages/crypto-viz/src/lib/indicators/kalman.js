@@ -1,17 +1,42 @@
 /**
+ * @typedef {Object} Candle
+ * @property {number} time
+ * @property {number} open
+ * @property {number} high
+ * @property {number} low
+ * @property {number} close
+ */
+
+/**
+ * @typedef {Object} KalmanPoint
+ * @property {number} time
+ * @property {number} price
+ * @property {number} filtered
+ * @property {'up' | 'down' | null} crossover
+ */
+
+/**
+ * @typedef {Object} CrossoverPoint
+ * @property {number} time
+ * @property {number} value
+ * @property {'up' | 'down'} direction
+ */
+
+/**
  * Kalman Filter for price data
  * A simple 1D Kalman filter implementation for smoothing price series
  * 
- * @param {Array<{time: number, open: number, high: number, low: number, close: number}>} candles
+ * @param {Candle[]} candles
  * @param {number} processNoise - Process noise covariance Q (higher = more responsive, default 0.01)
  * @param {number} measurementNoise - Measurement noise covariance R (higher = smoother, default 0.1)
- * @returns {Array<{time: number, price: number, filtered: number, crossover: 'up' | 'down' | null}>}
+ * @returns {KalmanPoint[]}
  */
 export function calculateKalman(candles, processNoise = 0.01, measurementNoise = 0.1) {
     if (!candles || candles.length < 2) {
         return [];
     }
 
+    /** @type {KalmanPoint[]} */
     const result = [];
     
     // Initial state
@@ -43,6 +68,7 @@ export function calculateKalman(candles, processNoise = 0.01, measurementNoise =
         p = (1 - K) * pPred;
         
         // Detect crossover
+        /** @type {'up' | 'down' | null} */
         let crossover = null;
         if (i > 0) {
             const prevAbove = prevPrice > prevFiltered;
@@ -71,8 +97,8 @@ export function calculateKalman(candles, processNoise = 0.01, measurementNoise =
 
 /**
  * Extract crossover points from Kalman data
- * @param {Array<{time: number, price: number, filtered: number, crossover: 'up' | 'down' | null}>} kalmanData
- * @returns {Array<{time: number, value: number, direction: 'up' | 'down'}>}
+ * @param {KalmanPoint[]} kalmanData
+ * @returns {CrossoverPoint[]}
  */
 export function extractCrossovers(kalmanData) {
     return kalmanData
@@ -80,6 +106,6 @@ export function extractCrossovers(kalmanData) {
         .map(d => ({
             time: d.time,
             value: d.price,
-            direction: d.crossover
+            direction: /** @type {'up' | 'down'} */ (d.crossover)
         }));
 }

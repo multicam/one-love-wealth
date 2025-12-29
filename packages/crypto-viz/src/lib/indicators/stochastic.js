@@ -1,12 +1,28 @@
 import { sma, highest, lowest } from './utils.js';
 
 /**
+ * @typedef {Object} Candle
+ * @property {number} time
+ * @property {number} open
+ * @property {number} high
+ * @property {number} low
+ * @property {number} close
+ */
+
+/**
+ * @typedef {Object} StochasticPoint
+ * @property {number} time
+ * @property {number} k
+ * @property {number} d
+ */
+
+/**
  * Calculate Stochastic Oscillator
- * @param {Array<{time: number, open: number, high: number, low: number, close: number}>} candles
+ * @param {Candle[]} candles
  * @param {number} kPeriod - %K period (default 14)
  * @param {number} dPeriod - %D period (default 3)
  * @param {number} smooth - %K smoothing (default 3)
- * @returns {Array<{time: number, k: number, d: number}>}
+ * @returns {StochasticPoint[]}
  */
 export function calculateStochastic(candles, kPeriod = 14, dPeriod = 3, smooth = 3) {
     if (candles.length < kPeriod + smooth + dPeriod) {
@@ -18,6 +34,7 @@ export function calculateStochastic(candles, kPeriod = 14, dPeriod = 3, smooth =
     const closes = candles.map(c => c.close);
 
     // Calculate raw %K
+    /** @type {number[]} */
     const rawK = [];
     for (let i = kPeriod - 1; i < candles.length; i++) {
         const highestHigh = highest(highs, kPeriod, i);
@@ -38,6 +55,7 @@ export function calculateStochastic(candles, kPeriod = 14, dPeriod = 3, smooth =
     const dValues = sma(smoothedK, dPeriod);
 
     // Build result with aligned timestamps
+    /** @type {StochasticPoint[]} */
     const result = [];
     const startIndex = kPeriod - 1 + smooth - 1 + dPeriod - 1;
     

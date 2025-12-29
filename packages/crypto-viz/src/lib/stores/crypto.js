@@ -3,7 +3,16 @@ import { browser } from '$app/environment';
 import { fetchOHLC } from '$lib/services/dataService.js';
 import { settings } from './settings.js';
 import { saveSelectedCrypto, loadSelectedCrypto } from '$lib/services/storageService.js';
-import { crosshairPosition, visibleTimeRange } from './ui.js';
+import { crosshairPosition } from './ui.js';
+
+/**
+ * @typedef {Object} OHLCPoint
+ * @property {number} time
+ * @property {number} open
+ * @property {number} high
+ * @property {number} low
+ * @property {number} close
+ */
 
 function createSelectedCryptoStore() {
     const initial = browser ? loadSelectedCrypto() : 'bitcoin';
@@ -11,6 +20,9 @@ function createSelectedCryptoStore() {
 
     return {
         subscribe,
+        /**
+         * @param {string} value
+         */
         set: (value) => {
             set(value);
             if (browser) saveSelectedCrypto(value);
@@ -20,11 +32,22 @@ function createSelectedCryptoStore() {
 }
 
 export const selectedCrypto = createSelectedCryptoStore();
+
+/** @type {import('svelte/store').Writable<OHLCPoint[]>} */
 export const ohlcData = writable([]);
+
+/** @type {import('svelte/store').Writable<boolean>} */
 export const isLoading = writable(false);
+
+/** @type {import('svelte/store').Writable<Date | null>} */
 export const lastUpdated = writable(null);
+
+/** @type {import('svelte/store').Writable<string | null>} */
 export const error = writable(null);
 
+/**
+ * Load crypto data from the API
+ */
 export async function loadCryptoData() {
     const cryptoId = get(selectedCrypto);
     const currentSettings = get(settings);
@@ -49,7 +72,8 @@ export async function loadCryptoData() {
         ohlcData.set(data);
         lastUpdated.set(new Date());
     } catch (err) {
-        error.set(err.message || 'Failed to fetch data');
+        const message = err instanceof Error ? err.message : 'Failed to fetch data';
+        error.set(message);
         console.error('Failed to load crypto data:', err);
     } finally {
         isLoading.set(false);

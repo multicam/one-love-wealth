@@ -6,6 +6,22 @@ import { calculateStochasticRSI } from '$lib/indicators/stochasticRSI.js';
 import { calculateKalman } from '$lib/indicators/kalman.js';
 import { DEFAULT_SETTINGS } from '$lib/utils/constants.js';
 
+/**
+ * @typedef {Object} StochasticPoint
+ * @property {number} time
+ * @property {number} k
+ * @property {number} d
+ */
+
+/**
+ * @typedef {Object} KalmanPoint
+ * @property {number} time
+ * @property {number} price
+ * @property {number} filtered
+ * @property {'up' | 'down' | null} crossover
+ */
+
+/** @type {import('svelte/store').Readable<StochasticPoint[]>} */
 export const stochasticData = derived(
     [ohlcData, settings],
     ([$ohlc, $settings]) => {
@@ -17,6 +33,7 @@ export const stochasticData = derived(
     }
 );
 
+/** @type {import('svelte/store').Readable<StochasticPoint[]>} */
 export const stochasticRSIData = derived(
     [ohlcData, settings],
     ([$ohlc, $settings]) => {
@@ -28,6 +45,7 @@ export const stochasticRSIData = derived(
     }
 );
 
+/** @type {import('svelte/store').Readable<KalmanPoint[]>} */
 export const kalmanData = derived(
     [ohlcData, settings],
     ([$ohlc, $settings]) => {

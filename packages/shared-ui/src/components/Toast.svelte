@@ -3,7 +3,6 @@
   import { toastStore, type Toast } from '../stores/toastStore.js';
 
   interface Props {
-    /** Position of the toast container */
     position?: 'top-right' | 'top-left' | 'bottom-right' | 'bottom-left';
   }
 
@@ -16,29 +15,21 @@
     'bottom-left': 'bottom-8 left-8'
   };
 
-  const typeStyles: Record<Toast['type'], { bg: string; border: string; text: string; icon: string }> = {
+  const typeClasses: Record<Toast['type'], { container: string; icon: string }> = {
     info: {
-      bg: 'rgba(30, 64, 175, 0.8)',
-      border: 'rgba(59, 130, 246, 0.5)',
-      text: '#bfdbfe',
+      container: 'bg-blue-900/80 border-blue-500/50 text-blue-200',
       icon: 'ℹ️'
     },
     success: {
-      bg: 'rgba(6, 78, 59, 0.8)',
-      border: 'rgba(34, 197, 94, 0.5)',
-      text: '#bbf7d0',
+      container: 'bg-green-900/80 border-green-500/50 text-green-200',
       icon: '✅'
     },
     warning: {
-      bg: 'rgba(120, 53, 15, 0.8)',
-      border: 'rgba(245, 158, 11, 0.5)',
-      text: '#fde68a',
+      container: 'bg-amber-900/80 border-amber-500/50 text-amber-200',
       icon: '⚠️'
     },
     error: {
-      bg: 'rgba(127, 29, 29, 0.8)',
-      border: 'rgba(239, 68, 68, 0.5)',
-      text: '#fecaca',
+      container: 'bg-red-900/80 border-red-500/50 text-red-200',
       icon: '❌'
     }
   };
@@ -48,46 +39,23 @@
   }
 </script>
 
-<div class="fixed z-[100] pointer-events-none {positionClasses[position]}" style="display: flex; flex-direction: column; gap: 0.75rem;">
+<div class="fixed z-[100] pointer-events-none flex flex-col gap-3 {positionClasses[position]}">
   {#each $toastStore as toast (toast.id)}
-    {@const styles = typeStyles[toast.type]}
+    {@const styles = typeClasses[toast.type]}
     <div
       in:fly={{ y: position.startsWith('top') ? -20 : 20, duration: 300 }}
       out:fade={{ duration: 200 }}
-      class="pointer-events-auto"
-      style="
-        display: flex;
-        align-items: center;
-        padding: 1rem 1.5rem;
-        border-radius: 1rem;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
-        backdrop-filter: blur(12px);
-        min-width: 300px;
-        background-color: {styles.bg};
-        border: 1px solid {styles.border};
-        color: {styles.text};
-      "
+      class="pointer-events-auto flex items-center px-6 py-4 rounded-2xl shadow-2xl backdrop-blur-xl min-w-[300px] border {styles.container}"
     >
-      <span style="margin-right: 0.75rem; font-size: 1.25rem;">
+      <span class="mr-3 text-xl">
         {styles.icon}
       </span>
-      <div style="font-weight: 600; font-size: 0.875rem; flex: 1;">
+      <div class="font-semibold text-sm flex-1">
         {toast.message}
       </div>
       <button
         onclick={() => dismiss(toast.id)}
-        style="
-          margin-left: 1rem;
-          padding: 0.25rem;
-          background: transparent;
-          border: none;
-          color: rgba(255, 255, 255, 0.4);
-          cursor: pointer;
-          font-size: 1rem;
-          transition: color 0.2s;
-        "
-        onmouseenter={(e) => (e.currentTarget.style.color = 'white')}
-        onmouseleave={(e) => (e.currentTarget.style.color = 'rgba(255, 255, 255, 0.4)')}
+        class="ml-4 p-1 bg-transparent border-none text-white/40 hover:text-white cursor-pointer text-base transition-colors"
         aria-label="Dismiss notification"
       >
         ✕

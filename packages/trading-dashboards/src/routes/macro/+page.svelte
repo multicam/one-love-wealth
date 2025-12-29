@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import MetricCard from '$lib/components/charts/MetricCard.svelte';
 	import ChartModal from '$lib/components/modals/ChartModal.svelte';
+	import { RefreshButton } from '@one-love-wealth/shared-ui';
 	import {
 		btcPrice,
 		fearGreed,
@@ -62,8 +63,11 @@
 			<h1 class="dashboard-title">Macro Dashboard</h1>
 			<p class="dashboard-subtitle">Economic indicators and market sentiment tracking</p>
 		</div>
-		<div class="last-updated">
-			Last updated: {formatLastUpdate($lastUpdate)}
+		<div class="header-actions">
+			<div class="last-updated">
+				Last updated: {formatLastUpdate($lastUpdate)}
+			</div>
+			<RefreshButton onRefresh={fetchMacroData} />
 		</div>
 	</div>
 
@@ -236,6 +240,13 @@
 		font-size: 1rem;
 		color: var(--text-secondary);
 		margin: 0;
+	}
+
+	.header-actions {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: var(--spacing-sm);
 	}
 
 	.last-updated {
