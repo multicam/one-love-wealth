@@ -17,6 +17,8 @@ export { frequencyToTTL } from './cache/adapter';
 export type { CacheKeyComponents } from './cache/key-builder';
 export { buildCacheKey } from './cache/key-builder';
 export { MemoryAdapter } from './cache/memory-adapter';
+export { LocalStorageAdapter } from './cache/localstorage-adapter';
+export { IndexedDBAdapter } from './cache/indexeddb-adapter';
 
 // Rate Limiting
 export { RateLimiter } from './rate-limit/limiter';
@@ -25,3 +27,11 @@ export { DEFAULT_RATE_LIMITS } from './rate-limit/defaults';
 // Providers
 export { BaseProvider } from './providers/base-provider';
 export type { ProviderConfig } from './providers/base-provider';
+export { YahooProvider } from './providers/yahoo';
+export type { YahooConfig } from './providers/yahoo';
+export { CoinGeckoProvider } from './providers/coingecko';
+export type { CoinGeckoConfig, CoinGeckoEndpoint } from './providers/coingecko';
+
+// Builders
+export { YahooBuilder, yahoo } from './builders/yahoo-builder';
+export { CoinGeckoBuilder, coingecko } from './builders/coingecko-builder';
