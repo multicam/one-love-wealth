@@ -1,0 +1,39 @@
+{
+  "name": "@one-love-wealth/data-layer",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./cache": {
+      "import": "./dist/cache/index.js",
+      "types": "./dist/cache/index.d.ts"
+    },
+    "./providers": {
+      "import": "./dist/providers/index.js",
+      "types": "./dist/providers/index.d.ts"
+    },
+    "./types": {
+      "import": "./dist/types/index.js",
+      "types": "./dist/types/index.d.ts"
+    },
+    "./rate-limit": {
+      "import": "./dist/rate-limit/index.js",
+      "types": "./dist/rate-limit/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "tsc",
+    "test": "bun test",
+    "dev": "tsc --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "typescript": "^5.3.0"
+  }
+}

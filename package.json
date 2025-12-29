@@ -1,0 +1,15 @@
+{
+  "name": "one-love-wealth",
+  "module": "index.ts",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "scripts": {
+    "update": "bun update --latest --interactive"
+  }
+}
