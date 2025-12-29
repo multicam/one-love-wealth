@@ -1,0 +1,12 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+/* Custom Prose Invert overrides for MacroView dark theme */
+.prose-invert {
+    --tw-prose-body: #94a3b8;
+    --tw-prose-headings: #f8fafc;
+    --tw-prose-links: #3b82f6;
+    --tw-prose-bold: #cbd5e1;
+    --tw-prose-quotes: #e2e8f0;
+}

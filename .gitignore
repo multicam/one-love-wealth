@@ -1,0 +1,13 @@
+.idea/
+node_modules/
+thoughts/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Env
+.env
+.env.*
+!.env.example
+!.env.test
