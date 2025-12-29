@@ -88,6 +88,7 @@
       "name": "svelte-trading-dashboards",
       "version": "0.0.1",
       "dependencies": {
+        "@one-love-wealth/data-layer": "workspace:*",
         "lightweight-charts": "^4.1.0",
       },
       "devDependencies": {

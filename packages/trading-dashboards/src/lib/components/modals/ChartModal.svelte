@@ -27,7 +27,15 @@
 <svelte:window onkeydown={handleKeydown} />
 
 {#if isOpen && indicator}
-	<div class="modal-backdrop" onclick={handleBackdropClick}>
+	<!-- svelte-ignore a11y_no_static_element_interactions -->
+	<div 
+		class="modal-backdrop" 
+		onclick={handleBackdropClick}
+		onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') handleBackdropClick(e as unknown as MouseEvent); }}
+		role="button"
+		tabindex="-1"
+		aria-label="Close modal"
+	>
 		<div class="modal-content">
 			<div class="modal-header">
 				<h2>{title} - Historical Data</h2>

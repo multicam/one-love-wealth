@@ -28,7 +28,16 @@ export type FREDFrequency =
   | 'm' // Monthly
   | 'q' // Quarterly
   | 'sa' // Semiannual
-  | 'a'; // Annual
+  | 'a' // Annual
+  | 'wef' // Weekly, Ending Friday
+  | 'weth' // Weekly, Ending Thursday
+  | 'wew' // Weekly, Ending Wednesday
+  | 'wetu' // Weekly, Ending Tuesday
+  | 'wem' // Weekly, Ending Monday
+  | 'wesu' // Weekly, Ending Sunday
+  | 'wesa' // Weekly, Ending Saturday
+  | 'bwew' // Biweekly, Ending Wednesday
+  | 'bwem'; // Biweekly, Ending Monday
 
 export interface FREDConfig extends ProviderConfig {
   /** FRED series identifier (e.g., 'M2SL', 'IPMAN', 'GDP') */

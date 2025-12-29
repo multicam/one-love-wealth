@@ -13,6 +13,8 @@ export { DEFAULT_RATE_LIMITS } from './rate-limit/defaults';
 export { BaseProvider } from './providers/base-provider';
 export { YahooProvider } from './providers/yahoo';
 export { CoinGeckoProvider } from './providers/coingecko';
+export { FREDProvider } from './providers/fred';
 // Builders
 export { YahooBuilder, yahoo } from './builders/yahoo-builder';
 export { CoinGeckoBuilder, coingecko } from './builders/coingecko-builder';
+export { FREDBuilder, fred } from './builders/fred-builder';

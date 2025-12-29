@@ -20,6 +20,9 @@ export { YahooProvider } from './providers/yahoo';
 export type { YahooConfig } from './providers/yahoo';
 export { CoinGeckoProvider } from './providers/coingecko';
 export type { CoinGeckoConfig, CoinGeckoEndpoint } from './providers/coingecko';
+export { FREDProvider } from './providers/fred';
+export type { FREDConfig, FREDUnits, FREDFrequency } from './providers/fred';
 export { YahooBuilder, yahoo } from './builders/yahoo-builder';
 export { CoinGeckoBuilder, coingecko } from './builders/coingecko-builder';
+export { FREDBuilder, fred } from './builders/fred-builder';
 //# sourceMappingURL=index.d.ts.map

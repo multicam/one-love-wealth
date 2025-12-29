@@ -18,10 +18,12 @@
 	const isClickable = $derived(onclick !== undefined);
 </script>
 
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
 	class="metric-card {status}"
 	class:clickable={isClickable}
-	onclick={onclick}
+	onclick={isClickable ? onclick : undefined}
+	onkeydown={isClickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onclick?.(); } } : undefined}
 	role={isClickable ? 'button' : undefined}
 	tabindex={isClickable ? 0 : undefined}
 >

@@ -1,8 +1,21 @@
-// CoinGecko API - Free tier, no API key required
+// CoinGecko API - Using shared data-layer
 // Rate limit: 10-50 calls/minute (depending on endpoint)
 // Docs: https://docs.coingecko.com/reference/introduction
 
+import {
+	CoinGeckoProvider,
+	type CoinGeckoConfig,
+	MemoryAdapter,
+	DirectRequestAdapter,
+	type DataPoint,
+} from '@one-love-wealth/data-layer';
+
 const API_URL = 'https://api.coingecko.com/api/v3';
+
+// Create shared provider instance for market_chart data
+const sharedCache = new MemoryAdapter();
+const sharedRequest = new DirectRequestAdapter({ coingecko: API_URL });
+const sharedProvider = new CoinGeckoProvider(sharedCache, sharedRequest);
 
 interface CoinPrice {
 	current: number;
@@ -14,6 +27,16 @@ interface CoinPrice {
 interface HistoricalPrice {
 	timestamp: Date;
 	value: number;
+}
+
+/**
+ * Convert shared DataPoint to HistoricalPrice
+ */
+function toHistoricalPrice(point: DataPoint): HistoricalPrice {
+	return {
+		timestamp: new Date(point.time),
+		value: point.value ?? point.close ?? 0,
+	};
 }
 
 /**
@@ -38,7 +61,6 @@ export async function getBTCPrice(): Promise<CoinPrice> {
  */
 export async function getGoldPrice(): Promise<CoinPrice> {
 	// CoinGecko has gold price as "pax-gold" (PAXG) which tracks physical gold
-	// Alternatively we can use "tether-gold" (XAUT)
 	const response = await fetch(
 		`${API_URL}/simple/price?ids=pax-gold&vs_currencies=usd&include_24hr_change=true`
 	);
@@ -74,21 +96,36 @@ export async function getBTCGoldRatio(): Promise<CoinPrice> {
 
 /**
  * Get historical prices for a coin (last N days)
+ * Uses shared data-layer provider for transformation
  */
 export async function getHistoricalPrices(
 	coinId: string,
 	days: number = 30
 ): Promise<HistoricalPrice[]> {
-	const response = await fetch(
-		`${API_URL}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=daily`
-	);
-	const data = await response.json();
+	try {
+		const config: CoinGeckoConfig = {
+			coinId,
+			vsCurrency: 'usd',
+			days,
+			interval: 'daily',
+			endpoint: 'market_chart',
+		};
 
-	// data.prices is array of [timestamp_ms, price]
-	return data.prices.map(([timestamp, price]: [number, number]) => ({
-		timestamp: new Date(timestamp),
-		value: price
-	}));
+		const result = await sharedProvider.fetch(config);
+		return result.series.data.map(toHistoricalPrice);
+	} catch (error) {
+		// Fallback to direct API call if shared provider fails
+		console.warn('Shared provider failed, using direct API call:', error);
+		const response = await fetch(
+			`${API_URL}/coins/${coinId}/market_chart?vs_currency=usd&days=${days}&interval=daily`
+		);
+		const data = await response.json();
+
+		return data.prices.map(([timestamp, price]: [number, number]) => ({
+			timestamp: new Date(timestamp),
+			value: price
+		}));
+	}
 }
 
 /**

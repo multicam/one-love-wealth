@@ -8,7 +8,78 @@
  * Client-side clustering, filtering, and formatting of order book data
  * Client-side order book processing
  */
+
+// Type definitions
+interface AggregatorSettings {
+    clusterPct: number;
+    maxLevels: number;
+    minVolume: number;
+    priceRangePct: number;
+}
+
+interface OrderBookLevel {
+    price: number;
+    volume: number;
+    type?: string;
+    sources?: string[];
+}
+
+interface RawOrderBook {
+    bids: OrderBookLevel[];
+    asks: OrderBookLevel[];
+    price?: number;
+    bestBid?: number;
+    sources?: string[];
+    timestamp?: number;
+}
+
+interface ClusteredLevel {
+    price: number;
+    volume: number;
+    type?: string;
+    sources: string[];
+    count: number;
+}
+
+interface FormattedLevel {
+    price: number;
+    volume: number;
+    type: 'support' | 'resistance';
+    side: 'bid' | 'ask';
+    strength: number;
+    percentOfTotal: string;
+    sources: string[];
+    clustered: boolean;
+    clusterCount: number;
+}
+
+interface ProcessedOrderBook {
+    levels: FormattedLevel[];
+    price: number;
+    bidVolume: number;
+    askVolume: number;
+    imbalance: string;
+    sources: string[];
+    timestamp: number;
+    isWebSocket: boolean;
+    clustered: boolean;
+}
+
+interface DepthLevel {
+    price: number;
+    volume: number;
+    cumulative: number;
+}
+
+interface DepthData {
+    bids: DepthLevel[];
+    asks: DepthLevel[];
+    price: number;
+}
+
 class OrderBookAggregator {
+    settings: AggregatorSettings;
+
     constructor() {
         this.settings = {
             clusterPct: 0.15,      // Price clustering percentage
@@ -21,7 +92,7 @@ class OrderBookAggregator {
     /**
      * Update aggregation settings
      */
-    setSettings(settings) {
+    setSettings(settings: Partial<AggregatorSettings>): void {
         Object.assign(this.settings, settings);
     }
     
@@ -29,7 +100,7 @@ class OrderBookAggregator {
      * Process raw order book data from WebSocket
      * Returns standard API response format
      */
-    process(rawBook, currentPrice = null) {
+    process(rawBook: RawOrderBook, currentPrice: number | null = null): ProcessedOrderBook | null {
         if (!rawBook || (!rawBook.bids.length && !rawBook.asks.length)) {
             return null;
         }
@@ -72,9 +143,9 @@ class OrderBookAggregator {
     /**
      * Cluster nearby price levels together
      */
-    clusterLevels(levels, clusterPct, midPrice) {
+    clusterLevels(levels: OrderBookLevel[], clusterPct: number, midPrice: number): ClusteredLevel[] {
         if (clusterPct <= 0 || levels.length === 0) {
-            return levels.map(l => ({
+            return levels.map((l) => ({
                 price: l.price,
                 volume: l.volume,
                 type: l.type,
@@ -83,7 +154,7 @@ class OrderBookAggregator {
             }));
         }
         
-        const clusters = new Map();
+        const clusters = new Map<number, ClusteredLevel>();
         const clusterSize = midPrice * (clusterPct / 100);
         
         for (const level of levels) {
@@ -91,7 +162,7 @@ class OrderBookAggregator {
             const clusterKey = Math.round(level.price / clusterSize) * clusterSize;
             
             if (clusters.has(clusterKey)) {
-                const existing = clusters.get(clusterKey);
+                const existing = clusters.get(clusterKey)!;
                 // Weighted average price
                 const totalVol = existing.volume + level.volume;
                 existing.price = (existing.price * existing.volume + level.price * level.volume) / totalVol;
@@ -122,8 +193,8 @@ class OrderBookAggregator {
     /**
      * Apply volume and price range filters
      */
-    applyFilters(levels, midPrice) {
-        return levels.filter(level => {
+    applyFilters(levels: ClusteredLevel[], midPrice: number): ClusteredLevel[] {
+        return levels.filter((level) => {
             // Min volume filter
             if (level.volume < this.settings.minVolume) {
                 return false;
@@ -147,11 +218,17 @@ class OrderBookAggregator {
      * Standard API output format
      * Chart expects type: 'support' or 'resistance'
      */
-    formatLevels(bids, asks, bidVolume, askVolume, totalVolume) {
-        const levels = [];
+    formatLevels(
+        bids: ClusteredLevel[],
+        asks: ClusteredLevel[],
+        bidVolume: number,
+        askVolume: number,
+        totalVolume: number
+    ): FormattedLevel[] {
+        const levels: FormattedLevel[] = [];
         const maxVolume = Math.max(
-            ...bids.map(b => b.volume),
-            ...asks.map(a => a.volume),
+            ...bids.map((b) => b.volume),
+            ...asks.map((a) => a.volume),
             1
         );
         
@@ -192,7 +269,7 @@ class OrderBookAggregator {
      * Get unclustered book (for full book analytics)
      * Applies only minimal filtering, no clustering
      */
-    processFullBook(rawBook, currentPrice = null) {
+    processFullBook(rawBook: RawOrderBook, currentPrice: number | null = null): ProcessedOrderBook | null {
         if (!rawBook || (!rawBook.bids.length && !rawBook.asks.length)) {
             return null;
         }
@@ -201,18 +278,20 @@ class OrderBookAggregator {
         
         // No clustering, just convert format
         // Chart expects type: 'support' / 'resistance'
-        let bids = rawBook.bids.map(b => ({
+        let bids: ClusteredLevel[] = rawBook.bids.map((b) => ({
             price: b.price,
             volume: b.volume,
             type: 'support',
-            sources: b.sources || []
+            sources: b.sources || [],
+            count: 1
         }));
         
-        let asks = rawBook.asks.map(a => ({
+        let asks: ClusteredLevel[] = rawBook.asks.map((a) => ({
             price: a.price,
             volume: a.volume,
             type: 'resistance',
-            sources: a.sources || []
+            sources: a.sources || [],
+            count: 1
         }));
         
         // Sort
@@ -225,11 +304,7 @@ class OrderBookAggregator {
         const totalVolume = bidVolume + askVolume;
         
         // Format levels
-        const levels = this.formatLevels(
-            bids.map(b => ({ ...b, count: 1 })),
-            asks.map(a => ({ ...a, count: 1 })),
-            bidVolume, askVolume, totalVolume
-        );
+        const levels = this.formatLevels(bids, asks, bidVolume, askVolume, totalVolume);
         
         return {
             levels,
@@ -252,7 +327,7 @@ class OrderBookAggregator {
      * - Bids: Start at best bid (high), accumulate as price drops
      * - Asks: Start at best ask (low), accumulate as price rises
      */
-    processDepth(rawBook, currentPrice = null) {
+    processDepth(rawBook: RawOrderBook, currentPrice: number | null = null): DepthData {
         if (!rawBook || (!rawBook.bids?.length && !rawBook.asks?.length)) {
             return {
                 bids: [],
@@ -271,7 +346,7 @@ class OrderBookAggregator {
         
         // Filter and validate bids (must be below mid-price, within range)
         const filteredBids = [...(rawBook.bids || [])]
-            .filter(bid => {
+            .filter((bid) => {
                 return bid && 
                        typeof bid.price === 'number' && 
                        typeof bid.volume === 'number' &&
@@ -285,7 +360,7 @@ class OrderBookAggregator {
         
         // Filter and validate asks (must be above mid-price, within range)
         const filteredAsks = [...(rawBook.asks || [])]
-            .filter(ask => {
+            .filter((ask) => {
                 return ask && 
                        typeof ask.price === 'number' && 
                        typeof ask.volume === 'number' &&
@@ -307,7 +382,7 @@ class OrderBookAggregator {
         
         // Calculate cumulative volumes for bids (from best bid downward)
         let cumulativeBid = 0;
-        const bids = sortedBids.map(bid => {
+        const bids: DepthLevel[] = sortedBids.map((bid) => {
             cumulativeBid += bid.volume;
             return {
                 price: bid.price,
@@ -318,7 +393,7 @@ class OrderBookAggregator {
         
         // Calculate cumulative volumes for asks (from best ask upward)
         let cumulativeAsk = 0;
-        const asks = sortedAsks.map(ask => {
+        const asks: DepthLevel[] = sortedAsks.map((ask) => {
             cumulativeAsk += ask.volume;
             return {
                 price: ask.price,
@@ -337,4 +412,14 @@ class OrderBookAggregator {
 
 // Export singleton instance
 const orderBookAggregator = new OrderBookAggregator();
-
+export { orderBookAggregator, OrderBookAggregator };
+export type {
+    AggregatorSettings,
+    OrderBookLevel,
+    RawOrderBook,
+    ClusteredLevel,
+    FormattedLevel,
+    ProcessedOrderBook,
+    DepthLevel,
+    DepthData
+};

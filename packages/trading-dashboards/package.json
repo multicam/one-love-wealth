@@ -26,6 +26,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@one-love-wealth/data-layer": "workspace:*",
 		"lightweight-charts": "^4.1.0"
 	}
 }
