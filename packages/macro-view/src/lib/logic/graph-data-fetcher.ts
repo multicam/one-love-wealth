@@ -80,15 +80,15 @@ function applyTimeShifts(
     const shift = shifts.find(s => s.seriesIndex === i);
     if (!shift) return series;
 
-    // Shift dates by specified months
+    // Shift times by specified months
     return series.map(point => {
-      const d = new Date(point.date);
+      const d = new Date(point.time);
       if (shift.direction === 'lead') {
         d.setMonth(d.getMonth() + shift.months);
       } else {
         d.setMonth(d.getMonth() - shift.months);
       }
-      return { ...point, date: d.toISOString().split('T')[0] };
+      return { ...point, time: d.getTime() };
     });
   });
 }
@@ -104,10 +104,12 @@ function filterByDateRange(
   dataArrays: DataPoint[][],
   dateRange: { start?: string; end?: string }
 ): DataPoint[][] {
+  const startTime = dateRange.start ? new Date(dateRange.start).getTime() : undefined;
+  const endTime = dateRange.end ? new Date(dateRange.end).getTime() : undefined;
   return dataArrays.map(series =>
     series.filter(point => {
-      if (dateRange.start && point.date < dateRange.start) return false;
-      if (dateRange.end && point.date > dateRange.end) return false;
+      if (startTime && point.time < startTime) return false;
+      if (endTime && point.time > endTime) return false;
       return true;
     })
   );

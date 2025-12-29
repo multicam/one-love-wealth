@@ -39,7 +39,7 @@ describe('FREDClient', () => {
 			id: 'FRED:M2SL',
 			source: 'FRED' as const,
 			lastUpdated: Date.now(),
-			data: [{ date: '2023-01-01', value: 99 }],
+			data: [{ time: new Date('2023-01-01').getTime(), value: 99 }],
 			meta: {}
 		};
 		await db.saveSeries(cachedSeries);

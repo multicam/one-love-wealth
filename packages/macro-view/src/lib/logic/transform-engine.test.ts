@@ -13,7 +13,7 @@ const createDataPoints = (values: number[], startDate = '2020-01-01'): DataPoint
 		const date = new Date(startDate);
 		date.setDate(date.getDate() + i);
 		return {
-			date: date.toISOString().split('T')[0],
+			time: date.getTime(),
 			value
 		};
 	});
@@ -25,30 +25,29 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([100, ...Array(364).fill(0), 110]);
 			const result = applyTransform(data, { type: 'yoy', periods: 365 });
 
-			expect(result[365].value).toBeCloseTo(10, 1); // 10% increase
-			expect(isNaN(result[0].value)).toBe(true); // First value should be NaN
+			expect(result[365].value!).toBeCloseTo(10, 1); // 10% increase
+			expect(isNaN(result[0].value!)).toBe(true); // First value should be NaN
 		});
 
 		it('should return NaN when previous value is zero', () => {
 			const data = createDataPoints([0, 100]);
 			const result = applyTransform(data, { type: 'yoy', periods: 1 });
 
-			expect(isNaN(result[1].value)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
 		});
 
 		it('should handle missing data (early periods)', () => {
 			const data = createDataPoints([100, 110, 120]);
 			const result = applyTransform(data, { type: 'yoy', periods: 5 });
 
-			// All values should be NaN since we don't have 5 periods
-			result.forEach(point => expect(isNaN(point.value)).toBe(true));
+			// All values should be NaN since we don't have 5 periods				result.forEach(point => expect(isNaN(point.value!)).toBe(true));
 		});
 
 		it('should use default period of 365 if not specified', () => {
 			const data = createDataPoints(Array(366).fill(100));
 			const result = applyTransform(data, { type: 'yoy' });
 
-			expect(result[365].value).toBe(0); // No change
+			expect(result[365].value!).toBe(0); // No change
 		});
 	});
 
@@ -57,21 +56,21 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([100, ...Array(29).fill(0), 105]);
 			const result = applyTransform(data, { type: 'mom', periods: 30 });
 
-			expect(result[30].value).toBeCloseTo(5, 1); // 5% increase
+			expect(result[30].value!).toBeCloseTo(5, 1); // 5% increase
 		});
 
 		it('should return NaN when previous value is zero', () => {
 			const data = createDataPoints([0, 50]);
 			const result = applyTransform(data, { type: 'mom', periods: 1 });
 
-			expect(isNaN(result[1].value)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
 		});
 
 		it('should use default period of 30 if not specified', () => {
 			const data = createDataPoints(Array(31).fill(100));
 			const result = applyTransform(data, { type: 'mom' });
 
-			expect(result[30].value).toBe(0); // No change
+			expect(result[30].value!).toBe(0); // No change
 		});
 	});
 
@@ -120,7 +119,7 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([50, 100, 150]);
 			const result = applyTransform(data, {
 				type: 'normalize_date',
-				date: data[1].date
+				date: new Date(data[1].time).toISOString().split('T')[0]
 			});
 
 			expect(result[0].value).toBe(50);
@@ -142,7 +141,7 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([0, 50, 100]);
 			const result = applyTransform(data, {
 				type: 'normalize_date',
-				date: data[0].date
+				date: new Date(data[0].time).toISOString().split('T')[0]
 			});
 
 			expect(result).toEqual(data);
@@ -190,9 +189,9 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([0, -5, 10]);
 			const result = applyTransform(data, { type: 'log' });
 
-			expect(isNaN(result[0].value)).toBe(true);
-			expect(isNaN(result[1].value)).toBe(true);
-			expect(result[2].value).toBeGreaterThan(0);
+			expect(isNaN(result[0].value!)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
+			expect(result[2].value!).toBeGreaterThan(0);
 		});
 	});
 
@@ -211,8 +210,8 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([0, -10]);
 			const result = applyTransform(data, { type: 'log10' });
 
-			expect(isNaN(result[0].value)).toBe(true);
-			expect(isNaN(result[1].value)).toBe(true);
+			expect(isNaN(result[0].value!)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
 		});
 	});
 
@@ -257,20 +256,20 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([100, 105, 103, 110]);
 			const result = applyTransform(data, { type: 'diff', periods: 1 });
 
-			expect(isNaN(result[0].value)).toBe(true); // First value NaN
-			expect(result[1].value).toBe(5);
-			expect(result[2].value).toBe(-2);
-			expect(result[3].value).toBe(7);
+			expect(isNaN(result[0].value!)).toBe(true); // First value NaN
+			expect(result[1].value!).toBe(5);
+			expect(result[2].value!).toBe(-2);
+			expect(result[3].value!).toBe(7);
 		});
 
 		it('should calculate difference with custom period', () => {
 			const data = createDataPoints([10, 20, 30, 40, 50]);
 			const result = applyTransform(data, { type: 'diff', periods: 2 });
 
-			expect(isNaN(result[0].value)).toBe(true);
-			expect(isNaN(result[1].value)).toBe(true);
-			expect(result[2].value).toBe(20); // 30 - 10
-			expect(result[3].value).toBe(20); // 40 - 20
+			expect(isNaN(result[0].value!)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
+			expect(result[2].value!).toBe(20); // 30 - 10
+			expect(result[3].value!).toBe(20); // 40 - 20
 		});
 
 		it('should use default period of 1 if not specified', () => {
@@ -286,23 +285,23 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([100, 110, 121]);
 			const result = applyTransform(data, { type: 'pct_change', periods: 1 });
 
-			expect(isNaN(result[0].value)).toBe(true);
-			expect(result[1].value).toBeCloseTo(10, 1); // 10% increase
-			expect(result[2].value).toBeCloseTo(10, 1); // 10% increase
+			expect(isNaN(result[0].value!)).toBe(true);
+			expect(result[1].value!).toBeCloseTo(10, 1); // 10% increase
+			expect(result[2].value!).toBeCloseTo(10, 1); // 10% increase
 		});
 
 		it('should return NaN when previous value is zero', () => {
 			const data = createDataPoints([0, 100]);
 			const result = applyTransform(data, { type: 'pct_change', periods: 1 });
 
-			expect(isNaN(result[1].value)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
 		});
 
 		it('should use default period of 1 if not specified', () => {
 			const data = createDataPoints([50, 75]);
 			const result = applyTransform(data, { type: 'pct_change' });
 
-			expect(result[1].value).toBe(50); // 50% increase
+			expect(result[1].value!).toBe(50); // 50% increase
 		});
 	});
 
@@ -311,11 +310,11 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([10, 20, 30, 40, 50]);
 			const result = applyTransform(data, { type: 'rolling_avg', window: 3 });
 
-			expect(isNaN(result[0].value)).toBe(true);
-			expect(isNaN(result[1].value)).toBe(true);
-			expect(result[2].value).toBe(20); // (10+20+30)/3
-			expect(result[3].value).toBe(30); // (20+30+40)/3
-			expect(result[4].value).toBe(40); // (30+40+50)/3
+			expect(isNaN(result[0].value!)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
+			expect(result[2].value!).toBe(20); // (10+20+30)/3
+			expect(result[3].value!).toBe(30); // (20+30+40)/3
+			expect(result[4].value!).toBe(40); // (30+40+50)/3
 		});
 
 		it('should handle edge case with window size 1', () => {
@@ -331,8 +330,8 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([10, 20]);
 			const result = applyTransform(data, { type: 'rolling_avg', window: 5 });
 
-			expect(isNaN(result[0].value)).toBe(true);
-			expect(isNaN(result[1].value)).toBe(true);
+			expect(isNaN(result[0].value!)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
 		});
 	});
 
@@ -341,18 +340,18 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([10, 10, 10, 20, 20]);
 			const result = applyTransform(data, { type: 'rolling_std', window: 3 });
 
-			expect(isNaN(result[0].value)).toBe(true);
-			expect(isNaN(result[1].value)).toBe(true);
-			expect(result[2].value).toBeCloseTo(0, 5); // No variance
-			expect(result[3].value).toBeGreaterThan(0); // Has variance
+			expect(isNaN(result[0].value!)).toBe(true);
+			expect(isNaN(result[1].value!)).toBe(true);
+			expect(result[2].value!).toBeCloseTo(0, 5); // No variance
+			expect(result[3].value!).toBeGreaterThan(0); // Has variance
 		});
 
 		it('should return zero std for identical values', () => {
 			const data = createDataPoints([5, 5, 5, 5]);
 			const result = applyTransform(data, { type: 'rolling_std', window: 3 });
 
-			expect(result[2].value).toBe(0);
-			expect(result[3].value).toBe(0);
+			expect(result[2].value!).toBe(0);
+			expect(result[3].value!).toBe(0);
 		});
 	});
 
@@ -464,7 +463,7 @@ describe('Transform Engine', () => {
 			const data = createDataPoints([5, 15, 25, 35, 45]);
 			const result = applyTransform(data, { type: 'zscore' });
 
-			const values = result.map(d => d.value);
+			const values = result.map(d => d.value ?? 0);
 			const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
 
 			expect(mean).toBeCloseTo(0, 5); // Mean should be ~0
@@ -525,9 +524,9 @@ describe('Transform Engine', () => {
 
 			// After pct_change: [NaN, 10, 10, 10] (approximately)
 			// After scale by 2: [NaN, 20, 20, 20]
-			expect(isNaN(result[0].value)).toBe(true);
-			expect(result[1].value).toBeCloseTo(20, 1);
-			expect(result[2].value).toBeCloseTo(20, 1);
+			expect(isNaN(result[0].value!)).toBe(true);
+			expect(result[1].value!).toBeCloseTo(20, 1);
+			expect(result[2].value!).toBeCloseTo(20, 1);
 		});
 
 		it('should apply log then scale', () => {
@@ -585,9 +584,9 @@ describe('Transform Engine', () => {
 			expect(result).toEqual(data); // Should return unchanged
 		});
 
-		it('should preserve date strings in all transforms', () => {
+		it('should preserve time values in all transforms', () => {
 			const data = createDataPoints([10, 20, 30]);
-			const originalDates = data.map(d => d.date);
+			const originalTimes = data.map(d => d.time);
 
 			const transforms = [
 				{ type: 'normalize' as const, base: 100 },
@@ -598,8 +597,8 @@ describe('Transform Engine', () => {
 
 			transforms.forEach(operation => {
 				const result = applyTransform(data, operation);
-				const resultDates = result.map(d => d.date);
-				expect(resultDates).toEqual(originalDates);
+				const resultTimes = result.map(d => d.time);
+				expect(resultTimes).toEqual(originalTimes);
 			});
 		});
 	});

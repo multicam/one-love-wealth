@@ -69,22 +69,24 @@ export class QuandlProvider extends DataProvider<QuandlDataSourceConfig> {
 		const columnNames = dataset.column_names || [];
 		const columnIndex = config.column !== undefined ? config.column : columnNames.length - 1;
 
-		return data
-			.map((row: any[]) => {
-				const date = row[0];
-				const value = row[columnIndex];
+		const points: DataPoint[] = [];
+		for (const row of data) {
+			const date = row[0];
+			const rawValue = row[columnIndex];
 
-				if (!date || value === null || value === undefined) {
-					return null;
-				}
+			if (!date || rawValue === null || rawValue === undefined) {
+				continue;
+			}
 
-				return {
+			const value = parseFloat(rawValue);
+			if (!isNaN(value)) {
+				points.push({
 					time: new Date(date).getTime(),
-					value: parseFloat(value)
-				};
-			})
-			.filter((point): point is DataPoint => point !== null && !isNaN(point.value))
-			.sort((a, b) => a.time - b.time);
+					value
+				});
+			}
+		}
+		return points.sort((a, b) => a.time - b.time);
 	}
 
 	/**

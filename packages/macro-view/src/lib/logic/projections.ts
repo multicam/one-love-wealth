@@ -28,8 +28,8 @@ export function generateBtcForecast(
 	const regressionPoints: number[][] = [];
 	
 	m2Data.forEach(mPoint => {
-		const bPoint = btcData.find(b => b.date === mPoint.date);
-		if (bPoint) {
+		const bPoint = btcData.find(b => b.time === mPoint.time);
+		if (bPoint && mPoint.value !== undefined && bPoint.value !== undefined) {
 			// Using Log of Price and Log of M2 often shows better linear correlation
 			regressionPoints.push([Math.log(mPoint.value), Math.log(bPoint.value)]);
 		}
@@ -44,7 +44,8 @@ export function generateBtcForecast(
 	// 3. Project M2 into the future
 	const lastM2 = m2Data[m2Data.length - 1];
 	const results: ForecastResult[] = [];
-	const lastDate = new Date(lastM2.date);
+	const lastDate = new Date(lastM2.time);
+	const lastM2Value = lastM2.value ?? 0;
 
 	for (let i = 1; i <= assumptions.horizonMonths; i++) {
 		const forecastDate = new Date(lastDate);
@@ -53,7 +54,7 @@ export function generateBtcForecast(
 		// Monthly growth rate from YoY assumption
 		// (1 + g)^(1/12)
 		const monthlyGrowth = Math.pow(1 + assumptions.liquidityGrowthYoY, 1/12);
-		const projectedM2 = lastM2.value * Math.pow(monthlyGrowth, i);
+		const projectedM2 = lastM2Value * Math.pow(monthlyGrowth, i);
 		
 		// 4. Calculate BTC Base Price from Regression
 		const logBtcBase = fit(Math.log(projectedM2));

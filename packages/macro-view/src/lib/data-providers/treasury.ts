@@ -67,7 +67,7 @@ export class TreasuryProvider extends DataProvider<TreasuryDataSourceConfig> {
 						value: parseFloat(value)
 					};
 				})
-				.filter((dp: { time: number; value: number } | null): dp is DataPoint => dp !== null && !isNaN(dp.value))
+				.filter((dp: DataPoint | null): dp is DataPoint => dp !== null && typeof dp.value === 'number' && !isNaN(dp.value))
 		);
 	}
 

@@ -26,9 +26,9 @@ export class FREDClient {
 			}
 
 			const data: DataPoint[] = json.observations.map((obs: any) => ({
-				date: obs.date,
+				time: new Date(obs.date).getTime(),
 				value: parseFloat(obs.value)
-			})).filter((dp: any) => !isNaN(dp.value));
+			})).filter((dp: { time: number; value: number }) => !isNaN(dp.value));
 
 			const series: EconomicSeries = {
 				id: `FRED:${seriesId}`,
@@ -110,7 +110,7 @@ export class FREDClient {
 			}
 
 			data.push({
-				date: d.toISOString().split('T')[0],
+				time: d.getTime(),
 				value
 			});
 		}
@@ -180,7 +180,7 @@ export class CoinGeckoClient {
 			d.setDate(d.getDate() - i);
 			price = price * (1 + (Math.random() - 0.45) * 0.05); // Random walk
 			data.push({
-				date: d.toISOString().split('T')[0],
+				time: d.getTime(),
 				value: price
 			});
 		}
@@ -217,9 +217,9 @@ export class YahooClient {
 			}
 
 			const data: DataPoint[] = json.map((item: any) => ({
-				date: new Date(item.date).toISOString().split('T')[0],
+				time: new Date(item.date).getTime(),
 				value: item.adjClose || item.close
-			})).filter((dp: DataPoint) => !isNaN(dp.value));
+			})).filter((dp: { time: number; value: number }) => !isNaN(dp.value));
 
 			const series: EconomicSeries = {
 				id,
@@ -246,7 +246,7 @@ export class YahooClient {
 			d.setDate(d.getDate() - i);
 			price = price * (1 + (Math.random() - 0.45) * 0.03);
 			data.push({
-				date: d.toISOString().split('T')[0],
+				time: d.getTime(),
 				value: price
 			});
 		}

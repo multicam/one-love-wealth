@@ -96,7 +96,7 @@ export class OECDProvider extends DataProvider<OECDDataSourceConfig> {
 		}
 
 		return points
-			.filter((point) => !isNaN(point.value))
+			.filter((point) => point.value !== undefined && !isNaN(point.value))
 			.sort((a, b) => a.time - b.time);
 	}
 

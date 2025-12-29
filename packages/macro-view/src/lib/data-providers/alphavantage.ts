@@ -154,7 +154,8 @@ export class AlphaVantageProvider extends DataProvider<AlphaVantageDataSourceCon
 
 			// Random walk with slight upward trend
 			const randomChange = (Math.random() - 0.48) * (baseValue * 0.02);
-			const value = i === 199 ? baseValue : points[points.length - 1].value + randomChange;
+			const prevValue = i === 199 ? baseValue : (points[points.length - 1].value ?? baseValue);
+			const value = prevValue + randomChange;
 
 			points.push({
 				time: date.getTime(),

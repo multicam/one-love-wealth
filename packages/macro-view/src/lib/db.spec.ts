@@ -13,7 +13,7 @@ describe('MacroViewDatabase', () => {
 			id: 'FRED:M2SL',
 			source: 'FRED' as const,
 			lastUpdated: Date.now(),
-			data: [{ date: '2023-01-01', value: 100 }],
+			data: [{ time: new Date('2023-01-01').getTime(), value: 100 }],
 			meta: { units: 'Billions of Dollars' }
 		};
 

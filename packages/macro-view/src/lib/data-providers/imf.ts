@@ -65,26 +65,29 @@ export class IMFProvider extends DataProvider<IMFDataSourceConfig> {
 		// Obs can be single object or array
 		const observations = Array.isArray(firstSeries.Obs) ? firstSeries.Obs : [firstSeries.Obs];
 
-		return observations
-			.map((obs: any) => {
-				// IMF uses TIME_PERIOD and OBS_VALUE
-				const period = obs['@TIME_PERIOD'];
-				const value = obs['@OBS_VALUE'];
+		const points: DataPoint[] = [];
+		for (const obs of observations) {
+			const period = obs['@TIME_PERIOD'];
+			const rawValue = obs['@OBS_VALUE'];
 
-				if (!period || value === undefined || value === null) {
-					return null;
-				}
+			if (!period || rawValue === undefined || rawValue === null) {
+				continue;
+			}
 
-				// Convert period format to ISO date
-				const date = this.convertPeriodToDate(period, config.frequency);
+			const value = parseFloat(rawValue);
+			if (isNaN(value)) {
+				continue;
+			}
 
-				return {
-					time: new Date(date).getTime(),
-					value: parseFloat(value)
-				};
-			})
-			.filter((point: { time: number; value: number } | null): point is DataPoint => point !== null && !isNaN(point.value))
-			.sort((a: DataPoint, b: DataPoint) => a.time - b.time);
+			// Convert period format to ISO date
+			const date = this.convertPeriodToDate(period, config.frequency);
+
+			points.push({
+				time: new Date(date).getTime(),
+				value
+			});
+		}
+		return points.sort((a, b) => a.time - b.time);
 	}
 
 	/**
