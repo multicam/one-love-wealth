@@ -1,5 +1,16 @@
+<!--
+  DEPRECATED: This component has been replaced by @one-love-wealth/shared-ui Toast.
+  
+  Migration guide:
+  1. Import from shared-ui: import { Toast, toastStore } from '@one-love-wealth/shared-ui';
+  2. Add <Toast /> to your layout
+  3. Use toastStore.success(), toastStore.error(), toastStore.info(), toastStore.warning()
+  
+  This file is kept for backward compatibility. New code should use shared-ui.
+-->
 <script lang="ts" module>
-	import { writable } from 'svelte/store';
+	// Re-export from shared-ui for backward compatibility
+	import { toastStore } from '@one-love-wealth/shared-ui';
 
 	export interface Toast {
 		id: string;
@@ -7,45 +18,12 @@
 		type: 'success' | 'error' | 'info';
 	}
 
-	export const toasts = writable<Toast[]>([]);
+	// Legacy API - wraps the new store
+	export const toasts = toastStore;
 
 	export function addToast(message: string, type: Toast['type'] = 'info') {
-		const id = crypto.randomUUID();
-		toasts.update(all => [...all, { id, message, type }]);
-		setTimeout(() => {
-			removeToast(id);
-		}, 5000);
-	}
-
-	function removeToast(id: string) {
-		toasts.update(all => all.filter(t => t.id !== id));
+		toastStore.show(message, type);
 	}
 </script>
 
-<script lang="ts">
-	import { fade, fly } from 'svelte/transition';
-</script>
-
-<div class="fixed bottom-8 right-8 z-[100] space-y-3 pointer-events-none">
-	{#each $toasts as toast (toast.id)}
-		<div 
-			in:fly={{ y: 20, duration: 300 }}
-			out:fade
-			class="pointer-events-auto flex items-center px-6 py-4 rounded-2xl shadow-2xl border backdrop-blur-xl min-w-[300px]
-			{toast.type === 'error' ? 'bg-red-950/80 border-red-800 text-red-200' : 
-			 toast.type === 'success' ? 'bg-green-950/80 border-green-800 text-green-200' : 
-			 'bg-blue-950/80 border-blue-800 text-blue-200'}"
-		>
-			<span class="mr-3 text-xl">
-				{toast.type === 'error' ? '❌' : toast.type === 'success' ? '✅' : 'ℹ️'}
-			</span>
-			<div class="font-bold text-sm tracking-tight">{toast.message}</div>
-			<button 
-				onclick={() => removeToast(toast.id)}
-				class="ml-auto pl-4 text-white/30 hover:text-white transition-colors"
-			>
-				✕
-			</button>
-		</div>
-	{/each}
-</div>
+<!-- Component rendering is now handled by shared-ui Toast in +layout.svelte -->

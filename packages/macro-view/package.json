@@ -50,6 +50,7 @@
 	},
 	"dependencies": {
 		"@one-love-wealth/data-layer": "workspace:*",
+		"@one-love-wealth/shared-ui": "workspace:*",
 		"@types/marked": "^6.0.0",
 		"chart.js": "^4.5.1",
 		"dexie": "^4.2.1",

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import Sidebar from '$lib/components/layout/Sidebar.svelte';
 	import Header from '$lib/components/layout/Header.svelte';
-	import Toast from '$lib/components/common/Toast.svelte';
+	import { Toast } from '@one-love-wealth/shared-ui';
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { settings } from '$lib/stores/settingsStore';
@@ -55,7 +55,7 @@
 		</main>
 	</div>
 
-	<Toast />
+	<Toast position="bottom-right" />
 </div>
 
 <style>

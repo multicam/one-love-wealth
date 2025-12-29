@@ -334,8 +334,8 @@
 							<tbody>
 								{#each fetchResult.series.data.slice(0, 10) as point}
 									<tr>
-										<td>{point.date}</td>
-										<td>{point.value.toFixed(2)}</td>
+										<td>{new Date(point.time).toISOString().split('T')[0]}</td>
+										<td>{(point.value ?? 0).toFixed(2)}</td>
 									</tr>
 								{/each}
 							</tbody>
@@ -356,7 +356,7 @@
 							{#if fetchResult.series.data.length > 0}
 								<dt>Date Range:</dt>
 								<dd>
-									{fetchResult.series.data[0].date} to {fetchResult.series.data[fetchResult.series.data.length - 1].date}
+									{new Date(fetchResult.series.data[0].time).toISOString().split('T')[0]} to {new Date(fetchResult.series.data[fetchResult.series.data.length - 1].time).toISOString().split('T')[0]}
 								</dd>
 							{/if}
 						</dl>
