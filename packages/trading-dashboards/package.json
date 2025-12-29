@@ -2,14 +2,14 @@
 	"name": "svelte-trading-dashboards",
 	"version": "0.0.1",
 	"devDependencies": {
-		"@playwright/test": "^1.57.0",
+
 		"@sveltejs/adapter-auto": "^7.0.0",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@sveltejs/kit": "^2.48.5",
 		"@sveltejs/vite-plugin-svelte": "^6.2.1",
 		"@tailwindcss/vite": "^4.1.18",
 		"@vitest/ui": "^4.0.15",
-		"playwright": "^1.57.0",
+
 		"svelte": "^5.43.8",
 		"svelte-check": "^4.3.4",
 		"tailwindcss": "^4.1.18",
@@ -22,6 +22,7 @@
 		"dev": "vite dev --port 6009",
 		"build": "vite build",
 		"preview": "vite preview",
+		"test:e2e": "playwright test --project=trading-dashboards --config=../../playwright.config.ts",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"

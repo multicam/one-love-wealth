@@ -7,12 +7,19 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@types/bun": "latest"
+    "@types/bun": "latest",
+    "@playwright/test": "^1.57.0",
+    "playwright": "^1.57.0"
   },
   "peerDependencies": {
     "typescript": "^5"
   },
   "scripts": {
-    "update": "bun update --latest --interactive"
+    "update": "bun update --latest --interactive",
+    "test:e2e": "playwright test",
+    "test:e2e:crypto-viz": "playwright test --project=crypto-viz",
+    "test:e2e:macro-view": "playwright test --project=macro-view",
+    "test:e2e:trading-dashboards": "playwright test --project=trading-dashboards",
+    "playwright:install": "playwright install chromium"
   }
 }
