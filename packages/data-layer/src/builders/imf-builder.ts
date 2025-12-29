@@ -1,12 +1,10 @@
 import type { IMFConfig, IMFFrequency } from '../providers/imf';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for IMF configuration
  */
-export class IMFBuilder {
-  private config: Partial<IMFConfig> = {};
+export class IMFBuilder extends BaseBuilder<IMFConfig> {
 
   databaseId(id: string): this {
     this.config.databaseId = id;
@@ -91,22 +89,7 @@ export class IMFBuilder {
     return this.databaseId('IFS');
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): IMFConfig {
+  override build(): IMFConfig {
     if (!this.config.databaseId) {
       throw new Error('IMF databaseId is required');
     }

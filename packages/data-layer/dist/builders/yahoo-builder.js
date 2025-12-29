@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Yahoo Finance configuration
  */
-export class YahooBuilder {
-    config = {};
+export class YahooBuilder extends BaseBuilder {
     symbol(symbol) {
         this.config.symbol = symbol;
         return this;
@@ -13,18 +13,6 @@ export class YahooBuilder {
     }
     interval(interval) {
         this.config.interval = interval;
-        return this;
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
         return this;
     }
     build() {

@@ -1,17 +1,12 @@
 import type { YahooConfig } from '../providers/yahoo';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Yahoo Finance configuration
  */
-export declare class YahooBuilder {
-    private config;
+export declare class YahooBuilder extends BaseBuilder<YahooConfig> {
     symbol(symbol: string): this;
     period(period: YahooConfig['period']): this;
     interval(interval: YahooConfig['interval']): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): YahooConfig;
 }
 /**

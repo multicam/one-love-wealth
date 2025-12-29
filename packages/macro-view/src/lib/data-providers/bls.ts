@@ -85,13 +85,13 @@ export class BLSProvider extends DataProvider<BLSDataSourceConfig> {
 					}
 
 					return {
-						date,
+						time: new Date(date).getTime(),
 						value: parseFloat(d.value)
 					};
 				})
 				// BLS returns newest first, reverse for chronological order
 				.reverse()
-				.filter((dp: DataPoint) => !isNaN(dp.value))
+				.filter((dp: { time: number; value: number }) => !isNaN(dp.value))
 		);
 	}
 
@@ -171,7 +171,7 @@ export class BLSProvider extends DataProvider<BLSDataSourceConfig> {
 			const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
 
 			mockData.push({
-				date: `${year}-${month}-01`,
+				time: new Date(`${year}-${month}-01`).getTime(),
 				value: Math.round(currentValue * 100) / 100
 			});
 

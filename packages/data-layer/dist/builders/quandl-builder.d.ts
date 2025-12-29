@@ -1,11 +1,9 @@
 import type { QuandlConfig, QuandlCollapse, QuandlTransform } from '../providers/quandl';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Quandl configuration
  */
-export declare class QuandlBuilder {
-    private config;
+export declare class QuandlBuilder extends BaseBuilder<QuandlConfig> {
     databaseCode(code: string): this;
     datasetCode(code: string): this;
     database(databaseCode: string, datasetCode: string): this;
@@ -25,9 +23,6 @@ export declare class QuandlBuilder {
     cumulative(): this;
     normalize(): this;
     rows(count: number): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): QuandlConfig;
 }
 /**

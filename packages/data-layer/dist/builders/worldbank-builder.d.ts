@@ -1,11 +1,9 @@
 import type { WorldBankConfig } from '../providers/worldbank';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for World Bank configuration
  */
-export declare class WorldBankBuilder {
-    private config;
+export declare class WorldBankBuilder extends BaseBuilder<WorldBankConfig> {
     indicatorCode(code: string): this;
     countryCode(code: string): this;
     usa(): this;
@@ -16,9 +14,6 @@ export declare class WorldBankBuilder {
     startYear(year: number): this;
     endYear(year: number): this;
     mostRecentValues(count: number): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): WorldBankConfig;
 }
 /**

@@ -1,12 +1,10 @@
 import type { CoinGeckoConfig, CoinGeckoEndpoint } from '../providers/coingecko';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for CoinGecko configuration
  */
-export class CoinGeckoBuilder {
-  private config: Partial<CoinGeckoConfig> = {};
+export class CoinGeckoBuilder extends BaseBuilder<CoinGeckoConfig> {
 
   coin(coinId: string): this {
     this.config.coinId = coinId;
@@ -66,22 +64,7 @@ export class CoinGeckoBuilder {
     return this;
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): CoinGeckoConfig {
+  override build(): CoinGeckoConfig {
     if (!this.config.coinId) {
       throw new Error('CoinGecko coinId is required');
     }

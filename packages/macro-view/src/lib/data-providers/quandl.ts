@@ -79,12 +79,12 @@ export class QuandlProvider extends DataProvider<QuandlDataSourceConfig> {
 				}
 
 				return {
-					date: date,
+					time: new Date(date).getTime(),
 					value: parseFloat(value)
 				};
 			})
 			.filter((point): point is DataPoint => point !== null && !isNaN(point.value))
-			.sort((a, b) => a.date.localeCompare(b.date));
+			.sort((a, b) => a.time - b.time);
 	}
 
 	/**
@@ -105,7 +105,7 @@ export class QuandlProvider extends DataProvider<QuandlDataSourceConfig> {
 			value = Math.max(value, 50); // Floor at 50
 
 			points.push({
-				date: date.toISOString().split('T')[0],
+				time: date.getTime(),
 				value: value
 			});
 		}

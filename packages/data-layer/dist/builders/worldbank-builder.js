@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for World Bank configuration
  */
-export class WorldBankBuilder {
-    config = {};
+export class WorldBankBuilder extends BaseBuilder {
     indicatorCode(code) {
         this.config.indicatorCode = code;
         return this;
@@ -38,18 +38,6 @@ export class WorldBankBuilder {
     }
     mostRecentValues(count) {
         this.config.mrv = count;
-        return this;
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
         return this;
     }
     build() {

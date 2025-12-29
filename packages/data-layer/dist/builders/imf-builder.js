@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for IMF configuration
  */
-export class IMFBuilder {
-    config = {};
+export class IMFBuilder extends BaseBuilder {
     databaseId(id) {
         this.config.databaseId = id;
         return this;
@@ -67,18 +67,6 @@ export class IMFBuilder {
     // Convenience for IFS database
     ifs() {
         return this.databaseId('IFS');
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
-        return this;
     }
     build() {
         if (!this.config.databaseId) {

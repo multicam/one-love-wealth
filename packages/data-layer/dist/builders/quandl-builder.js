@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Quandl configuration
  */
-export class QuandlBuilder {
-    config = {};
+export class QuandlBuilder extends BaseBuilder {
     databaseCode(code) {
         this.config.databaseCode = code;
         return this;
@@ -72,18 +72,6 @@ export class QuandlBuilder {
     }
     rows(count) {
         this.config.rows = count;
-        return this;
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
         return this;
     }
     build() {

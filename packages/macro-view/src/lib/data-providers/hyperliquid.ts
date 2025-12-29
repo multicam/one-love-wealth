@@ -50,10 +50,10 @@ export class HyperliquidProvider extends DataProvider<HyperliquidDataSourceConfi
 
 			return json
 				.map((candle: any) => ({
-					date: new Date(candle.t).toISOString().split('T')[0],
+					time: candle.t,
 					value: parseFloat(candle.c) // Close price
 				}))
-				.filter((dp: DataPoint) => !isNaN(dp.value));
+				.filter((dp: { time: number; value: number }) => !isNaN(dp.value));
 		}
 
 		// Funding history: array of funding rate objects
@@ -64,10 +64,10 @@ export class HyperliquidProvider extends DataProvider<HyperliquidDataSourceConfi
 
 			return json
 				.map((item: any) => ({
-					date: new Date(item.time).toISOString().split('T')[0],
+					time: item.time,
 					value: parseFloat(item.fundingRate) * 100 // Convert to percentage
 				}))
-				.filter((dp: DataPoint) => !isNaN(dp.value));
+				.filter((dp: { time: number; value: number }) => !isNaN(dp.value));
 		}
 
 		// Open interest: single value response
@@ -78,7 +78,7 @@ export class HyperliquidProvider extends DataProvider<HyperliquidDataSourceConfi
 
 			return [
 				{
-					date: new Date().toISOString().split('T')[0],
+					time: Date.now(),
 					value: parseFloat(json.openInterest)
 				}
 			];
@@ -157,11 +157,8 @@ export class HyperliquidProvider extends DataProvider<HyperliquidDataSourceConfi
 				currentValue = Math.max(baseValue * 0.5, currentValue);
 			}
 
-			// Format date
-			const date = currentDate.toISOString().split('T')[0];
-
 			mockData.push({
-				date,
+				time: currentDate.getTime(),
 				value: Math.round(currentValue * 100) / 100
 			});
 

@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for OECD configuration
  */
-export class OECDBuilder {
-    config = {};
+export class OECDBuilder extends BaseBuilder {
     dataset(dataset) {
         this.config.dataset = dataset;
         return this;
@@ -75,18 +75,6 @@ export class OECDBuilder {
     timeRange(start, end) {
         this.config.startTime = start;
         this.config.endTime = end;
-        return this;
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
         return this;
     }
     build() {

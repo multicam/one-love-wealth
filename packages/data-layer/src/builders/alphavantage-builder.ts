@@ -3,14 +3,12 @@ import type {
   AlphaVantageFunction,
   AlphaVantageInterval,
 } from '../providers/alphavantage';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for Alpha Vantage configuration
  */
-export class AlphaVantageBuilder {
-  private config: Partial<AlphaVantageConfig> = {};
+export class AlphaVantageBuilder extends BaseBuilder<AlphaVantageConfig> {
 
   function(func: AlphaVantageFunction): this {
     this.config.function = func;
@@ -95,22 +93,7 @@ export class AlphaVantageBuilder {
     return this;
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): AlphaVantageConfig {
+  override build(): AlphaVantageConfig {
     if (!this.config.function) {
       throw new Error('Alpha Vantage function is required');
     }

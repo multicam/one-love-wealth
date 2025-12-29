@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for CoinGecko configuration
  */
-export class CoinGeckoBuilder {
-    config = {};
+export class CoinGeckoBuilder extends BaseBuilder {
     coin(coinId) {
         this.config.coinId = coinId;
         return this;
@@ -47,18 +47,6 @@ export class CoinGeckoBuilder {
     }
     include24hrChange(include = true) {
         this.config.include24hrChange = include;
-        return this;
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
         return this;
     }
     build() {

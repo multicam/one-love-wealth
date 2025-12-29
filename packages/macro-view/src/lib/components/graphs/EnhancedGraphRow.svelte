@@ -60,56 +60,61 @@
 				};
 			}
 
-			// Merge data on common dates
-			const allDates = new Set<string>();
+			// Merge data on common timestamps
+			const allTimes = new Set<number>();
+			const startTime = dateRange.start ? new Date(dateRange.start).getTime() : 0;
+			const endTime = dateRange.end ? new Date(dateRange.end).getTime() : Infinity;
 			transformedResults.forEach((result) => {
 				result.data.forEach((point: DataPoint) => {
 					// Apply date range filter
-					if (dateRange.start && point.date < dateRange.start) return;
-					if (dateRange.end && point.date > dateRange.end) return;
-					allDates.add(point.date);
+					if (point.time < startTime) return;
+					if (point.time > endTime) return;
+					allTimes.add(point.time);
 				});
 			});
 
-			let labels = Array.from(allDates).sort();
+			let sortedTimes = Array.from(allTimes).sort((a, b) => a - b);
 
 			// Apply recentPoints filter if configured
 			if (graph.timeAlignment?.recentPoints) {
-				labels = labels.slice(-graph.timeAlignment.recentPoints);
+				sortedTimes = sortedTimes.slice(-graph.timeAlignment.recentPoints);
 			} else {
 				// Default: Last 200 points for performance
-				labels = labels.slice(-200);
+				sortedTimes = sortedTimes.slice(-200);
 			}
+
+			// Convert timestamps to date labels for display
+			const labels = sortedTimes.map(t => new Date(t).toISOString().split('T')[0]);
 
 			// Build datasets with time alignment
 			const datasets = transformedResults.map((result, index) => {
 				const config = result.config;
-				const dataMap = new Map(result.data.map((d: DataPoint) => [d.date, d.value]));
+				const dataMap = new Map(result.data.map((d: DataPoint) => [d.time, d.value]));
 
 				// Get time shift configuration for this series
 				const shiftConfig = graph.timeAlignment?.shifts?.find((s) => s.seriesIndex === index);
 
-				let values = labels.map((date) => {
+				let values = sortedTimes.map((time) => {
 					// Apply time shift if configured
 					if (shiftConfig) {
 						const shiftMonths = shiftConfig.months;
 						const direction = shiftConfig.direction;
 
-						// Calculate shifted date
-						const dateObj = new Date(date);
+						// Calculate shifted time
+						const dateObj = new Date(time);
 						if (direction === 'lead') {
 							dateObj.setMonth(dateObj.getMonth() + shiftMonths);
 						} else {
 							dateObj.setMonth(dateObj.getMonth() - shiftMonths);
 						}
-						const shiftedDate = dateObj.toISOString().split('T')[0];
+						const shiftedTime = dateObj.getTime();
 
-						// Look up value at shifted date
-						return dataMap.get(shiftedDate) ?? null;
+						// Look up value at shifted time
+						return dataMap.get(shiftedTime) ?? null;
 					}
 
 					// No shift - direct lookup
-					return dataMap.get(date) ?? null;
+					return dataMap.get(time) ?? null;
 				});
 
 				// Get display configuration

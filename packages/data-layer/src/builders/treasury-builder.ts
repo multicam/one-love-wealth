@@ -1,12 +1,10 @@
 import type { TreasuryConfig, TreasuryDataset } from '../providers/treasury';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for Treasury configuration
  */
-export class TreasuryBuilder {
-  private config: Partial<TreasuryConfig> = {};
+export class TreasuryBuilder extends BaseBuilder<TreasuryConfig> {
 
   dataset(dataset: TreasuryDataset): this {
     this.config.dataset = dataset;
@@ -50,22 +48,7 @@ export class TreasuryBuilder {
     return this;
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): TreasuryConfig {
+  override build(): TreasuryConfig {
     if (!this.config.dataset) {
       throw new Error('Treasury dataset is required');
     }

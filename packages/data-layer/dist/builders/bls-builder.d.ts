@@ -1,11 +1,9 @@
 import type { BLSConfig } from '../providers/bls';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for BLS configuration
  */
-export declare class BLSBuilder {
-    private config;
+export declare class BLSBuilder extends BaseBuilder<BLSConfig> {
     seriesId(seriesId: string): this;
     dateRange(startYear: number, endYear: number): this;
     startYear(year: number): this;
@@ -13,9 +11,6 @@ export declare class BLSBuilder {
     lastYears(count: number): this;
     calculations(enabled?: boolean): this;
     annualAverage(enabled?: boolean): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): BLSConfig;
 }
 /**

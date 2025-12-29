@@ -47,18 +47,18 @@ export class YahooProvider extends DataProvider<YahooDataSourceConfig> {
 
 		return json
 			.map((row: any) => {
-				const date = new Date(row.date).toISOString().split('T')[0];
+				const time = new Date(row.date).getTime();
 				const value =
 					config.includeAdjustedClose !== false && row.adjClose !== undefined
 						? row.adjClose
 						: row.close;
 
 				return {
-					date,
+					time,
 					value: parseFloat(value)
 				};
 			})
-			.filter((dp: DataPoint) => !isNaN(dp.value));
+			.filter((dp: { time: number; value: number }) => dp.value !== undefined && !isNaN(dp.value));
 	}
 
 	/**
@@ -102,12 +102,10 @@ export class YahooProvider extends DataProvider<YahooDataSourceConfig> {
 				currentValue = currentValue * (1 + trend + randomChange);
 
 				// Ensure non-negative values
-				currentValue = Math.max(currentValue, baseValue * 0.5);
-
-				mockData.push({
-					date: currentDate.toISOString().split('T')[0],
-					value: Math.round(currentValue * 100) / 100
-				});
+				currentValue = Math.max(currentValue, baseValue * 0.5);					mockData.push({
+						time: currentDate.getTime(),
+						value: Math.round(currentValue * 100) / 100
+					});
 			}
 
 			// Advance by 1 day

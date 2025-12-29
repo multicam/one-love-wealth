@@ -1,11 +1,9 @@
 import type { HyperliquidConfig, HyperliquidDataType, HyperliquidInterval } from '../providers/hyperliquid';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Hyperliquid configuration
  */
-export declare class HyperliquidBuilder {
-    private config;
+export declare class HyperliquidBuilder extends BaseBuilder<HyperliquidConfig> {
     coin(coin: string): this;
     dataType(dataType: HyperliquidDataType): this;
     candles(): this;
@@ -27,9 +25,6 @@ export declare class HyperliquidBuilder {
     endTime(time: number): this;
     lastDays(days: number): this;
     lastHours(hours: number): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): HyperliquidConfig;
 }
 /**

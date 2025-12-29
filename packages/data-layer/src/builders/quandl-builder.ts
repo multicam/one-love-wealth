@@ -1,12 +1,10 @@
 import type { QuandlConfig, QuandlCollapse, QuandlTransform } from '../providers/quandl';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for Quandl configuration
  */
-export class QuandlBuilder {
-  private config: Partial<QuandlConfig> = {};
+export class QuandlBuilder extends BaseBuilder<QuandlConfig> {
 
   databaseCode(code: string): this {
     this.config.databaseCode = code;
@@ -98,22 +96,7 @@ export class QuandlBuilder {
     return this;
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): QuandlConfig {
+  override build(): QuandlConfig {
     if (!this.config.databaseCode) {
       throw new Error('Quandl databaseCode is required');
     }

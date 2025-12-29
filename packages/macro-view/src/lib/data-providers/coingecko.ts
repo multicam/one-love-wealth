@@ -29,11 +29,12 @@ function toSharedConfig(config: CoinGeckoDataSourceConfig): SharedCoinGeckoConfi
 }
 
 /**
- * Convert shared DataPoint (time: number) to macro-view DataPoint (date: string)
+ * Convert shared DataPoint to macro-view DataPoint
+ * Both now use time: number format
  */
 function toMacroViewDataPoint(point: SharedDataPoint): DataPoint {
 	return {
-		date: new Date(point.time).toISOString().split('T')[0],
+		time: point.time,
 		value: point.value ?? point.close ?? 0,
 	};
 }

@@ -38,6 +38,8 @@ export { OECDProvider, OECD_DATASETS, OECD_QNA_INDICATORS, OECD_MEI_INDICATORS, 
 export type { OECDConfig, OECDFrequency } from './providers/oecd';
 export { HyperliquidProvider, HYPERLIQUID_COINS } from './providers/hyperliquid';
 export type { HyperliquidConfig, HyperliquidDataType, HyperliquidInterval } from './providers/hyperliquid';
+export { ProxyHandler } from './server/proxy-handler';
+export type { ProxyRequestConfig, ProxySuccess, ProxyError, ProxyResult, } from './server/proxy-handler';
 export { YahooBuilder, yahoo } from './builders/yahoo-builder';
 export { CoinGeckoBuilder, coingecko } from './builders/coingecko-builder';
 export { FREDBuilder, fred } from './builders/fred-builder';

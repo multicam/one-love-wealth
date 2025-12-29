@@ -1,11 +1,9 @@
 import type { IMFConfig, IMFFrequency } from '../providers/imf';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for IMF configuration
  */
-export declare class IMFBuilder {
-    private config;
+export declare class IMFBuilder extends BaseBuilder<IMFConfig> {
     databaseId(id: string): this;
     indicator(indicator: string): this;
     frequency(frequency: IMFFrequency): this;
@@ -24,9 +22,6 @@ export declare class IMFBuilder {
     endPeriod(period: string): this;
     periodRange(start: string, end: string): this;
     ifs(): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): IMFConfig;
 }
 /**

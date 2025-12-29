@@ -1,11 +1,9 @@
 import type { TreasuryConfig, TreasuryDataset } from '../providers/treasury';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Treasury configuration
  */
-export declare class TreasuryBuilder {
-    private config;
+export declare class TreasuryBuilder extends BaseBuilder<TreasuryConfig> {
     dataset(dataset: TreasuryDataset): this;
     debtToPenny(): this;
     historicalDebt(): this;
@@ -15,9 +13,6 @@ export declare class TreasuryBuilder {
     startDate(date: string): this;
     endDate(date: string): this;
     fields(fields: string[]): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): TreasuryConfig;
 }
 /**

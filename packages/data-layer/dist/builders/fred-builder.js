@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for FRED configuration
  */
-export class FREDBuilder {
-    config = {};
+export class FREDBuilder extends BaseBuilder {
     seriesId(seriesId) {
         this.config.seriesId = seriesId;
         return this;
@@ -60,18 +60,6 @@ export class FREDBuilder {
     }
     limit(count) {
         this.config.limit = count;
-        return this;
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
         return this;
     }
     build() {

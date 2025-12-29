@@ -90,14 +90,14 @@ export class OECDProvider extends DataProvider<OECDDataSourceConfig> {
 			const date = this.convertPeriodToDate(period.id, config.frequency);
 
 			points.push({
-				date: date,
+				time: new Date(date).getTime(),
 				value: parseFloat(obsValue)
 			});
 		}
 
 		return points
 			.filter((point) => !isNaN(point.value))
-			.sort((a, b) => a.date.localeCompare(b.date));
+			.sort((a, b) => a.time - b.time);
 	}
 
 	/**
@@ -136,7 +136,7 @@ export class OECDProvider extends DataProvider<OECDDataSourceConfig> {
 			for (let i = currentYear - 19; i <= currentYear; i++) {
 				value += (Math.random() - 0.45) * 5;
 				points.push({
-					date: `${i}-12-31`,
+					time: new Date(`${i}-12-31`).getTime(),
 					value: value
 				});
 			}
@@ -148,7 +148,7 @@ export class OECDProvider extends DataProvider<OECDDataSourceConfig> {
 				const month = quarter * 3;
 				value += (Math.random() - 0.48) * 3;
 				points.push({
-					date: `${year}-${month.toString().padStart(2, '0')}-01`,
+					time: new Date(`${year}-${month.toString().padStart(2, '0')}-01`).getTime(),
 					value: value
 				});
 			}
@@ -159,7 +159,7 @@ export class OECDProvider extends DataProvider<OECDDataSourceConfig> {
 				date.setMonth(date.getMonth() - (59 - i));
 				value += (Math.random() - 0.48) * 2;
 				points.push({
-					date: date.toISOString().split('T')[0],
+					time: date.getTime(),
 					value: value
 				});
 			}

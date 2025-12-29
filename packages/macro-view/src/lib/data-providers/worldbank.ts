@@ -53,12 +53,12 @@ export class WorldBankProvider extends DataProvider<WorldBankDataSourceConfig> {
 				.filter((item: any) => item.value !== null && item.value !== undefined)
 				.map((item: any) => ({
 					// Use year-end date for annual data
-					date: `${item.date}-12-31`,
+					time: new Date(`${item.date}-12-31`).getTime(),
 					value: parseFloat(item.value)
 				}))
 				// World Bank returns newest first, reverse for chronological order
 				.reverse()
-				.filter((dp: DataPoint) => !isNaN(dp.value))
+				.filter((dp: { time: number; value: number }) => !isNaN(dp.value))
 		);
 	}
 
@@ -161,7 +161,7 @@ export class WorldBankProvider extends DataProvider<WorldBankDataSourceConfig> {
 			}
 
 			mockData.push({
-				date: `${year}-12-31`,
+				time: new Date(`${year}-12-31`).getTime(),
 				value: Math.round(currentValue * 100) / 100
 			});
 		}

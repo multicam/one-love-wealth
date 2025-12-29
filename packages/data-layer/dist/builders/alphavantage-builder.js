@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Alpha Vantage configuration
  */
-export class AlphaVantageBuilder {
-    config = {};
+export class AlphaVantageBuilder extends BaseBuilder {
     function(func) {
         this.config.function = func;
         return this;
@@ -66,18 +66,6 @@ export class AlphaVantageBuilder {
     }
     dateRange(start, end) {
         this.config.dateRange = { start, end };
-        return this;
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
         return this;
     }
     build() {

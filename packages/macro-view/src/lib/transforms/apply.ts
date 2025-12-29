@@ -49,13 +49,13 @@ function applyOperation(
     case 'normalize_date':
       return normalizeToDate(series, operation.date);
     case 'invert':
-      return series.map(d => ({ ...d, value: -d.value }));
+      return series.map(d => ({ ...d, value: -(d.value ?? 0) }));
     case 'log':
-      return series.map(d => ({ ...d, value: Math.log(d.value) }));
+      return series.map(d => ({ ...d, value: Math.log(d.value ?? 0) }));
     case 'log10':
-      return series.map(d => ({ ...d, value: Math.log10(d.value) }));
+      return series.map(d => ({ ...d, value: Math.log10(d.value ?? 0) }));
     case 'abs':
-      return series.map(d => ({ ...d, value: Math.abs(d.value) }));
+      return series.map(d => ({ ...d, value: Math.abs(d.value ?? 0) }));
     case 'cumsum':
       return cumulativeSum(series);
     case 'diff':
@@ -69,15 +69,15 @@ function applyOperation(
     case 'ratio':
       return calculateRatio(series, allSeries[operation.dividendIndex]);
     case 'scale':
-      return series.map(d => ({ ...d, value: d.value * operation.factor }));
+      return series.map(d => ({ ...d, value: (d.value ?? 0) * operation.factor }));
     case 'offset':
-      return series.map(d => ({ ...d, value: d.value + operation.value }));
+      return series.map(d => ({ ...d, value: (d.value ?? 0) + operation.value }));
     case 'clip':
       return series.map(d => ({
         ...d,
         value: Math.max(
           operation.min ?? -Infinity,
-          Math.min(operation.max ?? Infinity, d.value)
+          Math.min(operation.max ?? Infinity, d.value ?? 0)
         )
       }));
     case 'zscore':
@@ -106,12 +106,13 @@ function calculateChange(
 ): DataPoint[] {
   return series.map((point, i) => {
     if (i < periods) return { ...point, value: NaN };
-    const prevValue = series[i - periods].value;
+    const prevValue = series[i - periods].value ?? 0;
+    const currValue = point.value ?? 0;
     if (type === 'percent') {
-      return { ...point, value: ((point.value - prevValue) / prevValue) * 100 };
+      return { ...point, value: ((currValue - prevValue) / prevValue) * 100 };
     }
-    return { ...point, value: point.value - prevValue };
-  }).filter(d => !isNaN(d.value));
+    return { ...point, value: currValue - prevValue };
+  }).filter(d => d.value !== undefined && !isNaN(d.value));
 }
 
 /**
@@ -123,8 +124,9 @@ function calculateChange(
  */
 function normalize(series: DataPoint[], base: number): DataPoint[] {
   if (series.length === 0) return series;
-  const firstValue = series[0].value;
-  return series.map(d => ({ ...d, value: (d.value / firstValue) * base }));
+  const firstValue = series[0].value ?? 0;
+  if (firstValue === 0) return series;
+  return series.map(d => ({ ...d, value: ((d.value ?? 0) / firstValue) * base }));
 }
 
 /**
@@ -135,9 +137,10 @@ function normalize(series: DataPoint[], base: number): DataPoint[] {
  * @returns Normalized series (base 100 at specified date)
  */
 function normalizeToDate(series: DataPoint[], date: string): DataPoint[] {
-  const basePoint = series.find(d => d.date === date);
-  if (!basePoint) return series;
-  return series.map(d => ({ ...d, value: (d.value / basePoint.value) * 100 }));
+  const targetTime = new Date(date).getTime();
+  const basePoint = series.find(d => d.time === targetTime);
+  if (!basePoint || basePoint.value === undefined) return series;
+  return series.map(d => ({ ...d, value: ((d.value ?? 0) / basePoint.value!) * 100 }));
 }
 
 /**
@@ -149,7 +152,7 @@ function normalizeToDate(series: DataPoint[], date: string): DataPoint[] {
 function cumulativeSum(series: DataPoint[]): DataPoint[] {
   let sum = 0;
   return series.map(d => {
-    sum += d.value;
+    sum += d.value ?? 0;
     return { ...d, value: sum };
   });
 }
@@ -169,7 +172,7 @@ function rollingWindow(
 ): DataPoint[] {
   return series.map((point, i) => {
     if (i < window - 1) return { ...point, value: NaN };
-    const windowValues = series.slice(i - window + 1, i + 1).map(d => d.value);
+    const windowValues = series.slice(i - window + 1, i + 1).map(d => d.value ?? 0);
     let result: number;
     if (operation === 'avg') {
       result = windowValues.reduce((a, b) => a + b, 0) / window;
@@ -179,7 +182,7 @@ function rollingWindow(
       result = Math.sqrt(variance);
     }
     return { ...point, value: result };
-  }).filter(d => !isNaN(d.value));
+  }).filter(d => d.value !== undefined && !isNaN(d.value));
 }
 
 /**
@@ -187,13 +190,13 @@ function rollingWindow(
  *
  * @param numerator - Numerator series
  * @param denominator - Denominator series
- * @returns Ratio series (only includes dates present in both series)
+ * @returns Ratio series (only includes times present in both series)
  */
 function calculateRatio(numerator: DataPoint[], denominator: DataPoint[]): DataPoint[] {
-  const denomMap = new Map(denominator.map(d => [d.date, d.value]));
+  const denomMap = new Map(denominator.map(d => [d.time, d.value ?? 0]));
   return numerator
-    .filter(d => denomMap.has(d.date))
-    .map(d => ({ ...d, value: d.value / denomMap.get(d.date)! }));
+    .filter(d => denomMap.has(d.time))
+    .map(d => ({ ...d, value: (d.value ?? 0) / denomMap.get(d.time)! }));
 }
 
 /**
@@ -203,10 +206,11 @@ function calculateRatio(numerator: DataPoint[], denominator: DataPoint[]): DataP
  * @returns Z-score normalized series
  */
 function zScore(series: DataPoint[]): DataPoint[] {
-  const values = series.map(d => d.value);
+  const values = series.map(d => d.value ?? 0);
   const mean = values.reduce((a, b) => a + b, 0) / values.length;
   const std = Math.sqrt(values.reduce((a, b) => a + (b - mean) ** 2, 0) / values.length);
-  return series.map(d => ({ ...d, value: (d.value - mean) / std }));
+  if (std === 0) return series;
+  return series.map(d => ({ ...d, value: ((d.value ?? 0) - mean) / std }));
 }
 
 /**
@@ -216,9 +220,9 @@ function zScore(series: DataPoint[]): DataPoint[] {
  * @returns Percentile rank series
  */
 function percentileRank(series: DataPoint[]): DataPoint[] {
-  const sorted = [...series].sort((a, b) => a.value - b.value);
-  const ranks = new Map(sorted.map((d, i) => [d.date, (i / (series.length - 1)) * 100]));
-  return series.map(d => ({ ...d, value: ranks.get(d.date)! }));
+  const sorted = [...series].sort((a, b) => (a.value ?? 0) - (b.value ?? 0));
+  const ranks = new Map(sorted.map((d, i) => [d.time, (i / (series.length - 1)) * 100]));
+  return series.map(d => ({ ...d, value: ranks.get(d.time)! }));
 }
 
 /**
@@ -231,13 +235,14 @@ function percentileRank(series: DataPoint[]): DataPoint[] {
 function resample(series: DataPoint[], frequency: 'd' | 'w' | 'm' | 'q' | 'a'): DataPoint[] {
   const groups = new Map<string, DataPoint[]>();
   for (const point of series) {
-    const key = getPeriodKey(point.date, frequency);
+    const dateStr = new Date(point.time).toISOString().split('T')[0];
+    const key = getPeriodKey(dateStr, frequency);
     if (!groups.has(key)) groups.set(key, []);
     groups.get(key)!.push(point);
   }
-  return Array.from(groups.entries()).map(([key, points]) => ({
-    date: points[points.length - 1].date,
-    value: points.reduce((a, b) => a + b.value, 0) / points.length
+  return Array.from(groups.entries()).map(([_key, points]) => ({
+    time: points[points.length - 1].time,
+    value: points.reduce((a, b) => a + (b.value ?? 0), 0) / points.length
   }));
 }
 

@@ -1,8 +1,10 @@
 import { FRED_API_KEY } from '$env/static/private';
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
+import { ProxyHandler } from '@one-love-wealth/data-layer';
 import type { RequestHandler } from './$types';
 
-// Parameters to pass through to FRED API
+const handler = new ProxyHandler('FRED', 'https://api.stlouisfed.org');
+
 const FRED_PARAMS = [
 	'series_id',
 	'observation_start',
@@ -23,45 +25,30 @@ export const GET: RequestHandler = async ({ url }) => {
 	const seriesId = url.searchParams.get('series_id');
 
 	if (!seriesId) {
-		return json({ error: 'Missing series_id parameter' }, { status: 400 });
+		return error(400, 'Missing series_id parameter');
 	}
 
 	if (!FRED_API_KEY) {
-		console.error('[Proxy] Server misconfiguration: No FRED API Key');
-		return json({ error: 'Server misconfiguration: No FRED API Key' }, { status: 500 });
+		return error(500, 'Server misconfiguration: No FRED API Key');
 	}
 
-	try {
-		// Build URL with all passed parameters
-		const fredUrl = new URL('https://api.stlouisfed.org/fred/series/observations');
-		fredUrl.searchParams.set('api_key', FRED_API_KEY);
-		fredUrl.searchParams.set('file_type', 'json');
+	// Build params object from URL
+	const params: Record<string, string | null> = {
+		api_key: FRED_API_KEY,
+		file_type: 'json'
+	};
 
-		// Pass through all supported parameters
-		for (const param of FRED_PARAMS) {
-			const value = url.searchParams.get(param);
-			if (value) {
-				fredUrl.searchParams.set(param, value);
-			}
-		}
-
-		console.log(`[Proxy] FRED: ${fredUrl.toString().replace(FRED_API_KEY, '***')}`);
-
-		const response = await fetch(fredUrl.toString());
-
-		if (!response.ok) {
-			const text = await response.text();
-			console.error(`[Proxy] FRED API Error (${response.status}): ${text}`);
-			return json(
-				{ error: `FRED API Error: ${response.statusText}`, details: text },
-				{ status: response.status }
-			);
-		}
-
-		const data = await response.json();
-		return json(data);
-	} catch (err: any) {
-		console.error(`[Proxy] Failed to fetch from FRED: ${err.message}`);
-		return json({ error: 'Failed to fetch from FRED', details: err.message }, { status: 500 });
+	for (const param of FRED_PARAMS) {
+		params[param] = url.searchParams.get(param);
 	}
+
+	const result = await handler.fetch({
+		url: handler.buildUrl('/fred/series/observations', params)
+	});
+
+	if (!result.ok) {
+		return error(result.status, result.error);
+	}
+
+	return json(result.data);
 };

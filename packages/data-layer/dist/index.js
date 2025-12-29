@@ -22,6 +22,8 @@ export { QuandlProvider, QUANDL_DATASETS } from './providers/quandl';
 export { IMFProvider, IMF_DATABASES, IMF_IFS_INDICATORS, IMF_COUNTRY_CODES } from './providers/imf';
 export { OECDProvider, OECD_DATASETS, OECD_QNA_INDICATORS, OECD_MEI_INDICATORS, OECD_LOCATIONS } from './providers/oecd';
 export { HyperliquidProvider, HYPERLIQUID_COINS } from './providers/hyperliquid';
+// Server utilities
+export { ProxyHandler } from './server/proxy-handler';
 // Builders
 export { YahooBuilder, yahoo } from './builders/yahoo-builder';
 export { CoinGeckoBuilder, coingecko } from './builders/coingecko-builder';

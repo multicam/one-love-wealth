@@ -1,11 +1,9 @@
 import type { CoinGeckoConfig, CoinGeckoEndpoint } from '../providers/coingecko';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for CoinGecko configuration
  */
-export declare class CoinGeckoBuilder {
-    private config;
+export declare class CoinGeckoBuilder extends BaseBuilder<CoinGeckoConfig> {
     coin(coinId: string): this;
     vsCurrency(currency: string): this;
     endpoint(endpoint: CoinGeckoEndpoint): this;
@@ -18,9 +16,6 @@ export declare class CoinGeckoBuilder {
     includeMarketCap(include?: boolean): this;
     include24hrVol(include?: boolean): this;
     include24hrChange(include?: boolean): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): CoinGeckoConfig;
 }
 /**

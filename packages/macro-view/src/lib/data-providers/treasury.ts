@@ -63,11 +63,11 @@ export class TreasuryProvider extends DataProvider<TreasuryDataSourceConfig> {
 					}
 
 					return {
-						date,
+						time: new Date(date).getTime(),
 						value: parseFloat(value)
 					};
 				})
-				.filter((dp: DataPoint | null): dp is DataPoint => dp !== null && !isNaN(dp.value))
+				.filter((dp: { time: number; value: number } | null): dp is DataPoint => dp !== null && !isNaN(dp.value))
 		);
 	}
 
@@ -140,7 +140,7 @@ export class TreasuryProvider extends DataProvider<TreasuryDataSourceConfig> {
 			const date = `${year}-${month}-${day}`;
 
 			mockData.push({
-				date,
+				time: new Date(date).getTime(),
 				value: Math.round(currentValue * 100) / 100
 			});
 

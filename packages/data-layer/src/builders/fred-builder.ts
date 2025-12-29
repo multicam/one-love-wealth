@@ -1,12 +1,10 @@
 import type { FREDConfig, FREDUnits, FREDFrequency } from '../providers/fred';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for FRED configuration
  */
-export class FREDBuilder {
-  private config: Partial<FREDConfig> = {};
+export class FREDBuilder extends BaseBuilder<FREDConfig> {
 
   seriesId(seriesId: string): this {
     this.config.seriesId = seriesId;
@@ -83,22 +81,7 @@ export class FREDBuilder {
     return this;
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): FREDConfig {
+  override build(): FREDConfig {
     if (!this.config.seriesId) {
       throw new Error('FRED seriesId is required');
     }

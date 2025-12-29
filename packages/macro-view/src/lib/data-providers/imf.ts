@@ -79,12 +79,12 @@ export class IMFProvider extends DataProvider<IMFDataSourceConfig> {
 				const date = this.convertPeriodToDate(period, config.frequency);
 
 				return {
-					date: date,
+					time: new Date(date).getTime(),
 					value: parseFloat(value)
 				};
 			})
-			.filter((point: DataPoint | null): point is DataPoint => point !== null && !isNaN(point.value))
-			.sort((a: DataPoint, b: DataPoint) => a.date.localeCompare(b.date));
+			.filter((point: { time: number; value: number } | null): point is DataPoint => point !== null && !isNaN(point.value))
+			.sort((a: DataPoint, b: DataPoint) => a.time - b.time);
 	}
 
 	/**
@@ -121,7 +121,7 @@ export class IMFProvider extends DataProvider<IMFDataSourceConfig> {
 			for (let i = currentYear - 19; i <= currentYear; i++) {
 				value += (Math.random() - 0.45) * 5;
 				points.push({
-					date: `${i}-12-31`,
+					time: new Date(`${i}-12-31`).getTime(),
 					value: value
 				});
 			}
@@ -133,7 +133,7 @@ export class IMFProvider extends DataProvider<IMFDataSourceConfig> {
 				const month = quarter * 3;
 				value += (Math.random() - 0.48) * 3;
 				points.push({
-					date: `${year}-${month.toString().padStart(2, '0')}-01`,
+					time: new Date(`${year}-${month.toString().padStart(2, '0')}-01`).getTime(),
 					value: value
 				});
 			}
@@ -144,7 +144,7 @@ export class IMFProvider extends DataProvider<IMFDataSourceConfig> {
 				date.setMonth(date.getMonth() - (59 - i));
 				value += (Math.random() - 0.48) * 2;
 				points.push({
-					date: date.toISOString().split('T')[0],
+					time: date.getTime(),
 					value: value
 				});
 			}

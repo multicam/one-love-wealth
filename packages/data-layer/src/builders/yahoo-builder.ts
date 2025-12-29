@@ -1,13 +1,10 @@
 import type { YahooConfig } from '../providers/yahoo';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for Yahoo Finance configuration
  */
-export class YahooBuilder {
-  private config: Partial<YahooConfig> = {};
-
+export class YahooBuilder extends BaseBuilder<YahooConfig> {
   symbol(symbol: string): this {
     this.config.symbol = symbol;
     return this;
@@ -23,22 +20,7 @@ export class YahooBuilder {
     return this;
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): YahooConfig {
+  override build(): YahooConfig {
     if (!this.config.symbol) {
       throw new Error('Yahoo symbol is required');
     }

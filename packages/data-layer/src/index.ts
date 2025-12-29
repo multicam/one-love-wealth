@@ -50,6 +50,15 @@ export type { OECDConfig, OECDFrequency } from './providers/oecd';
 export { HyperliquidProvider, HYPERLIQUID_COINS } from './providers/hyperliquid';
 export type { HyperliquidConfig, HyperliquidDataType, HyperliquidInterval } from './providers/hyperliquid';
 
+// Server utilities
+export { ProxyHandler } from './server/proxy-handler';
+export type {
+  ProxyRequestConfig,
+  ProxySuccess,
+  ProxyError,
+  ProxyResult,
+} from './server/proxy-handler';
+
 // Builders
 export { YahooBuilder, yahoo } from './builders/yahoo-builder';
 export { CoinGeckoBuilder, coingecko } from './builders/coingecko-builder';

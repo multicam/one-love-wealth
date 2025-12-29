@@ -92,18 +92,16 @@ export class AlphaVantageProvider extends DataProvider<AlphaVantageDataSourceCon
 			} else {
 				// Economic indicators - use 'value' field
 				value = parseFloat((values as any)['value']);
-			}
-
-			if (!isNaN(value)) {
-				points.push({
-					date: date,
-					value: value
-				});
-			}
+			}				if (!isNaN(value)) {
+					points.push({
+						time: new Date(date).getTime(),
+						value: value
+					});
+				}
 		}
 
-		// Sort by date (Alpha Vantage returns newest first)
-		return points.sort((a, b) => a.date.localeCompare(b.date));
+		// Sort by time (Alpha Vantage returns newest first)
+		return points.sort((a, b) => a.time - b.time);
 	}
 
 	/**
@@ -159,7 +157,7 @@ export class AlphaVantageProvider extends DataProvider<AlphaVantageDataSourceCon
 			const value = i === 199 ? baseValue : points[points.length - 1].value + randomChange;
 
 			points.push({
-				date: date.toISOString().split('T')[0],
+				time: date.getTime(),
 				value: Math.max(value, baseValue * 0.5) // Prevent going too low
 			});
 		}

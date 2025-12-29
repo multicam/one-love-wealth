@@ -1,12 +1,10 @@
 import type { WorldBankConfig } from '../providers/worldbank';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for World Bank configuration
  */
-export class WorldBankBuilder {
-  private config: Partial<WorldBankConfig> = {};
+export class WorldBankBuilder extends BaseBuilder<WorldBankConfig> {
 
   indicatorCode(code: string): this {
     this.config.indicatorCode = code;
@@ -55,22 +53,7 @@ export class WorldBankBuilder {
     return this;
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): WorldBankConfig {
+  override build(): WorldBankConfig {
     if (!this.config.indicatorCode) {
       throw new Error('World Bank indicatorCode is required');
     }

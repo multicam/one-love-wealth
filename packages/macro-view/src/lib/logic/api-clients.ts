@@ -150,7 +150,7 @@ export class CoinGeckoClient {
 			}
 
 			const data: DataPoint[] = json.prices.map((p: [number, number]) => ({
-				date: new Date(p[0]).toISOString().split('T')[0],
+				time: p[0],
 				value: p[1]
 			}));
 

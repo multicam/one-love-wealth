@@ -1,12 +1,10 @@
 import type { BLSConfig } from '../providers/bls';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for BLS configuration
  */
-export class BLSBuilder {
-  private config: Partial<BLSConfig> = {};
+export class BLSBuilder extends BaseBuilder<BLSConfig> {
 
   seriesId(seriesId: string): this {
     this.config.seriesId = seriesId;
@@ -52,22 +50,7 @@ export class BLSBuilder {
     return this;
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): BLSConfig {
+  override build(): BLSConfig {
     if (!this.config.seriesId) {
       throw new Error('BLS seriesId is required');
     }

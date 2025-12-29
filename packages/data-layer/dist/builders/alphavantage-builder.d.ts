@@ -1,11 +1,9 @@
 import type { AlphaVantageConfig, AlphaVantageFunction, AlphaVantageInterval } from '../providers/alphavantage';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Alpha Vantage configuration
  */
-export declare class AlphaVantageBuilder {
-    private config;
+export declare class AlphaVantageBuilder extends BaseBuilder<AlphaVantageConfig> {
     function(func: AlphaVantageFunction): this;
     symbol(symbol: string): this;
     daily(): this;
@@ -24,9 +22,6 @@ export declare class AlphaVantageBuilder {
     toCurrency(currency: string): this;
     forex(from: string, to: string): this;
     dateRange(start: string, end: string): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): AlphaVantageConfig;
 }
 /**

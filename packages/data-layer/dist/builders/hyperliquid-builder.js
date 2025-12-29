@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Hyperliquid configuration
  */
-export class HyperliquidBuilder {
-    config = {};
+export class HyperliquidBuilder extends BaseBuilder {
     coin(coin) {
         this.config.coin = coin;
         return this;
@@ -78,18 +78,6 @@ export class HyperliquidBuilder {
         const endTime = Date.now();
         const startTime = endTime - hours * 60 * 60 * 1000;
         return this.dateRange(startTime, endTime);
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
-        return this;
     }
     build() {
         if (!this.config.coin) {

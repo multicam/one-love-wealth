@@ -1,11 +1,9 @@
 import type { OECDConfig, OECDFrequency } from '../providers/oecd';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for OECD configuration
  */
-export declare class OECDBuilder {
-    private config;
+export declare class OECDBuilder extends BaseBuilder<OECDConfig> {
     dataset(dataset: string): this;
     indicator(indicator: string): this;
     location(location: string): this;
@@ -27,9 +25,6 @@ export declare class OECDBuilder {
     startTime(time: string): this;
     endTime(time: string): this;
     timeRange(start: string, end: string): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): OECDConfig;
 }
 /**

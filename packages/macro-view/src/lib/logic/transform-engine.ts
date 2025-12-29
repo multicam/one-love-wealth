@@ -73,9 +73,9 @@ export function applyTransforms(data: DataPoint[], transforms: DataTransform[]):
 function transformYoY(data: DataPoint[], periods: number): DataPoint[] {
 	return data.map((point, i) => {
 		if (i < periods) return { ...point, value: NaN };
-		const previousValue = data[i - periods].value;
+		const previousValue = data[i - periods].value ?? 0;
 		if (previousValue === 0) return { ...point, value: NaN };
-		const yoyChange = ((point.value - previousValue) / previousValue) * 100;
+		const yoyChange = (((point.value ?? 0) - previousValue) / previousValue) * 100;
 		return { ...point, value: yoyChange };
 	});
 }
@@ -86,9 +86,9 @@ function transformYoY(data: DataPoint[], periods: number): DataPoint[] {
 function transformMoM(data: DataPoint[], periods: number): DataPoint[] {
 	return data.map((point, i) => {
 		if (i < periods) return { ...point, value: NaN };
-		const previousValue = data[i - periods].value;
+		const previousValue = data[i - periods].value ?? 0;
 		if (previousValue === 0) return { ...point, value: NaN };
-		const momChange = ((point.value - previousValue) / previousValue) * 100;
+		const momChange = (((point.value ?? 0) - previousValue) / previousValue) * 100;
 		return { ...point, value: momChange };
 	});
 }
@@ -98,11 +98,11 @@ function transformMoM(data: DataPoint[], periods: number): DataPoint[] {
  */
 function transformNormalize(data: DataPoint[], base: number): DataPoint[] {
 	if (data.length === 0) return data;
-	const firstValue = data[0].value;
+	const firstValue = data[0].value ?? 0;
 	if (firstValue === 0) return data;
 	return data.map((point) => ({
 		...point,
-		value: (point.value / firstValue) * base
+		value: ((point.value ?? 0) / firstValue) * base
 	}));
 }
 
@@ -110,11 +110,12 @@ function transformNormalize(data: DataPoint[], base: number): DataPoint[] {
  * Normalize to specific date
  */
 function transformNormalizeDate(data: DataPoint[], date: string): DataPoint[] {
-	const basePoint = data.find((d) => d.date === date);
-	if (!basePoint || basePoint.value === 0) return data;
+	const targetTime = new Date(date).getTime();
+	const basePoint = data.find((d) => d.time === targetTime);
+	if (!basePoint || basePoint.value === undefined || basePoint.value === 0) return data;
 	return data.map((point) => ({
 		...point,
-		value: (point.value / basePoint.value) * 100
+		value: ((point.value ?? 0) / basePoint.value!) * 100
 	}));
 }
 
@@ -124,7 +125,7 @@ function transformNormalizeDate(data: DataPoint[], date: string): DataPoint[] {
 function transformInvert(data: DataPoint[]): DataPoint[] {
 	return data.map((point) => ({
 		...point,
-		value: -point.value
+		value: -(point.value ?? 0)
 	}));
 }
 
@@ -134,7 +135,7 @@ function transformInvert(data: DataPoint[]): DataPoint[] {
 function transformLog(data: DataPoint[]): DataPoint[] {
 	return data.map((point) => ({
 		...point,
-		value: point.value > 0 ? Math.log(point.value) : NaN
+		value: (point.value ?? 0) > 0 ? Math.log(point.value!) : NaN
 	}));
 }
 
@@ -144,7 +145,7 @@ function transformLog(data: DataPoint[]): DataPoint[] {
 function transformLog10(data: DataPoint[]): DataPoint[] {
 	return data.map((point) => ({
 		...point,
-		value: point.value > 0 ? Math.log10(point.value) : NaN
+		value: (point.value ?? 0) > 0 ? Math.log10(point.value!) : NaN
 	}));
 }
 
@@ -154,7 +155,7 @@ function transformLog10(data: DataPoint[]): DataPoint[] {
 function transformAbs(data: DataPoint[]): DataPoint[] {
 	return data.map((point) => ({
 		...point,
-		value: Math.abs(point.value)
+		value: Math.abs(point.value ?? 0)
 	}));
 }
 
@@ -164,7 +165,7 @@ function transformAbs(data: DataPoint[]): DataPoint[] {
 function transformCumSum(data: DataPoint[]): DataPoint[] {
 	let sum = 0;
 	return data.map((point) => {
-		sum += point.value;
+		sum += point.value ?? 0;
 		return { ...point, value: sum };
 	});
 }
@@ -175,7 +176,7 @@ function transformCumSum(data: DataPoint[]): DataPoint[] {
 function transformDiff(data: DataPoint[], periods: number): DataPoint[] {
 	return data.map((point, i) => {
 		if (i < periods) return { ...point, value: NaN };
-		return { ...point, value: point.value - data[i - periods].value };
+		return { ...point, value: (point.value ?? 0) - (data[i - periods].value ?? 0) };
 	});
 }
 
@@ -185,9 +186,9 @@ function transformDiff(data: DataPoint[], periods: number): DataPoint[] {
 function transformPctChange(data: DataPoint[], periods: number): DataPoint[] {
 	return data.map((point, i) => {
 		if (i < periods) return { ...point, value: NaN };
-		const previousValue = data[i - periods].value;
+		const previousValue = data[i - periods].value ?? 0;
 		if (previousValue === 0) return { ...point, value: NaN };
-		return { ...point, value: ((point.value - previousValue) / previousValue) * 100 };
+		return { ...point, value: (((point.value ?? 0) - previousValue) / previousValue) * 100 };
 	});
 }
 
@@ -198,7 +199,7 @@ function transformRollingAvg(data: DataPoint[], window: number): DataPoint[] {
 	return data.map((point, i) => {
 		if (i < window - 1) return { ...point, value: NaN };
 		const windowData = data.slice(i - window + 1, i + 1);
-		const avg = windowData.reduce((sum, d) => sum + d.value, 0) / window;
+		const avg = windowData.reduce((sum, d) => sum + (d.value ?? 0), 0) / window;
 		return { ...point, value: avg };
 	});
 }
@@ -210,8 +211,8 @@ function transformRollingStd(data: DataPoint[], window: number): DataPoint[] {
 	return data.map((point, i) => {
 		if (i < window - 1) return { ...point, value: NaN };
 		const windowData = data.slice(i - window + 1, i + 1);
-		const avg = windowData.reduce((sum, d) => sum + d.value, 0) / window;
-		const variance = windowData.reduce((sum, d) => sum + Math.pow(d.value - avg, 2), 0) / window;
+		const avg = windowData.reduce((sum, d) => sum + (d.value ?? 0), 0) / window;
+		const variance = windowData.reduce((sum, d) => sum + Math.pow((d.value ?? 0) - avg, 2), 0) / window;
 		return { ...point, value: Math.sqrt(variance) };
 	});
 }
@@ -222,17 +223,17 @@ function transformRollingStd(data: DataPoint[], window: number): DataPoint[] {
 function transformScale(data: DataPoint[], factor: number): DataPoint[] {
 	return data.map((point) => ({
 		...point,
-		value: point.value * factor
+		value: (point.value ?? 0) * factor
 	}));
 }
 
 /**
  * Add offset
  */
-function transformOffset(data: DataPoint[], value: number): DataPoint[] {
+function transformOffset(data: DataPoint[], offset: number): DataPoint[] {
 	return data.map((point) => ({
 		...point,
-		value: point.value + value
+		value: (point.value ?? 0) + offset
 	}));
 }
 
@@ -241,7 +242,7 @@ function transformOffset(data: DataPoint[], value: number): DataPoint[] {
  */
 function transformClip(data: DataPoint[], min?: number, max?: number): DataPoint[] {
 	return data.map((point) => {
-		let value = point.value;
+		let value = point.value ?? 0;
 		if (min !== undefined && value < min) value = min;
 		if (max !== undefined && value > max) value = max;
 		return { ...point, value };
@@ -252,7 +253,7 @@ function transformClip(data: DataPoint[], min?: number, max?: number): DataPoint
  * Z-score normalization (standardize)
  */
 function transformZScore(data: DataPoint[]): DataPoint[] {
-	const values = data.map((d) => d.value);
+	const values = data.map((d) => d.value ?? 0);
 	const mean = values.reduce((sum, v) => sum + v, 0) / values.length;
 	const variance = values.reduce((sum, v) => sum + Math.pow(v - mean, 2), 0) / values.length;
 	const std = Math.sqrt(variance);
@@ -261,7 +262,7 @@ function transformZScore(data: DataPoint[]): DataPoint[] {
 
 	return data.map((point) => ({
 		...point,
-		value: (point.value - mean) / std
+		value: ((point.value ?? 0) - mean) / std
 	}));
 }
 
@@ -269,9 +270,9 @@ function transformZScore(data: DataPoint[]): DataPoint[] {
  * Rank transformation (percentile)
  */
 function transformRank(data: DataPoint[]): DataPoint[] {
-	const sorted = [...data].sort((a, b) => a.value - b.value);
+	const sorted = [...data].sort((a, b) => (a.value ?? 0) - (b.value ?? 0));
 	return data.map((point) => {
-		const rank = sorted.findIndex((d) => d.date === point.date) + 1;
+		const rank = sorted.findIndex((d) => d.time === point.time) + 1;
 		return { ...point, value: (rank / data.length) * 100 };
 	});
 }

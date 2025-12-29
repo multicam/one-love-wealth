@@ -3,14 +3,12 @@ import type {
   HyperliquidDataType,
   HyperliquidInterval,
 } from '../providers/hyperliquid';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 
 /**
  * Fluent builder for Hyperliquid configuration
  */
-export class HyperliquidBuilder {
-  private config: Partial<HyperliquidConfig> = {};
+export class HyperliquidBuilder extends BaseBuilder<HyperliquidConfig> {
 
   coin(coin: string): this {
     this.config.coin = coin;
@@ -109,22 +107,7 @@ export class HyperliquidBuilder {
     return this.dateRange(startTime, endTime);
   }
 
-  cache(cache: CacheConfig): this {
-    this.config.cache = cache;
-    return this;
-  }
-
-  mockMode(enabled = true): this {
-    this.config.mockMode = enabled;
-    return this;
-  }
-
-  errorRecovery(config: ErrorRecoveryConfig): this {
-    this.config.errorRecovery = config;
-    return this;
-  }
-
-  build(): HyperliquidConfig {
+  override build(): HyperliquidConfig {
     if (!this.config.coin) {
       throw new Error('Hyperliquid coin is required');
     }

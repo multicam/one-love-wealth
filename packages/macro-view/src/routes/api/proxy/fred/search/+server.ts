@@ -1,30 +1,32 @@
 import { FRED_API_KEY } from '$env/static/private';
-import { json } from '@sveltejs/kit';
+import { json, error } from '@sveltejs/kit';
+import { ProxyHandler } from '@one-love-wealth/data-layer';
 import type { RequestHandler } from './$types';
+
+const handler = new ProxyHandler('FRED Search', 'https://api.stlouisfed.org');
 
 export const GET: RequestHandler = async ({ url }) => {
 	const query = url.searchParams.get('text');
 
 	if (!query) {
-		return json({ error: 'Missing text parameter' }, { status: 400 });
+		return error(400, 'Missing text parameter');
 	}
 
 	if (!FRED_API_KEY) {
-		return json({ error: 'Server misconfiguration: No FRED API Key' }, { status: 500 });
+		return error(500, 'Server misconfiguration: No FRED API Key');
 	}
 
-	try {
-		const fredUrl = `https://api.stlouisfed.org/fred/series/search?search_text=${encodeURIComponent(query)}&api_key=${FRED_API_KEY}&file_type=json`;
-		const response = await fetch(fredUrl);
+	const result = await handler.fetch({
+		url: handler.buildUrl('/fred/series/search', {
+			search_text: query,
+			api_key: FRED_API_KEY,
+			file_type: 'json'
+		})
+	});
 
-		if (!response.ok) {
-			const text = await response.text();
-			return json({ error: `FRED API Error: ${response.statusText}`, details: text }, { status: response.status });
-		}
-
-		const data = await response.json();
-		return json(data);
-	} catch (err: any) {
-		return json({ error: 'Failed to search FRED', details: err.message }, { status: 500 });
+	if (!result.ok) {
+		return error(result.status, result.error);
 	}
+
+	return json(result.data);
 };

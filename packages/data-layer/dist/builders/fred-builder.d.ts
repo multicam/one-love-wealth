@@ -1,11 +1,9 @@
 import type { FREDConfig, FREDUnits, FREDFrequency } from '../providers/fred';
-import type { CacheConfig } from '../cache/adapter';
-import type { ErrorRecoveryConfig } from '../types/errors';
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for FRED configuration
  */
-export declare class FREDBuilder {
-    private config;
+export declare class FREDBuilder extends BaseBuilder<FREDConfig> {
     seriesId(seriesId: string): this;
     units(units: FREDUnits): this;
     yoyChange(): this;
@@ -22,9 +20,6 @@ export declare class FREDBuilder {
     endDate(date: string): this;
     dateRange(start: string, end: string): this;
     limit(count: number): this;
-    cache(cache: CacheConfig): this;
-    mockMode(enabled?: boolean): this;
-    errorRecovery(config: ErrorRecoveryConfig): this;
     build(): FREDConfig;
 }
 /**

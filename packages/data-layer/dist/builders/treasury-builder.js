@@ -1,8 +1,8 @@
+import { BaseBuilder } from './base-builder';
 /**
  * Fluent builder for Treasury configuration
  */
-export class TreasuryBuilder {
-    config = {};
+export class TreasuryBuilder extends BaseBuilder {
     dataset(dataset) {
         this.config.dataset = dataset;
         return this;
@@ -34,18 +34,6 @@ export class TreasuryBuilder {
     }
     fields(fields) {
         this.config.fields = fields;
-        return this;
-    }
-    cache(cache) {
-        this.config.cache = cache;
-        return this;
-    }
-    mockMode(enabled = true) {
-        this.config.mockMode = enabled;
-        return this;
-    }
-    errorRecovery(config) {
-        this.config.errorRecovery = config;
         return this;
     }
     build() {
