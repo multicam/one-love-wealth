@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, type Writable } from 'svelte/store';
 
 export interface Toast {
   id: string;
@@ -7,15 +7,26 @@ export interface Toast {
   duration?: number;
 }
 
-function createToastStore() {
+interface ToastStore {
+  subscribe: Writable<Toast[]>['subscribe'];
+  show(message: string, type?: Toast['type'], duration?: number): string;
+  info(message: string, duration?: number): string;
+  success(message: string, duration?: number): string;
+  warning(message: string, duration?: number): string;
+  error(message: string, duration?: number): string;
+  dismiss(id: string): void;
+  clear(): void;
+}
+
+// Use globalThis to ensure singleton across module instances
+const STORE_KEY = '__shared_ui_toast_store__';
+
+function createToastStore(): ToastStore {
   const { subscribe, update } = writable<Toast[]>([]);
 
-  return {
+  const store: ToastStore = {
     subscribe,
 
-    /**
-     * Show a toast notification
-     */
     show(message: string, type: Toast['type'] = 'info', duration = 5000): string {
       const id = crypto.randomUUID();
       const toast: Toast = { id, message, type, duration };
@@ -24,55 +35,50 @@ function createToastStore() {
 
       if (duration > 0) {
         setTimeout(() => {
-          this.dismiss(id);
+          store.dismiss(id);
         }, duration);
       }
 
       return id;
     },
 
-    /**
-     * Show an info toast
-     */
     info(message: string, duration = 5000): string {
-      return this.show(message, 'info', duration);
+      return store.show(message, 'info', duration);
     },
 
-    /**
-     * Show a success toast
-     */
     success(message: string, duration = 5000): string {
-      return this.show(message, 'success', duration);
+      return store.show(message, 'success', duration);
     },
 
-    /**
-     * Show a warning toast
-     */
     warning(message: string, duration = 5000): string {
-      return this.show(message, 'warning', duration);
+      return store.show(message, 'warning', duration);
     },
 
-    /**
-     * Show an error toast
-     */
     error(message: string, duration = 5000): string {
-      return this.show(message, 'error', duration);
+      return store.show(message, 'error', duration);
     },
 
-    /**
-     * Dismiss a specific toast by ID
-     */
     dismiss(id: string): void {
       update(toasts => toasts.filter(t => t.id !== id));
     },
 
-    /**
-     * Clear all toasts
-     */
     clear(): void {
       update(() => []);
     }
   };
+
+  return store;
 }
 
-export const toastStore = createToastStore();
+// Singleton pattern using globalThis for cross-module consistency
+function getToastStore(): ToastStore {
+  if (typeof globalThis !== 'undefined') {
+    if (!(globalThis as any)[STORE_KEY]) {
+      (globalThis as any)[STORE_KEY] = createToastStore();
+    }
+    return (globalThis as any)[STORE_KEY];
+  }
+  return createToastStore();
+}
+
+export const toastStore = getToastStore();

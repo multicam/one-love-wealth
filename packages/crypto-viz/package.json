@@ -24,6 +24,7 @@
     "vitest": "^2.0.0"
   },
   "dependencies": {
+    "@one-love-wealth/shared-ui": "workspace:*",
     "lightweight-charts": "^4.1.0",
     "lucide-svelte": "^0.460.0"
   },
