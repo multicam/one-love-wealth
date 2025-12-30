@@ -128,7 +128,7 @@ const tests = [
 	},
 	{
 		name: 'OECD (CLI)',
-		url: '/api/proxy/oecd?dataset=MEI_CLI&indicator=LOLITOAA&location=USA',
+		url: '/api/proxy/oecd?dataset=CLI&location=USA&frequency=M&start=2020-01',
 		validate: (data: any) => data?.dataSets && data?.structure,
 	},
 	{
