@@ -29,6 +29,9 @@
   "scripts": {
     "build": "tsc",
     "test": "bun test",
+    "test:provider": "bun run src/cli/test-provider.ts",
+    "test:providers:all": "bun run src/cli/test-provider.ts --all",
+    "test:providers:ci": "bun run src/cli/test-provider.ts --all --quality",
     "dev": "tsc --watch",
     "typecheck": "tsc --noEmit"
   },

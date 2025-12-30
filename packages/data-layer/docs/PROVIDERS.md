@@ -767,6 +767,161 @@ const btcOI = await dataProviderRegistry.fetch({
 
 ---
 
+## SDMX Providers (Future Integration)
+
+**SDMX:** Statistical Data and Metadata eXchange (ISO 17369) | **Status:** Research Complete, Implementation Planned
+
+### Overview
+
+SDMX is an international standard for exchanging statistical data. 24+ organizations worldwide provide SDMX APIs for economic, financial, labor, and social statistics. We've identified 5 priority providers that fill critical gaps in our current data coverage.
+
+### Why SDMX?
+
+Current providers (FRED, World Bank, etc.) have limitations:
+- **Frequency gaps:** World Bank only provides annual inflation data; Eurostat provides monthly HICP (12x improvement)
+- **Coverage gaps:** No international labor statistics; ILO SDMX provides quarterly/monthly data for 190+ countries
+- **Regional gaps:** Limited European financial data; ECB provides daily Euro area exchange rates and monetary statistics
+- **Sector gaps:** No banking statistics; BIS provides consolidated banking stats and credit aggregates
+
+### Priority Providers (P0 - Critical Gaps)
+
+#### 1. ECB - European Central Bank
+**Base URL:** `https://data-api.ecb.europa.eu/service/data/`
+**Icon:** 🏦 | **Auth:** None | **Rate Limit:** None
+
+**Best For:**
+- Daily Euro area exchange rates (16:00 CET updates)
+- ECB policy rates and monetary statistics
+- Euro area financial indicators
+
+**Example Series:**
+- `EXR/D.USD.EUR.SP00.A` - EUR/USD daily exchange rate
+- `FM/M.U2.EUR.4F.KR.MFI_BOOK.TOTL` - M3 money supply
+- `IRS/M.AT.L.L40.CI.0000.EUR.N` - Interest rate statistics
+
+**Fills Gap:** European exchange rates, ECB monetary policy data
+
+#### 2. Eurostat - European Commission
+**Base URL:** `https://ec.europa.eu/eurostat/api/dissemination/sdmx/2.1/data/`
+**Icon:** 🇪🇺 | **Auth:** None | **Rate Limit:** None
+
+**Best For:**
+- Monthly EU inflation (HICP) - twice-daily updates
+- Quarterly EU GDP and regional breakdowns
+- Labor market statistics
+- Population and demographics
+
+**Example Series:**
+- `prc_hicp_midx` - Monthly HICP (Harmonized Index of Consumer Prices)
+- `nama_10_gdp` - Quarterly GDP by expenditure approach
+- `lfsq_urgan` - Quarterly unemployment by age and gender
+- `demo_pjan` - Annual population data
+
+**Fills Gap:** EU monthly inflation (vs World Bank annual), regional EU statistics
+
+#### 3. BIS - Bank for International Settlements
+**Base URL:** `https://stats.bis.org/api/v1/data/`
+**Icon:** 🏛️ | **Auth:** None | **Rate Limit:** Monitor usage
+
+**Best For:**
+- Consolidated banking statistics
+- International credit aggregates
+- Property price indices
+- Debt securities statistics
+
+**Example Series:**
+- `WS_CBS_PUB` - Consolidated banking statistics
+- `WS_LONG_CPI` - Long consumer price series
+- `WS_XRU` - Exchange rates and USD indices
+- `WS_CREDIT_GAP` - Credit-to-GDP gaps
+
+**Fills Gap:** Banking statistics, international credit data
+
+#### 4. ILO - International Labour Organization
+**Base URL:** `https://www.ilo.org/sdmx/rest/data/`
+**Icon:** 👷 | **Auth:** None | **Rate Limit:** None
+
+**Best For:**
+- International labor statistics (190+ countries)
+- Quarterly/monthly employment data
+- Informal employment
+- Labor force participation
+
+**Example Series:**
+- `DF_EMP_TEMP_SEX_AGE_NB` - Employment by sex and age
+- `DF_UNE_TUNE_SEX_AGE_NB` - Unemployment rates
+- `DF_EAP_TEAP_SEX_AGE_NB` - Labor force participation
+- `DF_EES_TEES_SEX_ECO_NB` - Employment by economic activity
+
+**Fills Gap:** International labor data (vs World Bank annual only)
+
+#### 5. UNSD - United Nations Statistics Division
+**Base URL:** `https://data.un.org/ws/rest/data/`
+**Icon:** 🌍 | **Auth:** None | **Rate Limit:** None
+
+**Best For:**
+- Sustainable Development Goal (SDG) indicators
+- International trade statistics
+- Demographics and population
+- Environmental indicators
+
+**Example Series:**
+- `DF_SDG_GLH` - Global SDG indicators
+- `DF_UNDATA_TRADE` - International trade
+- `DF_UNDATA_WPP` - World population prospects
+- `DF_UNDATA_ENERGY` - Energy statistics
+
+**Fills Gap:** SDG indicators, granular UN data
+
+### Implementation Status
+
+**Research:** ✅ Complete
+- [SDMX Ecosystem Research](./research/SDMX_ECOSYSTEM.md) - 87 pages covering 24+ providers, technical specs, client libraries
+- [Data Sources Comparison](./DATA_SOURCES_COMPARISON.md) - 45+ pages of series-level overlap analysis
+
+**Testing:** ✅ Complete
+- Comprehensive test suite with quality checks
+- CLI tool for testing individual providers
+- See [TESTING.md](./TESTING.md) for details
+
+**Storage:** ✅ Complete
+- Dual storage layer (IndexedDB + SQLite)
+- Bidirectional sync with conflict resolution
+- See [STORAGE.md](./STORAGE.md) for details
+
+**Implementation:** 🔄 Planned
+- TypeScript providers using sdmx1 library
+- BaseProvider pattern integration
+- Mock mode support
+- Caching and rate limiting
+
+### SDMX Technical Details
+
+**Data Formats Supported:**
+- SDMX-JSON (preferred)
+- SDMX-ML (XML)
+- SDMX-CSV
+
+**RESTful API Version:** 2.2.2 (August 2025 spec)
+
+**Client Libraries:**
+- `sdmx1` (Python) - Recommended for testing
+- `rsdmx` (R) - R integration
+- Custom TypeScript implementation (planned)
+
+**Authentication:** Top 5 providers require no authentication
+
+**Rate Limits:** Generally none or generous (varies by provider)
+
+### Related Documentation
+
+- **[SDMX Ecosystem](./research/SDMX_ECOSYSTEM.md)** - Complete research on SDMX standard and providers
+- **[Data Sources Comparison](./DATA_SOURCES_COMPARISON.md)** - Series-level overlap analysis across all 16 providers
+- **[Testing Guide](./TESTING.md)** - How to test providers and validate data quality
+- **[Storage Documentation](./STORAGE.md)** - Dual storage architecture with sync
+
+---
+
 ## Provider Comparison Matrix
 
 | Feature | FRED | CoinGecko | Yahoo | WorldBank | BLS | Treasury | Hyperliquid |

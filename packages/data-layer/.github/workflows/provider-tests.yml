@@ -1,0 +1,94 @@
+name: Data Provider Tests
+
+on:
+  push:
+    branches: [main, master, develop]
+  pull_request:
+    branches: [main, master]
+  schedule:
+    # Run daily at 6 AM UTC to catch stale data
+    - cron: '0 6 * * *'
+
+jobs:
+  test-providers:
+    name: Test All Data Providers
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run unit tests
+        run: cd packages/data-layer && bun test
+
+      - name: Test all providers (mock mode)
+        run: cd packages/data-layer && bun run test:providers:ci
+
+      - name: Generate quality report (JSON)
+        if: always()
+        run: |
+          cd packages/data-layer
+          bun run test:provider --all --quality --json > quality-report.json
+
+      - name: Upload quality report
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: quality-report
+          path: packages/data-layer/quality-report.json
+
+      - name: Comment PR with test results
+        if: github.event_name == 'pull_request' && failure()
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('packages/data-layer/quality-report.json', 'utf8'));
+
+            const failed = report.providers.filter(p => p.status === 'fail');
+
+            if (failed.length > 0) {
+              const comment = `## ❌ Provider Tests Failed\n\n` +
+                `${failed.length} provider(s) failed quality checks:\n\n` +
+                failed.map(p => `- **${p.provider}**: ${p.errors.join(', ')}`).join('\n');
+
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+
+  test-providers-live:
+    name: Test Providers (Live API - Manual)
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Test with live APIs
+        env:
+          FRED_API_KEY: ${{ secrets.FRED_API_KEY }}
+          BLS_API_KEY: ${{ secrets.BLS_API_KEY }}
+          ALPHAVANTAGE_API_KEY: ${{ secrets.ALPHAVANTAGE_API_KEY }}
+          QUANDL_API_KEY: ${{ secrets.QUANDL_API_KEY }}
+        run: cd packages/data-layer && bun run test:provider --all --quality --live

@@ -2,16 +2,16 @@
 
 ## Overview
 
-The Macro View data layer is a comprehensive system for fetching, caching, transforming, and visualizing macroeconomic and cryptocurrency data from 7 different providers.
+The Macro View data layer is a comprehensive system for fetching, caching, transforming, and visualizing macroeconomic and cryptocurrency data from multiple providers.
 
 **Architecture:** Provider Registry Pattern with unified `DataSourceConfig` discriminated union
 
 **Key Features:**
-- 🔌 **7 Data Providers** - FRED, CoinGecko, Yahoo Finance, World Bank, BLS, Treasury, Hyperliquid
+- 🔌 **11 Active Providers + 5 SDMX Planned** - FRED, CoinGecko, Yahoo Finance, World Bank, BLS, Treasury, Hyperliquid, Alpha Vantage, Quandl, IMF, OECD + (ECB, Eurostat, BIS, ILO, UNSD)
 - 🔄 **22 Transform Operations** - Client-side data transformations (YoY, normalize, rolling averages, etc.)
-- 💾 **IndexedDB Caching** - Configurable TTL per provider
+- 💾 **Dual Storage Layer** - IndexedDB (client) + SQLite (server) with bidirectional sync
+- 🧪 **Comprehensive Testing** - CLI tool for provider testing with quality validation
 - 📊 **Enhanced Graph System** - 47 macro graphs with server-side YoY, time alignment, and multi-provider support
-- 🧪 **API Tester** - Visual testing interface for all providers
 - 🎯 **Type-Safe** - Full TypeScript discriminated unions for all configurations
 
 ## Quick Start
@@ -104,6 +104,122 @@ const graph: EnhancedGraphDefinition = {
 };
 ```
 
+## Testing Providers
+
+The data layer includes a comprehensive testing CLI for validating provider functionality and data quality.
+
+### CLI Tool Usage
+
+```bash
+# Test a single provider
+bun run test:provider fred
+
+# Test with verbose output and quality checks
+bun run test:provider fred -v -q
+
+# Test in live mode (actual API calls, not mock)
+bun run test:provider fred -l
+
+# Test all providers
+bun run test:providers:all
+
+# CI/CD mode: test all with quality validation
+bun run test:providers:ci
+```
+
+### Quality Validation
+
+The testing system includes three quality checks:
+
+**1. Freshness** - Ensures data isn't stale
+- Real-time providers (5min max age): CoinGecko, Hyperliquid
+- Daily providers (2 days max age): FRED, Yahoo
+- Monthly/Quarterly (60 days max age): BLS, World Bank
+
+**2. Completeness** - Detects gaps in time series
+- Checks for missing values, nulls, or NaN
+- Supports both value-based and OHLC data
+- Reports gap count and percentage
+
+**3. Format Validation** - Verifies data structure
+- Valid timestamps
+- Proper numeric values
+- Required fields present
+
+### Test Output
+
+```bash
+$ bun run test:provider fred -v -q
+
+Testing provider: FRED
+Config: {
+  seriesId: 'M2SL',
+  limit: 100
+}
+
+✓ Fetch successful (234ms)
+  Data points: 100
+  From cache: false
+
+Quality Report:
+  Freshness: ✓ Data is fresh (1.2 days old, max: 2 days)
+  Completeness: ✓ No gaps (0/100 points)
+  Format: ✓ All data points valid
+
+✓ FRED test passed
+```
+
+**See [TESTING.md](./TESTING.md) for complete testing documentation.**
+
+---
+
+## Storage & Sync
+
+The data layer uses a dual storage architecture for optimal performance:
+
+**Client-Side (IndexedDB):**
+- Browser persistent storage
+- Fast read access
+- TTL-based expiration
+- Offline support
+
+**Server-Side (SQLite):**
+- Persistent storage for historical data
+- Advanced querying capabilities
+- Batch operations
+- Statistics and analytics
+
+**Bidirectional Sync:**
+- Three sync directions: pull, push, bidirectional
+- Three conflict resolution strategies: newest-wins, server-wins, client-wins
+- Filtered sync by source and timestamp
+- Status tracking and error reporting
+
+### Storage Quick Start
+
+```typescript
+import { SQLiteAdapter, SyncService } from '@/data-layer/storage';
+import { MemoryAdapter } from '@/data-layer/cache';
+
+// Initialize storage
+const client = new MemoryAdapter(); // or IndexedDBAdapter
+const server = new SQLiteAdapter('data-cache.sqlite');
+const sync = new SyncService(client, server);
+
+// Sync from server to client
+const result = await sync.sync({
+  direction: 'pull',
+  sources: ['FRED', 'CoinGecko'],
+  since: Date.now() - 7 * 24 * 60 * 60 * 1000 // Last 7 days
+});
+
+console.log(`Pulled: ${result.pulled}, Conflicts: ${result.conflicts}`);
+```
+
+**See [STORAGE.md](./STORAGE.md) for complete storage and sync documentation.**
+
+---
+
 ## Architecture
 
 ### Provider Registry Pattern
@@ -184,7 +300,11 @@ EnhancedGraphRow.svelte
 ## Documentation Index
 
 ### Data Layer (this package)
-- **[Provider Reference](./PROVIDERS.md)** - Complete guide to all 11 data providers
+- **[Provider Reference](./PROVIDERS.md)** - Complete guide to all 11 active providers + 5 SDMX providers (planned)
+- **[Testing Guide](./TESTING.md)** - CLI tool for provider testing with quality validation
+- **[Storage Documentation](./STORAGE.md)** - Dual storage architecture (IndexedDB + SQLite) with sync
+- **[Data Sources Comparison](./DATA_SOURCES_COMPARISON.md)** - Series-level overlap analysis across all 16 providers
+- **[SDMX Ecosystem Research](./research/SDMX_ECOSYSTEM.md)** - Comprehensive research on SDMX standard and providers
 - **[Type Definitions](../src/types/)** - TypeScript interfaces and types
 - **[Provider Implementations](../src/providers/)** - Provider source code
 
@@ -196,6 +316,8 @@ EnhancedGraphRow.svelte
 
 ## Provider Summary
 
+### Active Providers
+
 | Provider | Icon | Data Type | Server-Side Transforms | API Key Required | Rate Limits |
 |----------|------|-----------|------------------------|-----------------|-------------|
 | **FRED** | 📊 | Economic Indicators | ✅ YoY, MoM, Log | ✅ Required | 120 req/min |
@@ -205,6 +327,20 @@ EnhancedGraphRow.svelte
 | **BLS** | 👷 | US Labor Statistics | ✅ Calculations | ⚠️ Optional | 25/day (500 with key) |
 | **Treasury** | 💰 | US Fiscal Data | ❌ None | ❌ Not needed | No official limit |
 | **Hyperliquid** | ⚡ | Crypto Perpetuals | ❌ None | ❌ Not needed | No official limit |
+| **Alpha Vantage** | 📈 | Stock & Economic | ❌ None | ✅ Required | 25/day (free tier) |
+| **Quandl** | 📊 | Alternative Data | ❌ None | ⚠️ Optional | 50/day (500 with key) |
+| **IMF** | 🌍 | International Monetary | ❌ None | ❌ Not needed | No limit |
+| **OECD** | 📊 | Development Stats | ❌ None | ❌ Not needed | No limit |
+
+### SDMX Providers (Planned)
+
+| Provider | Icon | Data Type | Fills Gap | Rate Limits |
+|----------|------|-----------|-----------|-------------|
+| **ECB** | 🏦 | Euro Area Financial | European exchange rates, ECB policy | No limit |
+| **Eurostat** | 🇪🇺 | EU Statistics | Monthly EU inflation (12x improvement) | No limit |
+| **BIS** | 🏛️ | Banking Statistics | International banking & credit data | Monitor usage |
+| **ILO** | 👷 | International Labor | Quarterly/monthly labor (190+ countries) | No limit |
+| **UNSD** | 🌍 | UN Statistics | SDG indicators, granular UN data | No limit |
 
 ## Transform Engine Summary
 
