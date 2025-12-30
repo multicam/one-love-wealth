@@ -183,20 +183,16 @@ EnhancedGraphRow.svelte
 
 ## Documentation Index
 
-### Core Documentation
-- **[Provider Reference](./PROVIDERS.md)** - Complete guide to all 7 data providers
-- **[Transform Engine](./TRANSFORMS.md)** - All 22 transform operations
-- **[Graph System](./GRAPHS.md)** - Enhanced vs legacy graph definitions
-- **[API Tester Guide](./API_TESTER.md)** - Using the visual testing interface
+### Data Layer (this package)
+- **[Provider Reference](./PROVIDERS.md)** - Complete guide to all 11 data providers
+- **[Type Definitions](../src/types/)** - TypeScript interfaces and types
+- **[Provider Implementations](../src/providers/)** - Provider source code
 
-### Technical Details
-- **[Type Definitions](../src/lib/types/)** - TypeScript interfaces and types
-- **[Provider Implementations](../src/lib/data-providers/)** - Provider source code
-- **[Transform Engine](../src/lib/logic/transform-engine.ts)** - Transform implementations
-
-### Examples
-- **[Usage Examples](./EXAMPLES.md)** - Common patterns and recipes
-- **[Migration Guide](./MIGRATION.md)** - Extending the system
+### Macro View (consumer package)
+- **[Transform Engine](../../macro-view/docs/TRANSFORMS.md)** - 22 transform operations
+- **[Graph System](../../macro-view/docs/GRAPHS.md)** - Enhanced graph definitions
+- **[API Tester Guide](../../macro-view/docs/API_TESTER.md)** - Visual testing interface
+- **[Usage Examples](../../macro-view/docs/EXAMPLES.md)** - Common patterns and recipes
 
 ## Provider Summary
 
@@ -228,8 +224,13 @@ All providers normalize data to a standard format:
 
 ```typescript
 interface DataPoint {
-  date: string; // ISO 8601 date: 'YYYY-MM-DD'
-  value: number; // Numeric value
+  time: number;    // Unix timestamp in milliseconds
+  value?: number;  // Simple value (economic indicators)
+  open?: number;   // OHLC data (candlestick charts)
+  high?: number;
+  low?: number;
+  close?: number;
+  volume?: number;
 }
 ```
 

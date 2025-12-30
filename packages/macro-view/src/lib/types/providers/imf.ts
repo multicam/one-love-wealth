@@ -1,20 +1,22 @@
 import type { BaseDataSourceConfig } from '../data-provider';
 
 /**
- * IMF (International Monetary Fund) API configuration
- * International monetary and economic data
+ * IMF DataMapper API configuration
+ * API Documentation: https://www.imf.org/external/datamapper/api/help
  * Free tier: No rate limit (as of 2025)
  */
 export interface IMFDataSourceConfig extends BaseDataSourceConfig {
 	type: 'imf';
-	databaseId: string; // e.g., 'IFS' (International Financial Statistics)
-	indicator: string; // e.g., 'NGDP_R_SA_XDC' (Real GDP)
-	frequency: 'A' | 'Q' | 'M'; // Annual, Quarterly, Monthly
-	countryCode: string; // ISO 3-letter code (e.g., 'USA', 'CHN')
+	indicator: string; // e.g., 'NGDP_RPCH' (Real GDP growth)
+	countryCode?: string; // ISO 3-letter code (e.g., 'USA', 'CHN')
 
 	// Optional parameters
-	startPeriod?: string; // e.g., '2010' or '2010-Q1' or '2010-01'
+	startPeriod?: string; // e.g., '2010'
 	endPeriod?: string;
+
+	// Legacy fields (kept for backward compatibility, not used by DataMapper API)
+	databaseId?: string;
+	frequency?: 'A' | 'Q' | 'M';
 }
 
 /**
@@ -30,34 +32,40 @@ export const IMF_DATABASES = {
 } as const;
 
 /**
- * Common IMF indicators for International Financial Statistics (IFS)
+ * Common IMF DataMapper indicators
+ * Full list: https://www.imf.org/external/datamapper/api/v1/indicators
  */
-export const IMF_IFS_INDICATORS = {
-	// GDP indicators
-	NGDP_R_SA_XDC: 'NGDP_R_SA_XDC', // Real GDP, Seasonally Adjusted
-	NGDP_XDC: 'NGDP_XDC', // Nominal GDP
-	NGDP_D_SA_IX: 'NGDP_D_SA_IX', // GDP Deflator, Seasonally Adjusted
+export const IMF_INDICATORS = {
+	// GDP & Growth
+	NGDP_RPCH: 'NGDP_RPCH', // Real GDP growth (annual percent change)
+	NGDPD: 'NGDPD', // GDP, current prices (USD billions)
+	PPPGDP: 'PPPGDP', // GDP based on PPP (international dollars)
+	NGDPDPC: 'NGDPDPC', // GDP per capita, current prices (USD)
 
-	// Price indices
-	PCPI_IX: 'PCPI_IX', // Consumer Price Index
-	PCPI_PC_CP_A_PT: 'PCPI_PC_CP_A_PT', // CPI, Percent Change, Year-over-year
+	// Inflation & Prices
+	PCPIPCH: 'PCPIPCH', // Inflation rate (consumer prices, annual %)
+	PCPIEPCH: 'PCPIEPCH', // Inflation rate, end of period (annual %)
 
 	// Employment
-	LUR_PT: 'LUR_PT', // Unemployment Rate
+	LUR: 'LUR', // Unemployment rate (% of labor force)
 
-	// Money & Banking
-	FM_XDC: 'FM_XDC', // M2
-	FILR_PA: 'FILR_PA', // Interest Rate (Lending)
+	// Government Finance
+	GGXWDG_NGDP: 'GGXWDG_NGDP', // General government gross debt (% of GDP)
+	GGXCNL_NGDP: 'GGXCNL_NGDP', // General government net lending/borrowing (% of GDP)
+	GGR_NGDP: 'GGR_NGDP', // General government revenue (% of GDP)
+	GGX_NGDP: 'GGX_NGDP', // General government total expenditure (% of GDP)
 
-	// Exchange rates
-	ENDA_XDC_USD_RATE: 'ENDA_XDC_USD_RATE', // Exchange Rate vs USD
+	// External Sector
+	BCA_NGDPD: 'BCA_NGDPD', // Current account balance (% of GDP)
+	TM_RPCH: 'TM_RPCH', // Volume of imports (goods & services, annual % change)
+	TX_RPCH: 'TX_RPCH', // Volume of exports (goods & services, annual % change)
 
-	// Balance of Payments
-	BCA_BP6_USD: 'BCA_BP6_USD', // Current Account Balance
-
-	// International reserves
-	RAFA_USD: 'RAFA_USD' // Total Reserves
+	// Population
+	LP: 'LP' // Population (millions)
 } as const;
+
+// Legacy alias for backward compatibility
+export const IMF_IFS_INDICATORS = IMF_INDICATORS;
 
 /**
  * Common country codes (ISO 3166-1 alpha-3)

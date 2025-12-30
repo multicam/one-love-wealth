@@ -1,13 +1,16 @@
-# Macro View Data Layer Documentation
+# Macro View Documentation
 
-**Comprehensive 7-provider data infrastructure for macroeconomic and cryptocurrency analysis**
+**Macroeconomic analysis application with 47 enhanced graphs and visual data exploration**
 
-Version: 3.2 | Last Updated: 2025
+Version: 3.2 | Last Updated: 2025-12-31
 
 ## Quick Links
 
-📖 **[Data Layer Overview](./DATA_LAYER.md)** - Start here for architecture and quick start  
-📊 **[Provider Reference](./PROVIDERS.md)** - Complete guide to all 7 providers  
+### Data Layer (shared package)
+📖 **[Data Layer Overview](../../data-layer/docs/DATA_LAYER.md)** - Architecture and data flow  
+📊 **[Provider Reference](../../data-layer/docs/PROVIDERS.md)** - All 11 data providers
+
+### Macro View Specific
 🔄 **[Transform Engine](./TRANSFORMS.md)** - 22 client-side transform operations  
 📈 **[Graph System](./GRAPHS.md)** - Enhanced graph definitions and rendering  
 💡 **[Usage Examples](./EXAMPLES.md)** - Common patterns and recipes  

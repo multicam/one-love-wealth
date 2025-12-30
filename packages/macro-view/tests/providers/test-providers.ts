@@ -129,12 +129,12 @@ const tests = [
 	{
 		name: 'OECD (CLI)',
 		url: '/api/proxy/oecd?dataset=CLI&location=USA&frequency=M&start=2020-01',
-		validate: (data: any) => data?.dataSets && data?.structure,
+		validate: (data: any) => data?.dataSets && (data?.structures || data?.structure),
 	},
 	{
 		name: 'IMF',
-		url: '/api/proxy/imf?database=IFS&indicator=NGDP_R_XDC&frequency=A&country=US',
-		validate: (data: any) => data?.values !== undefined,
+		url: '/api/proxy/imf?indicator=NGDP_RPCH&country=USA',
+		validate: (data: any) => data?.values?.NGDP_RPCH !== undefined,
 	},
 	{
 		name: 'Quandl (requires API key)',

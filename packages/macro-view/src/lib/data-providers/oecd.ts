@@ -38,9 +38,11 @@ function toMacroViewDataPoint(point: SharedDataPoint): DataPoint {
 	};
 }
 
-// OECD SDMX response format (after proxy strips outer wrapper)
+// OECD SDMX JSON 2.0 response format
 interface OECDTimePeriod {
 	id: string;
+	start?: string;
+	end?: string;
 }
 
 interface OECDDimension {
@@ -48,10 +50,24 @@ interface OECDDimension {
 	values: OECDTimePeriod[];
 }
 
+interface OECDSeries {
+	attributes?: unknown[];
+	annotations?: unknown[];
+	observations?: Record<string, [number, ...unknown[]]>;
+}
+
 interface OECDProxyResponse {
 	dataSets?: Array<{
+		series?: Record<string, OECDSeries>;
 		observations?: Record<string, (number | null)[]>;
 	}>;
+	structures?: Array<{
+		dimensions?: {
+			series?: OECDDimension[];
+			observation?: OECDDimension[];
+		};
+	}>;
+	// Legacy format support
 	structure?: {
 		dimensions?: {
 			observation?: OECDDimension[];
@@ -91,47 +107,78 @@ export class OECDProvider extends DataProvider<OECDDataSourceConfig> {
 	}
 
 	/**
-	 * Transform OECD SDMX response to DataPoint[]
-	 * The proxy returns { dataSets, structure } after stripping outer wrapper
+	 * Transform OECD SDMX JSON 2.0 response to DataPoint[]
+	 * New format has structures[0].dimensions.observation for time periods
+	 * and dataSets[0].series with observations keyed by time index
 	 */
 	protected transformResponse(json: unknown, _config: OECDDataSourceConfig): DataPoint[] {
 		const response = json as OECDProxyResponse;
 
-		if (!response.dataSets || !response.structure) {
-			throw new Error('Invalid OECD response format');
+		if (!response.dataSets?.length) {
+			throw new Error('Invalid OECD response: no dataSets');
 		}
 
 		const dataset = response.dataSets[0];
-		if (!dataset?.observations) {
-			throw new Error('No OECD data found');
-		}
-
-		// Find time dimension
-		const timeDimension = response.structure.dimensions?.observation?.find(
+		
+		// Get time dimension from structures (new format) or structure (legacy)
+		const structure = response.structures?.[0] || response.structure;
+		const timeDimension = structure?.dimensions?.observation?.find(
 			(d) => d.id === 'TIME_PERIOD' || d.id === 'TIME'
 		);
 
-		if (!timeDimension) {
+		if (!timeDimension?.values?.length) {
 			throw new Error('No time dimension found in OECD response');
 		}
 
 		const points: DataPoint[] = [];
-		const observations = dataset.observations;
 
-		for (const [key, values] of Object.entries(observations)) {
-			const indices = key.split(':').map(Number);
-			const timeIndex = indices[indices.length - 1];
-			const timePeriod = timeDimension.values[timeIndex];
+		// New format: series with observations
+		if (dataset.series) {
+			// Find the CLI series (MEASURE=LI, ADJUSTMENT=AA for amplitude adjusted)
+			// Series key format: REF_AREA:FREQ:MEASURE:UNIT_MEASURE:ACTIVITY:ADJUSTMENT:TRANSFORMATION:TIME_HORIZ:METHODOLOGY
+			// We want LI (index 1 in MEASURE) and AA (index 1 in ADJUSTMENT)
+			for (const [_seriesKey, series] of Object.entries(dataset.series)) {
+				if (!series.observations) continue;
+				
+				for (const [timeIndex, obsValues] of Object.entries(series.observations)) {
+					const idx = parseInt(timeIndex);
+					const timePeriod = timeDimension.values[idx];
+					const value = obsValues[0];
 
-			if (timePeriod && values[0] !== null) {
-				const time = this.parseTimePeriod(timePeriod.id);
-				if (time) {
-					points.push({ time, value: values[0] });
+					if (timePeriod && typeof value === 'number') {
+						const time = this.parseTimePeriod(timePeriod.id);
+						if (time) {
+							points.push({ time, value });
+						}
+					}
+				}
+			}
+		}
+		// Legacy format: flat observations
+		else if (dataset.observations) {
+			for (const [key, values] of Object.entries(dataset.observations)) {
+				const indices = key.split(':').map(Number);
+				const timeIndex = indices[indices.length - 1];
+				const timePeriod = timeDimension.values[timeIndex];
+
+				if (timePeriod && values[0] !== null) {
+					const time = this.parseTimePeriod(timePeriod.id);
+					if (time) {
+						points.push({ time, value: values[0] });
+					}
 				}
 			}
 		}
 
-		return points.sort((a, b) => a.time - b.time);
+		// Deduplicate by time (keep first occurrence)
+		const seen = new Set<number>();
+		const uniquePoints = points.filter((p) => {
+			if (seen.has(p.time)) return false;
+			seen.add(p.time);
+			return true;
+		});
+
+		return uniquePoints.sort((a, b) => a.time - b.time);
 	}
 
 	private parseTimePeriod(period: string): number | null {
