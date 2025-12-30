@@ -1,5 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import { ProxyHandler } from '@one-love-wealth/data-layer';
+import { ALPHAVANTAGE_API_KEY } from '$env/static/private';
 import type { RequestHandler } from './$types';
 
 const handler = new ProxyHandler('Alpha Vantage', 'https://www.alphavantage.co');
@@ -27,8 +28,7 @@ export const GET: RequestHandler = async ({ url }) => {
 		return error(400, 'symbol parameter is required');
 	}
 
-	const apiKey = process.env.ALPHAVANTAGE_API_KEY;
-	if (!apiKey) {
+	if (!ALPHAVANTAGE_API_KEY) {
 		console.warn('[Alpha Vantage] API key not configured');
 		return json({ Note: 'API key not configured. Configure ALPHAVANTAGE_API_KEY in .env' });
 	}
@@ -36,7 +36,7 @@ export const GET: RequestHandler = async ({ url }) => {
 	const params: Record<string, string | null> = {
 		function: func,
 		symbol,
-		apikey: apiKey,
+		apikey: ALPHAVANTAGE_API_KEY,
 		interval,
 		outputsize,
 		datatype,

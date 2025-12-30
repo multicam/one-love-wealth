@@ -1,5 +1,6 @@
 import { json, error } from '@sveltejs/kit';
 import { ProxyHandler } from '@one-love-wealth/data-layer';
+import { QUANDL_API_KEY } from '$env/static/private';
 import type { RequestHandler } from './$types';
 
 const handler = new ProxyHandler('Quandl', 'https://data.nasdaq.com');
@@ -23,11 +24,9 @@ export const GET: RequestHandler = async ({ url }) => {
 		return error(400, 'database and dataset parameters are required');
 	}
 
-	const apiKey = process.env.QUANDL_API_KEY;
-
 	const result = await handler.fetch<QuandlResponse>({
 		url: handler.buildUrl(`/api/v3/datasets/${database}/${dataset}.json`, {
-			api_key: apiKey,
+			api_key: QUANDL_API_KEY,
 			column_index: columnIndex,
 			start_date: startDate,
 			end_date: endDate,

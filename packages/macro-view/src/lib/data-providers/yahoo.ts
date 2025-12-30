@@ -35,6 +35,17 @@ function toMacroViewDataPoint(point: SharedDataPoint): DataPoint {
 	};
 }
 
+// yahoo-finance2 historical data format
+interface YahooHistoricalData {
+	date: Date | string;
+	open: number;
+	high: number;
+	low: number;
+	close: number;
+	volume: number;
+	adjClose?: number;
+}
+
 /**
  * Yahoo Finance data provider
  * Uses yahoo-finance2 library via server-side proxy for stock market data
@@ -67,10 +78,21 @@ export class YahooProvider extends DataProvider<YahooDataSourceConfig> {
 		return `/api/proxy/yahoo?${params.toString()}`;
 	}
 
-	protected transformResponse(json: unknown, config: YahooDataSourceConfig): DataPoint[] {
-		const sharedConfig = toSharedConfig(config);
-		const sharedPoints = (sharedProvider as any).transformResponse(json, sharedConfig) as SharedDataPoint[];
-		return sharedPoints.map(toMacroViewDataPoint);
+	/**
+	 * Transform yahoo-finance2 historical data format to DataPoint[]
+	 * The proxy returns an array of { date, open, high, low, close, volume, adjClose }
+	 */
+	protected transformResponse(json: unknown, _config: YahooDataSourceConfig): DataPoint[] {
+		const data = json as YahooHistoricalData[];
+		
+		if (!Array.isArray(data)) {
+			throw new Error('Invalid Yahoo Finance response: expected array');
+		}
+
+		return data.map((item) => ({
+			time: new Date(item.date).getTime(),
+			value: item.close,
+		}));
 	}
 
 	protected generateMockData(config: YahooDataSourceConfig): DataPoint[] {

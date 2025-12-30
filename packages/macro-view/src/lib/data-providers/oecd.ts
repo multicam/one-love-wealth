@@ -38,6 +38,27 @@ function toMacroViewDataPoint(point: SharedDataPoint): DataPoint {
 	};
 }
 
+// OECD SDMX response format (after proxy strips outer wrapper)
+interface OECDTimePeriod {
+	id: string;
+}
+
+interface OECDDimension {
+	id: string;
+	values: OECDTimePeriod[];
+}
+
+interface OECDProxyResponse {
+	dataSets?: Array<{
+		observations?: Record<string, (number | null)[]>;
+	}>;
+	structure?: {
+		dimensions?: {
+			observation?: OECDDimension[];
+		};
+	};
+}
+
 /**
  * OECD (Organisation for Economic Co-operation and Development) data provider
  * Development statistics and economic indicators
@@ -69,10 +90,61 @@ export class OECDProvider extends DataProvider<OECDDataSourceConfig> {
 		return `/api/proxy/oecd?${params.toString()}`;
 	}
 
-	protected transformResponse(json: unknown, config: OECDDataSourceConfig): DataPoint[] {
-		const sharedConfig = toSharedConfig(config);
-		const sharedPoints = (sharedProvider as any).transformResponse(json, sharedConfig) as SharedDataPoint[];
-		return sharedPoints.map(toMacroViewDataPoint);
+	/**
+	 * Transform OECD SDMX response to DataPoint[]
+	 * The proxy returns { dataSets, structure } after stripping outer wrapper
+	 */
+	protected transformResponse(json: unknown, _config: OECDDataSourceConfig): DataPoint[] {
+		const response = json as OECDProxyResponse;
+
+		if (!response.dataSets || !response.structure) {
+			throw new Error('Invalid OECD response format');
+		}
+
+		const dataset = response.dataSets[0];
+		if (!dataset?.observations) {
+			throw new Error('No OECD data found');
+		}
+
+		// Find time dimension
+		const timeDimension = response.structure.dimensions?.observation?.find(
+			(d) => d.id === 'TIME_PERIOD' || d.id === 'TIME'
+		);
+
+		if (!timeDimension) {
+			throw new Error('No time dimension found in OECD response');
+		}
+
+		const points: DataPoint[] = [];
+		const observations = dataset.observations;
+
+		for (const [key, values] of Object.entries(observations)) {
+			const indices = key.split(':').map(Number);
+			const timeIndex = indices[indices.length - 1];
+			const timePeriod = timeDimension.values[timeIndex];
+
+			if (timePeriod && values[0] !== null) {
+				const time = this.parseTimePeriod(timePeriod.id);
+				if (time) {
+					points.push({ time, value: values[0] });
+				}
+			}
+		}
+
+		return points.sort((a, b) => a.time - b.time);
+	}
+
+	private parseTimePeriod(period: string): number | null {
+		// Handle formats: 2024-Q1, 2024-01, 2024
+		if (period.includes('-Q')) {
+			const [year, quarter] = period.split('-Q');
+			const month = (parseInt(quarter) - 1) * 3;
+			return new Date(parseInt(year), month, 1).getTime();
+		}
+		if (period.includes('-')) {
+			return new Date(period + '-01').getTime();
+		}
+		return new Date(parseInt(period), 0, 1).getTime();
 	}
 
 	protected generateMockData(config: OECDDataSourceConfig): DataPoint[] {
