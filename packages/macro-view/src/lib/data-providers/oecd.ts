@@ -135,16 +135,22 @@ export class OECDProvider extends DataProvider<OECDDataSourceConfig> {
 	}
 
 	private parseTimePeriod(period: string): number | null {
-		// Handle formats: 2024-Q1, 2024-01, 2024
-		if (period.includes('-Q')) {
-			const [year, quarter] = period.split('-Q');
-			const month = (parseInt(quarter) - 1) * 3;
-			return new Date(parseInt(year), month, 1).getTime();
+		try {
+			// Handle formats: 2024-Q1, 2024-01, 2024
+			let time: number;
+			if (period.includes('-Q')) {
+				const [year, quarter] = period.split('-Q');
+				const month = (parseInt(quarter) - 1) * 3;
+				time = new Date(parseInt(year), month, 1).getTime();
+			} else if (period.includes('-')) {
+				time = new Date(period + '-01').getTime();
+			} else {
+				time = new Date(parseInt(period), 0, 1).getTime();
+			}
+			return Number.isFinite(time) ? time : null;
+		} catch {
+			return null;
 		}
-		if (period.includes('-')) {
-			return new Date(period + '-01').getTime();
-		}
-		return new Date(parseInt(period), 0, 1).getTime();
 	}
 
 	protected generateMockData(config: OECDDataSourceConfig): DataPoint[] {

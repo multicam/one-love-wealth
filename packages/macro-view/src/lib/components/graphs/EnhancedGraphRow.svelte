@@ -66,6 +66,8 @@
 			const endTime = dateRange.end ? new Date(dateRange.end).getTime() : Infinity;
 			transformedResults.forEach((result) => {
 				result.data.forEach((point: DataPoint) => {
+					// Skip invalid timestamps
+					if (!point.time || !Number.isFinite(point.time)) return;
 					// Apply date range filter
 					if (point.time < startTime) return;
 					if (point.time > endTime) return;

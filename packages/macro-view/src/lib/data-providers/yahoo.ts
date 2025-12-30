@@ -89,10 +89,12 @@ export class YahooProvider extends DataProvider<YahooDataSourceConfig> {
 			throw new Error('Invalid Yahoo Finance response: expected array');
 		}
 
-		return data.map((item) => ({
-			time: new Date(item.date).getTime(),
-			value: item.close,
-		}));
+		return data
+			.map((item) => ({
+				time: new Date(item.date).getTime(),
+				value: item.close,
+			}))
+			.filter((point) => Number.isFinite(point.time) && point.time > 0);
 	}
 
 	protected generateMockData(config: YahooDataSourceConfig): DataPoint[] {
