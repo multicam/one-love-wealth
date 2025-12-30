@@ -40,7 +40,7 @@ export class CoinGeckoProvider extends BaseProvider<CoinGeckoConfig> {
   readonly name = 'CoinGecko';
   readonly cachePrefix = 'COINGECKO';
 
-  protected buildRequestConfig(config: CoinGeckoConfig): RequestConfig {
+  protected override buildRequestConfig(config: CoinGeckoConfig): RequestConfig {
     const endpoint = config.endpoint || 'market_chart';
     const params: Record<string, string> = {
       coin_id: config.coinId,
@@ -71,7 +71,7 @@ export class CoinGeckoProvider extends BaseProvider<CoinGeckoConfig> {
     };
   }
 
-  protected getCacheKeyComponents(config: CoinGeckoConfig): CacheKeyComponents {
+  protected override getCacheKeyComponents(config: CoinGeckoConfig): CacheKeyComponents {
     const endpoint = config.endpoint || 'market_chart';
     const params: Record<string, string | number | boolean> = {
       coinId: config.coinId,
@@ -92,7 +92,7 @@ export class CoinGeckoProvider extends BaseProvider<CoinGeckoConfig> {
     };
   }
 
-  protected transformResponse(json: unknown, config: CoinGeckoConfig): DataPoint[] {
+  protected override transformResponse(json: unknown, config: CoinGeckoConfig): DataPoint[] {
     const endpoint = config.endpoint || 'market_chart';
 
     if (endpoint === 'market_chart') {
@@ -194,7 +194,7 @@ export class CoinGeckoProvider extends BaseProvider<CoinGeckoConfig> {
     return [point];
   }
 
-  protected generateMockData(config: CoinGeckoConfig): DataPoint[] {
+  protected override generateMockData(config: CoinGeckoConfig): DataPoint[] {
     const endpoint = config.endpoint || 'market_chart';
     const now = Date.now();
     let price = config.coinId === 'bitcoin' ? 50000 : 3000;

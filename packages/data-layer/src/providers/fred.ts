@@ -69,7 +69,7 @@ export class FREDProvider extends BaseProvider<FREDConfig> {
   readonly name = 'FRED';
   readonly cachePrefix = 'FRED';
 
-  protected buildRequestConfig(config: FREDConfig): RequestConfig {
+  protected override buildRequestConfig(config: FREDConfig): RequestConfig {
     const params: Record<string, string> = {
       series_id: config.seriesId,
     };
@@ -91,7 +91,7 @@ export class FREDProvider extends BaseProvider<FREDConfig> {
     };
   }
 
-  protected getCacheKeyComponents(config: FREDConfig): CacheKeyComponents {
+  protected override getCacheKeyComponents(config: FREDConfig): CacheKeyComponents {
     const params: Record<string, string | number | boolean> = {
       seriesId: config.seriesId,
     };
@@ -109,7 +109,7 @@ export class FREDProvider extends BaseProvider<FREDConfig> {
     };
   }
 
-  protected transformResponse(json: unknown, _config: FREDConfig): DataPoint[] {
+  protected override transformResponse(json: unknown, _config: FREDConfig): DataPoint[] {
     const response = json as FREDResponse;
 
     if (!response.observations) {
@@ -133,7 +133,7 @@ export class FREDProvider extends BaseProvider<FREDConfig> {
     return result;
   }
 
-  protected generateMockData(config: FREDConfig): DataPoint[] {
+  protected override generateMockData(config: FREDConfig): DataPoint[] {
     const now = Date.now();
     const data: DataPoint[] = [];
     let value = this.getBaselineValue(config.seriesId);

@@ -1,6 +1,39 @@
 import { DataProvider } from './base';
 import type { YahooDataSourceConfig } from '../types/providers/yahoo';
 import type { DataPoint } from '../db';
+import {
+	YahooProvider as SharedYahooProvider,
+	type YahooConfig as SharedYahooConfig,
+	MemoryAdapter,
+	ProxyRequestAdapter,
+	type DataPoint as SharedDataPoint,
+} from '@one-love-wealth/data-layer';
+
+// Create shared provider instance for reusing transformation logic
+const sharedCache = new MemoryAdapter();
+const sharedRequest = new ProxyRequestAdapter('/api/proxy');
+const sharedProvider = new SharedYahooProvider(sharedCache, sharedRequest);
+
+/**
+ * Convert macro-view config to shared data-layer config
+ */
+function toSharedConfig(config: YahooDataSourceConfig): SharedYahooConfig {
+	return {
+		symbol: config.symbol,
+		period: '1y',
+		interval: config.interval as SharedYahooConfig['interval'],
+	};
+}
+
+/**
+ * Convert shared DataPoint to macro-view DataPoint
+ */
+function toMacroViewDataPoint(point: SharedDataPoint): DataPoint {
+	return {
+		time: point.time,
+		value: point.value ?? point.close ?? 0,
+	};
+}
 
 /**
  * Yahoo Finance data provider
@@ -11,9 +44,6 @@ export class YahooProvider extends DataProvider<YahooDataSourceConfig> {
 	readonly cachePrefix = 'YAHOO';
 	protected defaultTTL = 24 * 60 * 60 * 1000; // 24 hours for stock data
 
-	/**
-	 * Build proxy URL for Yahoo Finance request
-	 */
 	protected buildUrl(config: YahooDataSourceConfig): string {
 		const params = new URLSearchParams();
 		params.set('symbol', config.symbol);
@@ -37,86 +67,18 @@ export class YahooProvider extends DataProvider<YahooDataSourceConfig> {
 		return `/api/proxy/yahoo?${params.toString()}`;
 	}
 
-	/**
-	 * Transform Yahoo Finance response to DataPoint array
-	 */
-	protected transformResponse(json: any, config: YahooDataSourceConfig): DataPoint[] {
-		if (!Array.isArray(json)) {
-			throw new Error('Invalid Yahoo Finance response format');
-		}
-
-		return json
-			.map((row: any) => {
-				const time = new Date(row.date).getTime();
-				const value =
-					config.includeAdjustedClose !== false && row.adjClose !== undefined
-						? row.adjClose
-						: row.close;
-
-				return {
-					time,
-					value: parseFloat(value)
-				};
-			})
-			.filter((dp: { time: number; value: number }) => dp.value !== undefined && !isNaN(dp.value));
+	protected transformResponse(json: unknown, config: YahooDataSourceConfig): DataPoint[] {
+		const sharedConfig = toSharedConfig(config);
+		const sharedPoints = (sharedProvider as any).transformResponse(json, sharedConfig) as SharedDataPoint[];
+		return sharedPoints.map(toMacroViewDataPoint);
 	}
 
-	/**
-	 * Generate mock data for Yahoo Finance series
-	 * Creates realistic stock index movements with trends and volatility
-	 */
 	protected generateMockData(config: YahooDataSourceConfig): DataPoint[] {
-		const mockData: DataPoint[] = [];
-		const endDate = new Date();
-		const startDate = new Date();
-		startDate.setFullYear(startDate.getFullYear() - 2); // 2 years of data
-
-		// Different base values for different symbols
-		let baseValue = 4500; // Default (S&P 500 range)
-		let volatility = 0.01; // 1% daily volatility
-
-		if (config.symbol.includes('NDX') || config.symbol.includes('NASDAQ')) {
-			baseValue = 15000; // NASDAQ-100 range
-			volatility = 0.015; // Higher volatility
-		} else if (config.symbol.includes('DJI') || config.symbol.includes('DOW')) {
-			baseValue = 35000; // Dow Jones range
-			volatility = 0.008;
-		} else if (config.symbol.includes('VIX')) {
-			baseValue = 18; // VIX range
-			volatility = 0.05; // Very high volatility
-		} else if (config.symbol.includes('TNX')) {
-			baseValue = 4; // 10-year yield %
-			volatility = 0.02;
-		}
-
-		let currentValue = baseValue;
-		const trend = 0.0003; // Slight upward trend per day
-
-		let currentDate = new Date(startDate);
-		while (currentDate <= endDate) {
-			// Skip weekends for stock data (unless it's VIX or rates)
-			const isWeekend = currentDate.getDay() === 0 || currentDate.getDay() === 6;
-			if (!isWeekend || config.symbol.includes('VIX') || config.symbol.includes('TNX')) {
-				// Random walk with trend
-				const randomChange = (Math.random() - 0.5) * 2 * volatility;
-				currentValue = currentValue * (1 + trend + randomChange);
-
-				// Ensure non-negative values
-				currentValue = Math.max(currentValue, baseValue * 0.5);					mockData.push({
-						time: currentDate.getTime(),
-						value: Math.round(currentValue * 100) / 100
-					});
-			}
-
-			// Advance by 1 day
-			currentDate.setDate(currentDate.getDate() + 1);
-		}
-
-		return mockData;
+		const sharedConfig = toSharedConfig(config);
+		const sharedPoints = (sharedProvider as any).generateMockData(sharedConfig) as SharedDataPoint[];
+		return sharedPoints.map(toMacroViewDataPoint);
 	}
 }
 
-/**
- * Singleton instance
- */
+// Singleton export
 export const yahooProvider = new YahooProvider();

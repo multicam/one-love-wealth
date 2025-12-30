@@ -1,6 +1,44 @@
 import { DataProvider } from './base';
 import type { QuandlDataSourceConfig } from '../types/providers/quandl';
 import type { DataPoint } from '../db';
+import {
+	QuandlProvider as SharedQuandlProvider,
+	type QuandlConfig as SharedQuandlConfig,
+	MemoryAdapter,
+	ProxyRequestAdapter,
+	type DataPoint as SharedDataPoint,
+} from '@one-love-wealth/data-layer';
+
+// Create shared provider instance for reusing transformation logic
+const sharedCache = new MemoryAdapter();
+const sharedRequest = new ProxyRequestAdapter('/api/proxy');
+const sharedProvider = new SharedQuandlProvider(sharedCache, sharedRequest);
+
+/**
+ * Convert macro-view config to shared data-layer config
+ */
+function toSharedConfig(config: QuandlDataSourceConfig): SharedQuandlConfig {
+	return {
+		databaseCode: config.databaseCode,
+		datasetCode: config.datasetCode,
+		column: config.column,
+		startDate: config.startDate,
+		endDate: config.endDate,
+		collapse: config.collapse,
+		transform: config.transform,
+		rows: config.rows,
+	};
+}
+
+/**
+ * Convert shared DataPoint to macro-view DataPoint
+ */
+function toMacroViewDataPoint(point: SharedDataPoint): DataPoint {
+	return {
+		time: point.time,
+		value: point.value ?? 0,
+	};
+}
 
 /**
  * Quandl (Nasdaq Data Link) data provider
@@ -11,9 +49,6 @@ export class QuandlProvider extends DataProvider<QuandlDataSourceConfig> {
 	readonly cachePrefix = 'QUANDL';
 	protected defaultTTL = 24 * 60 * 60 * 1000; // 24 hours
 
-	/**
-	 * Build proxy URL for Quandl request
-	 */
 	protected buildUrl(config: QuandlDataSourceConfig): string {
 		const params = new URLSearchParams();
 
@@ -47,71 +82,15 @@ export class QuandlProvider extends DataProvider<QuandlDataSourceConfig> {
 		return `/api/proxy/quandl?${params.toString()}`;
 	}
 
-	/**
-	 * Transform Quandl API response to DataPoint array
-	 */
-	protected transformResponse(json: any, config: QuandlDataSourceConfig): DataPoint[] {
-		// Quandl returns data in dataset.data array
-		const dataset = json.dataset || json.dataset_data;
-
-		if (!dataset) {
-			throw new Error('Invalid Quandl response format');
-		}
-
-		const data = dataset.data;
-
-		if (!Array.isArray(data) || data.length === 0) {
-			throw new Error(`No data found for ${config.databaseCode}/${config.datasetCode}`);
-		}
-
-		// Quandl data format: [date, value1, value2, ...]
-		// We use the last column by default, or specified column
-		const columnNames = dataset.column_names || [];
-		const columnIndex = config.column !== undefined ? config.column : columnNames.length - 1;
-
-		const points: DataPoint[] = [];
-		for (const row of data) {
-			const date = row[0];
-			const rawValue = row[columnIndex];
-
-			if (!date || rawValue === null || rawValue === undefined) {
-				continue;
-			}
-
-			const value = parseFloat(rawValue);
-			if (!isNaN(value)) {
-				points.push({
-					time: new Date(date).getTime(),
-					value
-				});
-			}
-		}
-		return points.sort((a, b) => a.time - b.time);
+	protected transformResponse(json: unknown, config: QuandlDataSourceConfig): DataPoint[] {
+		const sharedConfig = toSharedConfig(config);
+		const sharedPoints = (sharedProvider as any).transformResponse(json, sharedConfig) as SharedDataPoint[];
+		return sharedPoints.map(toMacroViewDataPoint);
 	}
 
-	/**
-	 * Generate mock data for development/fallback
-	 */
 	protected generateMockData(config: QuandlDataSourceConfig): DataPoint[] {
-		const points: DataPoint[] = [];
-		const today = new Date();
-		let value = 100;
-
-		// Generate 200 days of mock data
-		for (let i = 199; i >= 0; i--) {
-			const date = new Date(today);
-			date.setDate(date.getDate() - i);
-
-			// Random walk
-			value += (Math.random() - 0.5) * 5;
-			value = Math.max(value, 50); // Floor at 50
-
-			points.push({
-				time: date.getTime(),
-				value: value
-			});
-		}
-
-		return points;
+		const sharedConfig = toSharedConfig(config);
+		const sharedPoints = (sharedProvider as any).generateMockData(sharedConfig) as SharedDataPoint[];
+		return sharedPoints.map(toMacroViewDataPoint);
 	}
 }

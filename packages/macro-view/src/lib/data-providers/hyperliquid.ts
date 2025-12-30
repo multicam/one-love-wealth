@@ -1,6 +1,40 @@
 import { DataProvider } from './base';
 import type { HyperliquidDataSourceConfig } from '../types/providers/hyperliquid';
 import type { DataPoint } from '../db';
+import {
+	HyperliquidProvider as SharedHyperliquidProvider,
+	type HyperliquidConfig as SharedHyperliquidConfig,
+	MemoryAdapter,
+	ProxyRequestAdapter,
+	type DataPoint as SharedDataPoint,
+} from '@one-love-wealth/data-layer';
+
+// Create shared provider instance for reusing transformation logic
+const sharedCache = new MemoryAdapter();
+const sharedRequest = new ProxyRequestAdapter('/api/proxy');
+const sharedProvider = new SharedHyperliquidProvider(sharedCache, sharedRequest);
+
+/**
+ * Convert macro-view config to shared data-layer config
+ */
+function toSharedConfig(config: HyperliquidDataSourceConfig): SharedHyperliquidConfig {
+	return {
+		coin: config.coin,
+		dataType: config.dataType,
+		interval: config.interval,
+		dateRange: config.dateRange,
+	};
+}
+
+/**
+ * Convert shared DataPoint to macro-view DataPoint
+ */
+function toMacroViewDataPoint(point: SharedDataPoint): DataPoint {
+	return {
+		time: point.time,
+		value: point.value ?? 0,
+	};
+}
 
 /**
  * Hyperliquid DEX API provider
@@ -12,11 +46,6 @@ export class HyperliquidProvider extends DataProvider<HyperliquidDataSourceConfi
 	readonly cachePrefix = 'HYPERLIQUID';
 	protected defaultTTL = 5 * 60 * 1000; // 5 minutes for crypto data
 
-	/**
-	 * Build proxy URL for Hyperliquid request
-	 * Note: Hyperliquid uses POST requests, but we pass params as query string
-	 * and the proxy route will convert them to POST body
-	 */
 	protected buildUrl(config: HyperliquidDataSourceConfig): string {
 		const params = new URLSearchParams();
 		params.set('coin', config.coin);
@@ -37,140 +66,18 @@ export class HyperliquidProvider extends DataProvider<HyperliquidDataSourceConfi
 		return `/api/proxy/hyperliquid?${params.toString()}`;
 	}
 
-	/**
-	 * Transform Hyperliquid response to DataPoint array
-	 * Different response formats for different data types
-	 */
-	protected transformResponse(json: any, config: HyperliquidDataSourceConfig): DataPoint[] {
-		// Candles data: array of candle objects
-		if (config.dataType === 'candles') {
-			if (!Array.isArray(json)) {
-				throw new Error('Invalid Hyperliquid candles response format');
-			}
-
-			return json
-				.map((candle: any) => ({
-					time: candle.t,
-					value: parseFloat(candle.c) // Close price
-				}))
-				.filter((dp: { time: number; value: number }) => !isNaN(dp.value));
-		}
-
-		// Funding history: array of funding rate objects
-		if (config.dataType === 'fundingHistory') {
-			if (!Array.isArray(json)) {
-				throw new Error('Invalid Hyperliquid funding history response format');
-			}
-
-			return json
-				.map((item: any) => ({
-					time: item.time,
-					value: parseFloat(item.fundingRate) * 100 // Convert to percentage
-				}))
-				.filter((dp: { time: number; value: number }) => !isNaN(dp.value));
-		}
-
-		// Open interest: single value response
-		if (config.dataType === 'openInterest') {
-			if (typeof json.openInterest === 'undefined') {
-				throw new Error('Invalid Hyperliquid open interest response format');
-			}
-
-			return [
-				{
-					time: Date.now(),
-					value: parseFloat(json.openInterest)
-				}
-			];
-		}
-
-		return [];
+	protected transformResponse(json: unknown, config: HyperliquidDataSourceConfig): DataPoint[] {
+		const sharedConfig = toSharedConfig(config);
+		const sharedPoints = (sharedProvider as any).transformResponse(json, sharedConfig) as SharedDataPoint[];
+		return sharedPoints.map(toMacroViewDataPoint);
 	}
 
-	/**
-	 * Generate mock data for Hyperliquid series
-	 * Creates realistic crypto perpetuals data with high volatility
-	 */
 	protected generateMockData(config: HyperliquidDataSourceConfig): DataPoint[] {
-		const mockData: DataPoint[] = [];
-		const endDate = new Date();
-		const startDate = new Date();
-
-		// Different date ranges for different data types
-		if (config.dataType === 'candles') {
-			// 1 year of daily candles
-			startDate.setFullYear(startDate.getFullYear() - 1);
-		} else {
-			// 30 days for funding/open interest
-			startDate.setDate(startDate.getDate() - 30);
-		}
-
-		// Different base values and volatility for different data types
-		let baseValue = 1;
-		let volatility = 0.03; // 3% daily volatility
-
-		// Candles - price data
-		if (config.dataType === 'candles') {
-			// Different prices for different coins
-			if (config.coin === 'BTC') {
-				baseValue = 45000; // $45,000
-				volatility = 0.03;
-			} else if (config.coin === 'ETH') {
-				baseValue = 2500; // $2,500
-				volatility = 0.04;
-			} else if (config.coin === 'SOL') {
-				baseValue = 100; // $100
-				volatility = 0.05;
-			} else {
-				baseValue = 1; // Other coins
-				volatility = 0.06;
-			}
-		}
-
-		// Funding history - percentage values
-		else if (config.dataType === 'fundingHistory') {
-			baseValue = 0.01; // 0.01% (1 basis point)
-			volatility = 2; // High relative volatility for funding rates
-		}
-
-		// Open interest - contract volume
-		else if (config.dataType === 'openInterest') {
-			baseValue = 1000000; // 1 million contracts
-			volatility = 0.1;
-		}
-
-		// Generate data points
-		let currentValue = baseValue;
-		let currentDate = new Date(startDate);
-
-		while (currentDate <= endDate) {
-			// Random walk with high volatility
-			const randomChange = (Math.random() - 0.5) * 2 * volatility;
-			currentValue = currentValue * (1 + randomChange);
-
-			// Ensure reasonable bounds
-			if (config.dataType === 'fundingHistory') {
-				// Funding rates between -0.1% and +0.1%
-				currentValue = Math.max(-0.1, Math.min(0.1, currentValue));
-			} else {
-				// Non-negative for prices and open interest
-				currentValue = Math.max(baseValue * 0.5, currentValue);
-			}
-
-			mockData.push({
-				time: currentDate.getTime(),
-				value: Math.round(currentValue * 100) / 100
-			});
-
-			// Advance by 1 day
-			currentDate.setDate(currentDate.getDate() + 1);
-		}
-
-		return mockData;
+		const sharedConfig = toSharedConfig(config);
+		const sharedPoints = (sharedProvider as any).generateMockData(sharedConfig) as SharedDataPoint[];
+		return sharedPoints.map(toMacroViewDataPoint);
 	}
 }
 
-/**
- * Singleton instance
- */
+// Singleton export
 export const hyperliquidProvider = new HyperliquidProvider();

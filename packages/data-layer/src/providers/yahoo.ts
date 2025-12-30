@@ -31,7 +31,7 @@ export class YahooProvider extends BaseProvider<YahooConfig> {
   readonly name = 'Yahoo Finance';
   readonly cachePrefix = 'YAHOO';
 
-  protected buildRequestConfig(config: YahooConfig): RequestConfig {
+  protected override buildRequestConfig(config: YahooConfig): RequestConfig {
     const params: Record<string, string> = {
       symbol: config.symbol,
     };
@@ -45,7 +45,7 @@ export class YahooProvider extends BaseProvider<YahooConfig> {
     };
   }
 
-  protected getCacheKeyComponents(config: YahooConfig): CacheKeyComponents {
+  protected override getCacheKeyComponents(config: YahooConfig): CacheKeyComponents {
     return {
       provider: this.cachePrefix,
       params: {
@@ -56,7 +56,7 @@ export class YahooProvider extends BaseProvider<YahooConfig> {
     };
   }
 
-  protected transformResponse(json: unknown, _config: YahooConfig): DataPoint[] {
+  protected override transformResponse(json: unknown, _config: YahooConfig): DataPoint[] {
     const response = json as YahooResponse;
     if (!response.chart?.result?.[0]) {
       throw new DataLayerError(
@@ -80,7 +80,7 @@ export class YahooProvider extends BaseProvider<YahooConfig> {
     }));
   }
 
-  protected generateMockData(config: YahooConfig): DataPoint[] {
+  protected override generateMockData(config: YahooConfig): DataPoint[] {
     const data: DataPoint[] = [];
     const now = Date.now();
     let price = 100;

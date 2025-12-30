@@ -15,6 +15,7 @@ export type { RequestConfig, RequestAdapter } from './types/request';
 export type { CacheAdapter, CacheConfig } from './cache/adapter';
 export { frequencyToTTL } from './cache/adapter';
 export type { CacheKeyComponents } from './cache/key-builder';
+
 export { buildCacheKey } from './cache/key-builder';
 export { MemoryAdapter } from './cache/memory-adapter';
 export { LocalStorageAdapter } from './cache/localstorage-adapter';
