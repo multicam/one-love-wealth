@@ -22,7 +22,7 @@
 		"dev": "vite dev --port 6009",
 		"build": "vite build",
 		"preview": "vite preview",
-		"test:e2e": "playwright test --project=trading-dashboards --config=../../playwright.config.ts",
+		"test:e2e": "playwright test",
 		"prepare": "svelte-kit sync || echo ''",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"

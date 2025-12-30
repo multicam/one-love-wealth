@@ -2,9 +2,18 @@ import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vitest/config';
 import { playwright } from '@vitest/browser-playwright';
 import { sveltekit } from '@sveltejs/kit/vite';
+import { packages } from '../../workspace.config';
+
+const pkg = packages['macro-view'];
 
 export default defineConfig({
 	plugins: [tailwindcss(), sveltekit()],
+	server: {
+		port: pkg.devPort
+	},
+	preview: {
+		port: pkg.previewPort
+	},
 
 	test: {
 		expect: { requireAssertions: true },

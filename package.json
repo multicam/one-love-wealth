@@ -17,9 +17,9 @@
   "scripts": {
     "update": "bun update --latest --interactive",
     "test:e2e": "playwright test",
-    "test:e2e:crypto-viz": "playwright test --project=crypto-viz",
-    "test:e2e:macro-view": "playwright test --project=macro-view",
-    "test:e2e:trading-dashboards": "playwright test --project=trading-dashboards",
+    "test:e2e:crypto-viz": "cd packages/crypto-viz && playwright test",
+    "test:e2e:macro-view": "cd packages/macro-view && playwright test",
+    "test:e2e:trading-dashboards": "cd packages/trading-dashboards && playwright test",
     "playwright:install": "playwright install chromium"
   }
 }

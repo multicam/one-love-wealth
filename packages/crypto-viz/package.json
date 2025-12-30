@@ -10,7 +10,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "vitest",
-    "test:e2e": "playwright test --project=crypto-viz --config=../../playwright.config.ts"
+    "test:e2e": "playwright test"
   },
   "devDependencies": {
     "@sveltejs/adapter-auto": "^3.0.0",

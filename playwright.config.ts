@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { packages, getDevUrl, getPreviewUrl, getPackagePath } from './workspace.config';
 
 export default defineConfig({
 	testDir: '.',
@@ -19,24 +20,24 @@ export default defineConfig({
 	// WebServers must be defined at root level, not per-project
 	webServer: [
 		{
-			command: 'cd packages/crypto-viz && bun run dev',
-			url: 'http://localhost:6006',
+			command: `cd ${getPackagePath('crypto-viz')} && bun run dev`,
+			url: getDevUrl('crypto-viz'),
 			reuseExistingServer: !process.env.CI,
 			timeout: 120000,
 			stdout: 'pipe',
 			stderr: 'pipe'
 		},
 		{
-			command: 'cd packages/macro-view && bun run build && bun run preview',
-			url: 'http://localhost:4173',
+			command: `cd ${getPackagePath('macro-view')} && bun run build && bun run preview`,
+			url: getPreviewUrl('macro-view'),
 			reuseExistingServer: !process.env.CI,
 			timeout: 120000,
 			stdout: 'pipe',
 			stderr: 'pipe'
 		},
 		{
-			command: 'cd packages/trading-dashboards && bun run dev',
-			url: 'http://localhost:6009',
+			command: `cd ${getPackagePath('trading-dashboards')} && bun run dev`,
+			url: getDevUrl('trading-dashboards'),
 			reuseExistingServer: !process.env.CI,
 			timeout: 120000,
 			stdout: 'pipe',
@@ -46,26 +47,26 @@ export default defineConfig({
 	projects: [
 		{
 			name: 'crypto-viz',
-			testDir: './packages/crypto-viz/e2e',
+			testDir: `./${getPackagePath('crypto-viz')}/${packages['crypto-viz'].testDir}`,
 			use: {
 				...devices['Desktop Chrome'],
-				baseURL: 'http://localhost:6006'
+				baseURL: getDevUrl('crypto-viz')
 			}
 		},
 		{
 			name: 'macro-view',
-			testDir: './packages/macro-view/e2e',
+			testDir: `./${getPackagePath('macro-view')}/${packages['macro-view'].testDir}`,
 			use: {
 				...devices['Desktop Chrome'],
-				baseURL: 'http://localhost:4173'
+				baseURL: getPreviewUrl('macro-view')
 			}
 		},
 		{
 			name: 'trading-dashboards',
-			testDir: './packages/trading-dashboards/e2e',
+			testDir: `./${getPackagePath('trading-dashboards')}/${packages['trading-dashboards'].testDir}`,
 			use: {
 				...devices['Desktop Chrome'],
-				baseURL: 'http://localhost:6009'
+				baseURL: getDevUrl('trading-dashboards')
 			}
 		}
 	],
