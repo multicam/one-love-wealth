@@ -6,17 +6,43 @@ export default defineConfig({
 	expect: {
 		timeout: 5000
 	},
-	fullyParallel: true,
+	fullyParallel: false, // Run projects sequentially to avoid port conflicts
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 2 : 0,
-	workers: process.env.CI ? 1 : undefined,
+	workers: 1, // Single worker to avoid conflicts with shared servers
 	reporter: 'html',
 	use: {
-		baseURL: 'http://localhost:5173',
 		trace: 'on-first-retry',
 		screenshot: 'only-on-failure',
 		video: 'retain-on-failure'
 	},
+	// WebServers must be defined at root level, not per-project
+	webServer: [
+		{
+			command: 'cd packages/crypto-viz && bun run dev',
+			url: 'http://localhost:6006',
+			reuseExistingServer: !process.env.CI,
+			timeout: 120000,
+			stdout: 'pipe',
+			stderr: 'pipe'
+		},
+		{
+			command: 'cd packages/macro-view && bun run build && bun run preview',
+			url: 'http://localhost:4173',
+			reuseExistingServer: !process.env.CI,
+			timeout: 120000,
+			stdout: 'pipe',
+			stderr: 'pipe'
+		},
+		{
+			command: 'cd packages/trading-dashboards && bun run dev',
+			url: 'http://localhost:6009',
+			reuseExistingServer: !process.env.CI,
+			timeout: 120000,
+			stdout: 'pipe',
+			stderr: 'pipe'
+		}
+	],
 	projects: [
 		{
 			name: 'crypto-viz',
@@ -24,12 +50,6 @@ export default defineConfig({
 			use: {
 				...devices['Desktop Chrome'],
 				baseURL: 'http://localhost:6006'
-			},
-			webServer: {
-				command: 'bun run --cwd packages/crypto-viz dev',
-				url: 'http://localhost:6006',
-				reuseExistingServer: !process.env.CI,
-				timeout: 120000
 			}
 		},
 		{
@@ -38,12 +58,6 @@ export default defineConfig({
 			use: {
 				...devices['Desktop Chrome'],
 				baseURL: 'http://localhost:4173'
-			},
-			webServer: {
-				command: 'bun run --cwd packages/macro-view build && bun run --cwd packages/macro-view preview',
-				url: 'http://localhost:4173',
-				reuseExistingServer: !process.env.CI,
-				timeout: 120000
 			}
 		},
 		{
@@ -52,12 +66,6 @@ export default defineConfig({
 			use: {
 				...devices['Desktop Chrome'],
 				baseURL: 'http://localhost:6009'
-			},
-			webServer: {
-				command: 'bun run --cwd packages/trading-dashboards dev',
-				url: 'http://localhost:6009',
-				reuseExistingServer: !process.env.CI,
-				timeout: 120000
 			}
 		}
 	],

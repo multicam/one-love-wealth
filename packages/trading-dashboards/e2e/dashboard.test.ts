@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 test.describe('Trading Dashboards', () => {
 	test('home page loads', async ({ page }) => {
 		await page.goto('/');
-		await expect(page).toHaveTitle(/Trading|Dashboard/i);
+		// Wait for page to load and check that content is rendered
+		await expect(page.locator('.logo').first()).toBeVisible();
 	});
 
 	test('navigation is visible', async ({ page }) => {
