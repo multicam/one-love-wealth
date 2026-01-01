@@ -1,10 +1,14 @@
 .idea/
 node_modules
 
+dist/
+
 # Playwright
 test-results/
 playwright-report/
 playwright/.cache/
+
+# Thoughts
 thoughts/
 
 # OS

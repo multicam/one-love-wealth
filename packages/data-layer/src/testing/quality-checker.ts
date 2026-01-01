@@ -29,6 +29,15 @@ export function checkDataFreshness(
   }
 
   const lastPoint = series.data[series.data.length - 1];
+  if (!lastPoint) {
+    return {
+      lastUpdate: new Date(0),
+      ageMs: Infinity,
+      maxAgeMs,
+      isStale: true,
+      message: 'Last data point is undefined',
+    };
+  }
   const age = Date.now() - lastPoint.time;
 
   return {
@@ -106,6 +115,11 @@ export function checkDataFormat(series: DataSeries): FormatResult {
   for (let i = 0; i < series.data.length; i++) {
     const point = series.data[i];
     const pointNum = i + 1;
+
+    if (!point) {
+      issues.push(`Point ${pointNum}: undefined`);
+      continue;
+    }
 
     // Check required time field
     if (!point.time || typeof point.time !== 'number') {

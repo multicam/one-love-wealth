@@ -1021,6 +1021,8 @@ const gdp = await dataProviderRegistry.fetch({
 
 **Icon:** 📊 | **Type:** `'quandl'` | **API Key:** Optional | **Rate Limit:** 50/day (anonymous), 500/day (with key)
 
+> ⚠️ **Known Limitation:** Nasdaq Data Link (formerly Quandl) uses Cloudflare/Incapsula bot protection that blocks server-side requests. Both curl and Node.js fetch receive challenge pages instead of data. **Workaround:** Use client-side fetch, or consider alternative data sources (FRED has many overlapping series).
+
 ### Overview
 
 Quandl (now Nasdaq Data Link) provides alternative economic time series, commodities data, and financial indicators. Great for cross-validated data sources.
@@ -1089,9 +1091,13 @@ const gold = await dataProviderRegistry.fetch({
 
 **Icon:** 🌍 | **Type:** `'imf'` | **API Key:** Not Required | **Rate Limit:** None
 
+> ⚠️ **Known Limitation:** The IMF DataMapper API blocks server-side Node.js requests (ETIMEDOUT). The API works from browsers and curl but times out from Node.js fetch. This appears to be bot protection on IMF's servers. **Workaround:** Use client-side fetch or consider alternative data sources (World Bank, FRED) for similar indicators.
+
 ### Overview
 
-IMF provides international monetary data and global economic statistics. Essential for cross-country comparisons and global economic analysis.
+IMF DataMapper API provides international monetary data and global economic statistics. Essential for cross-country comparisons and global economic analysis.
+
+**API Documentation:** https://www.imf.org/external/datamapper/api/help
 
 ### Configuration
 
@@ -1100,40 +1106,50 @@ interface IMFDataSourceConfig {
   type: 'imf';
   id: string;
   name: string;
-  databaseId: string;    // e.g., 'IFS' (International Financial Statistics)
-  indicator: string;     // e.g., 'NGDP_R_SA_XDC' (Real GDP)
-  frequency: 'A' | 'Q' | 'M';  // Annual, Quarterly, Monthly
-  countryCode: string;   // ISO 3-letter code (e.g., 'USA', 'CHN')
+  indicator: string;     // DataMapper indicator (e.g., 'NGDP_RPCH')
+  countryCode?: string;  // ISO 3-letter code (e.g., 'USA', 'CHN')
 
   // Optional parameters
   startPeriod?: string;  // e.g., '2010'
   endPeriod?: string;
+
+  // Legacy fields (not used by DataMapper API)
+  databaseId?: string;
+  frequency?: 'A' | 'Q' | 'M';
 }
 ```
 
-### Common Indicators (IFS Database)
+### Common Indicators (DataMapper API)
+
+Full list: https://www.imf.org/external/datamapper/api/v1/indicators
 
 ```typescript
-// GDP
-'NGDP_R_SA_XDC'  // Real GDP, Seasonally Adjusted
-'NGDP_XDC'       // Nominal GDP
+// GDP & Growth
+'NGDP_RPCH'      // Real GDP growth (annual percent change) ⭐
+'NGDPD'          // GDP, current prices (USD billions)
+'PPPGDP'         // GDP based on PPP (international dollars)
+'NGDPDPC'        // GDP per capita, current prices (USD)
 
-// Prices
-'PCPI_IX'        // Consumer Price Index
-'PCPI_PC_CP_A_PT' // CPI, Year-over-year
+// Inflation & Prices
+'PCPIPCH'        // Inflation rate (consumer prices, annual %)
+'PCPIEPCH'       // Inflation rate, end of period (annual %)
 
 // Employment
-'LUR_PT'         // Unemployment Rate
+'LUR'            // Unemployment rate (% of labor force)
 
-// Money & Banking
-'FM_XDC'         // M2 Money Supply
-'FILR_PA'        // Lending Interest Rate
+// Government Finance
+'GGXWDG_NGDP'    // General government gross debt (% of GDP)
+'GGXCNL_NGDP'    // General government net lending/borrowing (% of GDP)
+'GGR_NGDP'       // General government revenue (% of GDP)
+'GGX_NGDP'       // General government total expenditure (% of GDP)
 
-// Balance of Payments
-'BCA_BP6_USD'    // Current Account Balance
+// External Sector
+'BCA_NGDPD'      // Current account balance (% of GDP)
+'TM_RPCH'        // Volume of imports (goods & services, annual % change)
+'TX_RPCH'        // Volume of exports (goods & services, annual % change)
 
-// Reserves
-'RAFA_USD'       // Total Reserves
+// Population
+'LP'             // Population (millions)
 ```
 
 ### Country Codes
@@ -1153,29 +1169,43 @@ interface IMFDataSourceConfig {
 ### Example Usage
 
 ```typescript
-// USA vs China Real GDP comparison
+// USA Real GDP Growth
 const usaGdp = await dataProviderRegistry.fetch({
   type: 'imf',
-  id: 'usa-gdp',
-  name: 'USA Real GDP',
-  databaseId: 'IFS',
-  indicator: 'NGDP_R_SA_XDC',
-  frequency: 'Q',
+  id: 'usa-gdp-growth',
+  name: 'USA Real GDP Growth',
+  indicator: 'NGDP_RPCH',
   countryCode: 'USA',
-  display: { color: '#3b82f6', label: 'USA' }
+  display: { color: '#3b82f6', label: 'USA GDP Growth' }
 });
 
-const chnGdp = await dataProviderRegistry.fetch({
+// China Inflation Rate
+const chnInflation = await dataProviderRegistry.fetch({
   type: 'imf',
-  id: 'chn-gdp',
-  name: 'China Real GDP',
-  databaseId: 'IFS',
-  indicator: 'NGDP_R_SA_XDC',
-  frequency: 'Q',
+  id: 'chn-inflation',
+  name: 'China Inflation',
+  indicator: 'PCPIPCH',
   countryCode: 'CHN',
-  display: { color: '#ef4444', label: 'China' }
+  display: { color: '#ef4444', label: 'China CPI' }
+});
+
+// Global Debt Comparison
+const usaDebt = await dataProviderRegistry.fetch({
+  type: 'imf',
+  id: 'usa-debt',
+  name: 'USA Debt/GDP',
+  indicator: 'GGXWDG_NGDP',
+  countryCode: 'USA',
+  display: { color: '#f59e0b', label: 'USA Debt %' }
 });
 ```
+
+### Best Practices
+
+- **Currently blocked:** IMF API blocks Node.js server requests
+- Use World Bank or FRED for similar indicators until resolved
+- Cache TTL: 7 days (annual data)
+- Data is primarily annual frequency
 
 ---
 
