@@ -13,6 +13,17 @@
         "typescript": "^5",
       },
     },
+    "packages/backtesting": {
+      "name": "@one-love-wealth/backtesting",
+      "version": "0.1.0",
+      "dependencies": {
+        "@one-love-wealth/data-layer": "workspace:*",
+      },
+      "devDependencies": {
+        "@types/bun": "latest",
+        "typescript": "^5.3.0",
+      },
+    },
     "packages/crypto-viz": {
       "name": "crypto-viz",
       "version": "0.0.1",
@@ -232,6 +243,8 @@
     "@jridgewell/trace-mapping": ["@jridgewell/trace-mapping@0.3.31", "", { "dependencies": { "@jridgewell/resolve-uri": "^3.1.0", "@jridgewell/sourcemap-codec": "^1.4.14" } }, "sha512-zzNR+SdQSDJzc8joaeP8QQoCQr8NuYx2dIIytl1QeBEZHJ9uW6hebsrYgbz8hJwUQao3TWCMtmfV8Nu1twOLAw=="],
 
     "@kurkle/color": ["@kurkle/color@0.3.4", "", {}, "sha512-M5UknZPHRu3DEDWoipU6sE8PdkZ6Z/S+v4dD+Ke8IaNlpdSQah50lz1KtcFBa2vsdOnwbbnxJwVM4wty6udA5w=="],
+
+    "@one-love-wealth/backtesting": ["@one-love-wealth/backtesting@workspace:packages/backtesting"],
 
     "@one-love-wealth/data-layer": ["@one-love-wealth/data-layer@workspace:packages/data-layer"],
 
