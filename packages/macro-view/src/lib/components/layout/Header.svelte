@@ -1,8 +1,8 @@
 <script lang="ts">
-	let { title = 'Dashboard', onMenuClick } = $props();
+	let { title = 'Dashboard', onMenuClick, class: className = '' } = $props();
 </script>
 
-<header class="h-16 bg-slate-950/50 backdrop-blur-xl border-b border-slate-900/50 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30">
+<header class="h-16 bg-slate-950/50 backdrop-blur-xl border-b border-slate-900/50 px-4 md:px-8 flex items-center justify-between sticky top-0 z-30 {className}">
 	<div class="flex items-center">
 		<button 
 			class="px-4 py-2 cursor-pointer hover:opacity-80 transition-opacity"

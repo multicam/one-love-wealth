@@ -3,6 +3,7 @@
 @import '@one-love-wealth/shared-ui/styles/theme.css';
 @import '@one-love-wealth/shared-ui/styles/animations.css';
 @import '@one-love-wealth/shared-ui/styles/utilities.css';
+@import '@splendidlabz/styles/layouts';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
 

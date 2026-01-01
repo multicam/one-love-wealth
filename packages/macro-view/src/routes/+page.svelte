@@ -2,12 +2,13 @@
 	import LiquidityCard from '$lib/components/dashboard/LiquidityCard.svelte';
 	import CycleIndicator from '$lib/components/dashboard/CycleIndicator.svelte';
 	import DebtCard from '$lib/components/dashboard/DebtCard.svelte';
+	import { LazyLoad } from '@one-love-wealth/shared-ui';
 </script>
 
-<div class="space-y-8">
-	<div class="flex items-center justify-between">
-		<div>
-			<h1 class="text-3xl font-bold text-white mb-2">Macro Dashboard</h1>
+<div class="vertical" style="--gap: 2rem;">
+	<div class="horizontal items-center justify-between">
+		<div class="vertical" style="--gap: 0.5rem;">
+			<h1 class="text-3xl font-bold text-white">Macro Dashboard</h1>
 			<p class="text-slate-400 max-w-2xl">
 				Monitor global liquidity flows and business cycle metrics to identify high-probability 
 				market regimes.
@@ -22,13 +23,19 @@
 	<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 		<!-- Main Liquidity Chart (Spans 2 cols) -->
 		<div class="lg:col-span-2">
-			<LiquidityCard />
+			<LazyLoad class="h-[500px]">
+				<LiquidityCard />
+			</LazyLoad>
 		</div>
 
 		<!-- Cycle Indicators & Metrics -->
-		<div class="space-y-8">
-			<CycleIndicator />
-			<DebtCard />
+		<div class="vertical" style="--gap: 2rem;">
+			<LazyLoad>
+				<CycleIndicator />
+			</LazyLoad>
+			<LazyLoad>
+				<DebtCard />
+			</LazyLoad>
 		</div>
 	</div>
 </div>

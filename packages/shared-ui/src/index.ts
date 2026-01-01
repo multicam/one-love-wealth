@@ -18,7 +18,8 @@ export {
 	Modal,
 	ConfirmDialog,
 	AlertDialog,
-	DialogProvider
+	DialogProvider,
+	LazyLoad
 } from './components/index.js';
 
 // Stores

@@ -26,34 +26,35 @@
 	};
 </script>
 
-<div class="flex h-screen bg-slate-950 text-slate-200 overflow-hidden font-sans">
-	<!-- Sidebar Overlay -->
+<div class="shell-grid bg-slate-950 text-slate-200 font-sans" style="--lsb-width: 16rem;">
+	<!-- Header spans full width -->
+	<Header 
+		class="header"
+		title={getTitle($page.url.pathname)} 
+		onMenuClick={() => isSidebarOpen = !isSidebarOpen} 
+	/>
+
+	<!-- Sidebar Overlay (mobile) -->
 	{#if isSidebarOpen}
 		<button 
-			class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40"
+			class="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 md:hidden"
 			aria-label="Close sidebar"
 			onclick={() => isSidebarOpen = false}
 		></button>
 	{/if}
 
-	<!-- Sidebar -->
-	<div class="fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300
-		{isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}">
+	<!-- Sidebar - fixed on mobile, grid-positioned on desktop -->
+	<div class="left-sidebar fixed inset-y-0 left-0 z-50 w-64 transform transition-transform duration-300 md:relative md:z-auto md:transform-none
+		{isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}">
 		<Sidebar onNavigate={() => isSidebarOpen = false} />
 	</div>
 
-	<div class="flex-1 flex flex-col overflow-hidden">
-		<Header 
-			title={getTitle($page.url.pathname)} 
-			onMenuClick={() => isSidebarOpen = !isSidebarOpen} 
-		/>
-
-		<main class="flex-1 overflow-y-auto p-4 md:p-8 custom-scrollbar">
-			<div class="mx-auto">
-				{@render children()}
-			</div>
-		</main>
-	</div>
+	<!-- Main content -->
+	<main class="content overflow-y-auto p-4 md:p-8 custom-scrollbar">
+		<div class="mx-auto">
+			{@render children()}
+		</div>
+	</main>
 
 	<Toast position="bottom-right" />
 </div>

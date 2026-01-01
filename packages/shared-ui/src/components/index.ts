@@ -14,3 +14,4 @@ export { default as Modal } from './Modal.svelte';
 export { default as ConfirmDialog } from './ConfirmDialog.svelte';
 export { default as AlertDialog } from './AlertDialog.svelte';
 export { default as DialogProvider } from './DialogProvider.svelte';
+export { default as LazyLoad } from './LazyLoad.svelte';

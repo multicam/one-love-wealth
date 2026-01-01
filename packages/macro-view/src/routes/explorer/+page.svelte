@@ -69,10 +69,10 @@
 	}
 </script>
 
-<div class="space-y-8 max-w-6xl mx-auto">
-	<div class="flex items-center justify-between">
-		<div>
-			<h1 class="text-3xl font-bold text-white mb-2">Data Explorer</h1>
+<div class="vertical max-w-6xl mx-auto" style="--gap: 2rem;">
+	<div class="horizontal items-center justify-between">
+		<div class="vertical" style="--gap: 0.5rem;">
+			<h1 class="text-3xl font-bold text-white">Data Explorer</h1>
 			<p class="text-slate-400">Search and analyze 800,000+ economic series from FRED.</p>
 		</div>
 	</div>

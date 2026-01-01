@@ -2,6 +2,7 @@
 	import { ENHANCED_GRAPHS_LIST } from '$lib/logic/graphs-config-enhanced';
 	import EnhancedGraphRow from '$lib/components/graphs/EnhancedGraphRow.svelte';
 	import { favorites } from '$lib/stores/favorites';
+	import { LazyLoad } from '@one-love-wealth/shared-ui';
 
 	let showOnlyFavorites = $state(false);
 
@@ -14,17 +15,17 @@
 	let favoritesCount = $derived($favorites.length);
 </script>
 
-<div class="max-w-7xl mx-auto space-y-8">
-	<div class="flex items-center justify-between flex-wrap gap-4">
-		<div class="flex-1 min-w-64">
-			<h1 class="text-3xl font-bold text-white mb-2">Macro Graphs</h1>
+<div class="max-w-7xl mx-auto vertical" style="--gap: 2rem;">
+	<div class="horizontal items-center justify-between flex-wrap gap-4">
+		<div class="vertical flex-1 min-w-64" style="--gap: 0.5rem;">
+			<h1 class="text-3xl font-bold text-white">Macro Graphs</h1>
 			<p class="text-slate-400">
 				A comprehensive collection of {ENHANCED_GRAPHS_LIST.length} key macroeconomic charts and correlations
 				powered by 7 data providers (FRED, CoinGecko, Yahoo Finance, World Bank, BLS, Treasury, Hyperliquid).
 			</p>
 		</div>
 
-		<div class="flex items-center gap-3">
+		<div class="horizontal items-center gap-3">
 			{#if favoritesCount > 0}
 				<button
 					onclick={() => showOnlyFavorites = !showOnlyFavorites}
@@ -78,9 +79,11 @@
 			</div>
 		</div>
 	{:else}
-		<div class="space-y-8">
+		<div class="vertical" style="--gap: 2rem;">
 			{#each filteredGraphs as graph (graph.id)}
-				<EnhancedGraphRow {graph} />
+				<LazyLoad class="min-h-[300px]">
+					<EnhancedGraphRow {graph} />
+				</LazyLoad>
 			{/each}
 		</div>
 	{/if}
