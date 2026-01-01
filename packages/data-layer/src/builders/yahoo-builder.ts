@@ -1,4 +1,4 @@
-import type { YahooConfig } from '../providers/yahoo';
+import type { YahooConfig, YahooPeriod, YahooInterval } from '../providers/yahoo';
 import { BaseBuilder } from './base-builder';
 
 /**
@@ -10,13 +10,31 @@ export class YahooBuilder extends BaseBuilder<YahooConfig> {
     return this;
   }
 
-  period(period: YahooConfig['period']): this {
+  period(period: YahooPeriod): this {
     this.config.period = period;
     return this;
   }
 
-  interval(interval: YahooConfig['interval']): this {
+  interval(interval: YahooInterval): this {
     this.config.interval = interval;
+    return this;
+  }
+
+  /**
+   * Convenience method for 10-year daily data (for backtesting)
+   */
+  tenYearDaily(): this {
+    this.config.period = '10y';
+    this.config.interval = '1d';
+    return this;
+  }
+
+  /**
+   * Convenience method for maximum available history (for backtesting)
+   */
+  maxHistory(): this {
+    this.config.period = 'max';
+    this.config.interval = '1d';
     return this;
   }
 

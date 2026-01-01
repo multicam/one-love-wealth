@@ -34,15 +34,11 @@ export const PROVIDER_TEST_CONFIGS: Record<string, ProviderTestConfig> = {
     name: 'Yahoo Finance',
     configBuilder: () => ({
       symbol: '^GSPC', // S&P 500
+      period: '1y',
       interval: '1d',
-      dateRange: {
-        start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0], // 90 days ago
-      },
     }),
     maxAgeMs: getMaxAgeForProvider('yahoo'),
-    expectedMinPoints: 60,
+    expectedMinPoints: 200,
   },
 
   worldbank: {

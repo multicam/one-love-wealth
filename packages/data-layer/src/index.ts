@@ -30,7 +30,7 @@ export { DEFAULT_RATE_LIMITS } from './rate-limit/defaults';
 export { BaseProvider } from './providers/base-provider';
 export type { ProviderConfig } from './providers/base-provider';
 export { YahooProvider } from './providers/yahoo';
-export type { YahooConfig } from './providers/yahoo';
+export type { YahooConfig, YahooPeriod, YahooInterval } from './providers/yahoo';
 export { CoinGeckoProvider } from './providers/coingecko';
 export type { CoinGeckoConfig, CoinGeckoEndpoint } from './providers/coingecko';
 export { FREDProvider } from './providers/fred';

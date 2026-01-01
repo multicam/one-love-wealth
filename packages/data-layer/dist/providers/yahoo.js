@@ -62,7 +62,8 @@ export class YahooProvider extends BaseProvider {
             '1y': 365,
             '2y': 730,
             '5y': 1825,
-            'max': 365,
+            '10y': 3650,
+            'max': 7300, // ~20 years for max
         };
         const days = periodDays[config.period || '1y'] || 365;
         for (let i = days; i >= 0; i--) {

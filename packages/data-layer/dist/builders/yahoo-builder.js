@@ -15,6 +15,22 @@ export class YahooBuilder extends BaseBuilder {
         this.config.interval = interval;
         return this;
     }
+    /**
+     * Convenience method for 10-year daily data (for backtesting)
+     */
+    tenYearDaily() {
+        this.config.period = '10y';
+        this.config.interval = '1d';
+        return this;
+    }
+    /**
+     * Convenience method for maximum available history (for backtesting)
+     */
+    maxHistory() {
+        this.config.period = 'max';
+        this.config.interval = '1d';
+        return this;
+    }
     build() {
         if (!this.config.symbol) {
             throw new Error('Yahoo symbol is required');
