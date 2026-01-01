@@ -6,6 +6,7 @@ export class FREDProvider extends BaseProvider {
     buildRequestConfig(config) {
         const params = {
             series_id: config.seriesId,
+            file_type: 'json', // Required for JSON response (default is XML)
         };
         if (config.startDate)
             params.observation_start = config.startDate;

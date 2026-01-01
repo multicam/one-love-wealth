@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "@one-love-wealth/shared-ui": "workspace:*",
+    "@splendidlabz/utils": "^1.11.2",
     "lightweight-charts": "^4.1.0",
     "lucide-svelte": "^0.460.0"
   },

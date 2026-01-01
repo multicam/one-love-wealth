@@ -66,27 +66,47 @@ export class HyperliquidProvider extends BaseProvider<HyperliquidConfig> {
   protected override defaultTTL = 5 * 60 * 1000; // 5 minutes for crypto data
 
   protected override buildRequestConfig(config: HyperliquidConfig): RequestConfig {
+    // Build request body based on data type
+    let body: Record<string, unknown>;
+    
+    if (config.dataType === 'candles') {
+      body = {
+        type: 'candleSnapshot',
+        req: {
+          coin: config.coin,
+          interval: config.interval || '1d',
+          startTime: config.dateRange?.startTime || Date.now() - 30 * 24 * 60 * 60 * 1000,
+          endTime: config.dateRange?.endTime || Date.now(),
+        },
+      };
+    } else if (config.dataType === 'fundingHistory') {
+      body = {
+        type: 'fundingHistory',
+        coin: config.coin,
+        startTime: config.dateRange?.startTime || Date.now() - 30 * 24 * 60 * 60 * 1000,
+      };
+    } else {
+      // openInterest
+      body = {
+        type: 'metaAndAssetCtxs',
+      };
+    }
+
+    // Params for cache key
     const params: Record<string, string> = {
       coin: config.coin,
       dataType: config.dataType,
     };
-
-    if (config.dataType === 'candles' && config.interval) {
-      params.interval = config.interval;
-    }
-
-    if (config.dateRange?.startTime) {
-      params.startTime = String(config.dateRange.startTime);
-    }
-
-    if (config.dateRange?.endTime) {
-      params.endTime = String(config.dateRange.endTime);
-    }
+    if (config.interval) params.interval = config.interval;
+    if (config.dateRange?.startTime) params.startTime = String(config.dateRange.startTime);
+    if (config.dateRange?.endTime) params.endTime = String(config.dateRange.endTime);
 
     return {
       provider: 'hyperliquid',
       endpoint: '/info',
       params,
+      method: 'POST',
+      body,
     };
   }
 

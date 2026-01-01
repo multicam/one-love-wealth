@@ -8,7 +8,8 @@ export {
   DEFAULT_ERROR_RECOVERY,
 } from './types/errors';
 export type { ErrorRecoveryConfig } from './types/errors';
-export { ProxyRequestAdapter, DirectRequestAdapter } from './types/request';
+export { ProxyRequestAdapter, DirectRequestAdapter, DEFAULT_PROVIDER_CONFIGS, createDirectAdapter } from './types/request';
+export type { ProviderApiConfig } from './types/request';
 export type { RequestConfig, RequestAdapter } from './types/request';
 
 // Cache

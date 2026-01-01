@@ -2,6 +2,7 @@
     import { browser } from '$app/environment';
     import { createChart } from 'lightweight-charts';
     import { crosshairPosition, visibleTimeRange } from '$lib/stores/ui.js';
+    import { resizeObserver } from '@splendidlabz/utils/dom';
 
     /**
      * @typedef {import('lightweight-charts').IChartApi} IChartApi
@@ -20,8 +21,8 @@
     let priceSeries = null;
     /** @type {ILineSeriesApi | null} */
     let filteredSeries = null;
-    /** @type {ResizeObserver | null} */
-    let resizeObserver = null;
+    /** @type {ReturnType<typeof resizeObserver> | null} */
+    let resizeObs = null;
     let initialized = false;
     /** @type {(() => void) | null} */
     let unsubscribeCrosshair = null;
@@ -114,12 +115,13 @@
             }
         });
 
-        resizeObserver = new ResizeObserver(() => {
-            if (chart && chartContainer) {
-                chart.applyOptions({ width: chartContainer.clientWidth });
+        resizeObs = resizeObserver(chartContainer, {
+            callback: () => {
+                if (chart && chartContainer) {
+                    chart.applyOptions({ width: chartContainer.clientWidth });
+                }
             }
         });
-        resizeObserver.observe(chartContainer);
         
         initialized = true;
 
@@ -176,9 +178,9 @@
                 unsubscribeTimeRange();
                 unsubscribeTimeRange = null;
             }
-            if (resizeObserver) {
-                resizeObserver.disconnect();
-                resizeObserver = null;
+            if (resizeObs) {
+                resizeObs.disconnect();
+                resizeObs = null;
             }
             if (chart) {
                 chart.remove();

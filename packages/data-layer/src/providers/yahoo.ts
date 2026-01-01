@@ -32,15 +32,20 @@ export class YahooProvider extends BaseProvider<YahooConfig> {
   readonly cachePrefix = 'YAHOO';
 
   protected override buildRequestConfig(config: YahooConfig): RequestConfig {
-    const params: Record<string, string> = {
-      symbol: config.symbol,
-    };
-    if (config.period) params.period = config.period;
+    const params: Record<string, string> = {};
+    
+    // Yahoo uses range (period1/period2) or period string
+    if (config.period) {
+      params.range = config.period;
+    } else {
+      params.range = '1y';
+    }
     if (config.interval) params.interval = config.interval;
 
+    // Yahoo Finance API: /chart/{symbol}?range=1y&interval=1d
     return {
       provider: 'yahoo',
-      endpoint: '/chart',
+      endpoint: `/${config.symbol}`,
       params,
     };
   }

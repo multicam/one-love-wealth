@@ -1,6 +1,6 @@
 export { isOHLC, hasValue, getValue, TimeUtils } from './types/data-point';
 export { ErrorCode, DataLayerError, DEFAULT_ERROR_RECOVERY, } from './types/errors';
-export { ProxyRequestAdapter, DirectRequestAdapter } from './types/request';
+export { ProxyRequestAdapter, DirectRequestAdapter, DEFAULT_PROVIDER_CONFIGS, createDirectAdapter } from './types/request';
 export { frequencyToTTL } from './cache/adapter';
 export { buildCacheKey } from './cache/key-builder';
 export { MemoryAdapter } from './cache/memory-adapter';

@@ -27,6 +27,8 @@
     }
   },
   "scripts": {
+    "populate-db": "bun run src/cli/populate-db.ts",
+    "populate-db:force": "bun run src/cli/populate-db.ts --force",
     "build": "tsc",
     "test": "bun test",
     "test:provider": "bun run src/cli/test-provider.ts",

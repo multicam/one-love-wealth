@@ -24,3 +24,6 @@ export {
 // Stores
 export { toastStore, type Toast as ToastType } from './stores/toastStore.js';
 export { dialogStore, type AlertOptions, type ConfirmOptions } from './stores/dialogStore.js';
+
+// DOM Utilities (re-exported from @splendidlabz/utils)
+export { resizeObserver, intersectionObserver, mutationObserver } from '@splendidlabz/utils/dom';

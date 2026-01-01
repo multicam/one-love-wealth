@@ -18,23 +18,49 @@ export class HyperliquidProvider extends BaseProvider {
     cachePrefix = 'HYPERLIQUID';
     defaultTTL = 5 * 60 * 1000; // 5 minutes for crypto data
     buildRequestConfig(config) {
+        // Build request body based on data type
+        let body;
+        if (config.dataType === 'candles') {
+            body = {
+                type: 'candleSnapshot',
+                req: {
+                    coin: config.coin,
+                    interval: config.interval || '1d',
+                    startTime: config.dateRange?.startTime || Date.now() - 30 * 24 * 60 * 60 * 1000,
+                    endTime: config.dateRange?.endTime || Date.now(),
+                },
+            };
+        }
+        else if (config.dataType === 'fundingHistory') {
+            body = {
+                type: 'fundingHistory',
+                coin: config.coin,
+                startTime: config.dateRange?.startTime || Date.now() - 30 * 24 * 60 * 60 * 1000,
+            };
+        }
+        else {
+            // openInterest
+            body = {
+                type: 'metaAndAssetCtxs',
+            };
+        }
+        // Params for cache key
         const params = {
             coin: config.coin,
             dataType: config.dataType,
         };
-        if (config.dataType === 'candles' && config.interval) {
+        if (config.interval)
             params.interval = config.interval;
-        }
-        if (config.dateRange?.startTime) {
+        if (config.dateRange?.startTime)
             params.startTime = String(config.dateRange.startTime);
-        }
-        if (config.dateRange?.endTime) {
+        if (config.dateRange?.endTime)
             params.endTime = String(config.dateRange.endTime);
-        }
         return {
             provider: 'hyperliquid',
             endpoint: '/info',
             params,
+            method: 'POST',
+            body,
         };
     }
     getCacheKeyComponents(config) {

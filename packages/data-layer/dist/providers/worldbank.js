@@ -53,9 +53,10 @@ export class WorldBankProvider extends BaseProvider {
     cachePrefix = 'WORLDBANK';
     defaultTTL = 90 * 24 * 60 * 60 * 1000; // 90 days (quarterly/annual data)
     buildRequestConfig(config) {
+        const country = config.countryCode || 'USA';
         const params = {
-            indicator: config.indicatorCode,
-            country: config.countryCode || 'USA',
+            format: 'json', // Required for JSON response (default is XML)
+            per_page: '1000', // Get more results
         };
         if (config.dateRange) {
             if (config.dateRange.start && config.dateRange.end) {
@@ -65,9 +66,10 @@ export class WorldBankProvider extends BaseProvider {
         if (config.mrv) {
             params.mrv = String(config.mrv);
         }
+        // World Bank API: /v2/country/{country}/indicator/{indicator}?format=json
         return {
             provider: 'worldbank',
-            endpoint: '/indicator',
+            endpoint: `/country/${country}/indicator/${config.indicatorCode}`,
             params,
         };
     }

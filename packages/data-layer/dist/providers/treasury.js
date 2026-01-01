@@ -32,21 +32,31 @@ export class TreasuryProvider extends BaseProvider {
     cachePrefix = 'TREASURY';
     defaultTTL = 24 * 60 * 60 * 1000; // 24 hours
     buildRequestConfig(config) {
+        const endpointPath = TREASURY_ENDPOINTS[config.dataset];
+        const dateField = TREASURY_DATE_FIELDS[config.dataset];
+        const valueField = TREASURY_VALUE_FIELDS[config.dataset];
         const params = {
-            dataset: config.dataset,
+            format: 'json',
+            'page[size]': '10000',
         };
+        // Build filter for date range
+        const filters = [];
         if (config.dateRange?.start) {
-            params.start = config.dateRange.start;
+            filters.push(`${dateField}:gte:${config.dateRange.start}`);
         }
         if (config.dateRange?.end) {
-            params.end = config.dateRange.end;
+            filters.push(`${dateField}:lte:${config.dateRange.end}`);
         }
-        if (config.fields && config.fields.length > 0) {
-            params.fields = config.fields.join(',');
+        if (filters.length > 0) {
+            params.filter = filters.join(',');
         }
+        // Select only needed fields
+        params.fields = `${dateField},${valueField}`;
+        // Sort by date ascending
+        params.sort = dateField;
         return {
             provider: 'treasury',
-            endpoint: `/${config.dataset}`,
+            endpoint: `/${endpointPath}`,
             params,
         };
     }

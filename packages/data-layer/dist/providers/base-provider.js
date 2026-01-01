@@ -99,8 +99,24 @@ export class BaseProvider {
                     throw new DataLayerError('Rate limited', ErrorCode.RATE_LIMITED, this.name);
                 }
                 if (!response.ok) {
-                    const errorBody = (await response.json().catch(() => ({})));
-                    throw new DataLayerError(`${this.name} API Error: ${errorBody.error || response.statusText}`, response.status === 404
+                    let errorMessage = response.statusText;
+                    try {
+                        const errorBody = await response.json();
+                        errorMessage = errorBody.error || errorBody.message || response.statusText;
+                    }
+                    catch {
+                        // If JSON parsing fails, try to get text
+                        try {
+                            const text = await response.text();
+                            if (text && text.length < 200) {
+                                errorMessage = text;
+                            }
+                        }
+                        catch {
+                            // Use statusText as fallback
+                        }
+                    }
+                    throw new DataLayerError(`${this.name} API Error: ${errorMessage}`, response.status === 404
                         ? ErrorCode.NOT_FOUND
                         : ErrorCode.NETWORK_ERROR, this.name);
                 }

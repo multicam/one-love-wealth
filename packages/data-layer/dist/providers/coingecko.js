@@ -6,12 +6,10 @@ export class CoinGeckoProvider extends BaseProvider {
     buildRequestConfig(config) {
         const endpoint = config.endpoint || 'market_chart';
         const params = {
-            coin_id: config.coinId,
             vs_currency: config.vsCurrency || 'usd',
-            endpoint,
         };
         if (endpoint === 'market_chart') {
-            params.days = String(config.days ?? 'max');
+            params.days = String(config.days ?? 30);
             if (config.interval)
                 params.interval = config.interval;
             if (config.precision !== undefined)
@@ -28,9 +26,10 @@ export class CoinGeckoProvider extends BaseProvider {
             if (config.include24hrChange)
                 params.include_24hr_change = 'true';
         }
+        // CoinGecko API: /coins/{coinId}/market_chart or /coins/{coinId}/ohlc
         return {
             provider: 'coingecko',
-            endpoint: `/${endpoint}`,
+            endpoint: `/${config.coinId}/${endpoint}`,
             params,
         };
     }

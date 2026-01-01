@@ -77,32 +77,45 @@ export class BLSProvider extends BaseProvider<BLSConfig> {
   protected override defaultTTL = 30 * 24 * 60 * 60 * 1000; // 30 days (monthly data)
 
   protected override buildRequestConfig(config: BLSConfig): RequestConfig {
-    const params: Record<string, string> = {
-      seriesId: config.seriesId,
-    };
-
+    let startYear: number;
+    let endYear: number;
+    
     if (config.dateRange) {
-      params.startYear = String(config.dateRange.startYear);
-      params.endYear = String(config.dateRange.endYear);
+      startYear = config.dateRange.startYear;
+      endYear = config.dateRange.endYear;
     } else {
-      const endYear = new Date().getFullYear();
-      const startYear = endYear - 5;
-      params.startYear = String(startYear);
-      params.endYear = String(endYear);
+      endYear = new Date().getFullYear();
+      startYear = endYear - 5;
     }
 
+    // BLS v2 API requires POST with JSON body
+    const body: Record<string, unknown> = {
+      seriesid: [config.seriesId],
+      startyear: String(startYear),
+      endyear: String(endYear),
+    };
+
     if (config.calculations) {
-      params.calculations = 'true';
+      body.calculations = true;
     }
 
     if (config.annualAverage) {
-      params.annualaverage = 'true';
+      body.annualaverage = true;
     }
+
+    // Pass date range in params for cache key building
+    const params: Record<string, string> = {
+      seriesId: config.seriesId,
+      startYear: String(startYear),
+      endYear: String(endYear),
+    };
 
     return {
       provider: 'bls',
-      endpoint: '/timeseries/data',
+      endpoint: '/timeseries/data/',
       params,
+      method: 'POST',
+      body,
     };
   }
 

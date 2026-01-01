@@ -34,29 +34,40 @@ export class BLSProvider extends BaseProvider {
     cachePrefix = 'BLS';
     defaultTTL = 30 * 24 * 60 * 60 * 1000; // 30 days (monthly data)
     buildRequestConfig(config) {
-        const params = {
-            seriesId: config.seriesId,
-        };
+        let startYear;
+        let endYear;
         if (config.dateRange) {
-            params.startYear = String(config.dateRange.startYear);
-            params.endYear = String(config.dateRange.endYear);
+            startYear = config.dateRange.startYear;
+            endYear = config.dateRange.endYear;
         }
         else {
-            const endYear = new Date().getFullYear();
-            const startYear = endYear - 5;
-            params.startYear = String(startYear);
-            params.endYear = String(endYear);
+            endYear = new Date().getFullYear();
+            startYear = endYear - 5;
         }
+        // BLS v2 API requires POST with JSON body
+        const body = {
+            seriesid: [config.seriesId],
+            startyear: String(startYear),
+            endyear: String(endYear),
+        };
         if (config.calculations) {
-            params.calculations = 'true';
+            body.calculations = true;
         }
         if (config.annualAverage) {
-            params.annualaverage = 'true';
+            body.annualaverage = true;
         }
+        // Pass date range in params for cache key building
+        const params = {
+            seriesId: config.seriesId,
+            startYear: String(startYear),
+            endYear: String(endYear),
+        };
         return {
             provider: 'bls',
-            endpoint: '/timeseries/data',
+            endpoint: '/timeseries/data/',
             params,
+            method: 'POST',
+            body,
         };
     }
     getCacheKeyComponents(config) {

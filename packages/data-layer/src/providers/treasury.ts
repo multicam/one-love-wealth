@@ -65,25 +65,36 @@ export class TreasuryProvider extends BaseProvider<TreasuryConfig> {
   protected override defaultTTL = 24 * 60 * 60 * 1000; // 24 hours
 
   protected override buildRequestConfig(config: TreasuryConfig): RequestConfig {
+    const endpointPath = TREASURY_ENDPOINTS[config.dataset];
+    const dateField = TREASURY_DATE_FIELDS[config.dataset];
+    const valueField = TREASURY_VALUE_FIELDS[config.dataset];
+    
     const params: Record<string, string> = {
-      dataset: config.dataset,
+      format: 'json',
+      'page[size]': '10000',
     };
 
+    // Build filter for date range
+    const filters: string[] = [];
     if (config.dateRange?.start) {
-      params.start = config.dateRange.start;
+      filters.push(`${dateField}:gte:${config.dateRange.start}`);
     }
-
     if (config.dateRange?.end) {
-      params.end = config.dateRange.end;
+      filters.push(`${dateField}:lte:${config.dateRange.end}`);
+    }
+    if (filters.length > 0) {
+      params.filter = filters.join(',');
     }
 
-    if (config.fields && config.fields.length > 0) {
-      params.fields = config.fields.join(',');
-    }
+    // Select only needed fields
+    params.fields = `${dateField},${valueField}`;
+
+    // Sort by date ascending
+    params.sort = dateField;
 
     return {
       provider: 'treasury',
-      endpoint: `/${config.dataset}`,
+      endpoint: `/${endpointPath}`,
       params,
     };
   }
