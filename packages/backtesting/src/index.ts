@@ -64,6 +64,54 @@ export {
   type GapFillStrategy,
 } from './data';
 
+// Testing Framework
+export {
+  // Types
+  type ParameterRange,
+  type ParameterSet,
+  type OptimizationMethod,
+  type OptimizationObjective,
+  type OptimizationConfig,
+  type OptimizationResult,
+  type OptimizationOutput,
+  type WalkForwardConfig,
+  type WalkForwardWindow,
+  type WalkForwardWindowResult,
+  type WalkForwardOutput,
+  type MonteCarloConfig,
+  type MonteCarloOutput,
+  type MonteCarloSimulation,
+  type MonteCarloStatistics,
+  type DistributionStats,
+  type BenchmarkDefinition,
+  type BenchmarkComparison,
+  type ValidationConfig,
+  type ValidationOutput,
+  type CrossValidationOutput,
+  type ValidationScore,
+  type ReportConfig,
+  type StrategyFactory,
+  // Classes
+  ParameterOptimizer,
+  WalkForwardAnalyzer,
+  MonteCarloSimulator,
+  BenchmarkComparer,
+  StrategyValidator,
+  ReportGenerator,
+  // Functions
+  optimizeStrategy,
+  walkForwardAnalysis,
+  walkForwardWithOptimization,
+  monteCarloSimulation,
+  compareToBenchmarks,
+  validateStrategy,
+  quickValidate,
+  generateReport,
+  generateBacktestReport,
+  generateOptimizationReport,
+  DEFAULT_BENCHMARKS,
+} from './testing';
+
 // Indicators
 export {
   // Types

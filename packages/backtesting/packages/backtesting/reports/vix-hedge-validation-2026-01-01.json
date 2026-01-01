@@ -1,0 +1,41 @@
+{
+  "strategy": "VIX Hedge",
+  "symbol": "TQQQ",
+  "period": "5y",
+  "rating": "⚠️ Poor",
+  "score": 1,
+  "fullPeriod": {
+    "totalReturn": -5.915257342306911,
+    "sharpeRatio": -0.025810307080212404,
+    "maxDrawdown": -0.7402619883986105,
+    "trades": 23
+  },
+  "trainTest": {
+    "trainReturn": 43.51007141411508,
+    "testReturn": -35.04230638893311,
+    "degradation": 180.53837939131733
+  },
+  "walkForward": {
+    "windows": 5,
+    "avgOOSReturn": 4.678373963463813,
+    "consistencyRatio": 60,
+    "robustnessScore": 23
+  },
+  "monteCarlo": {
+    "simulations": 500,
+    "probabilityOfProfit": 46.6,
+    "var95": -82.18292517379786,
+    "cvar95": -87.34934090953315
+  },
+  "benchmark": {
+    "buyAndHoldReturn": 135.3568409538002,
+    "alpha": -141.27209829610712
+  },
+  "flags": {
+    "isOverfit": true,
+    "isConsistent": true,
+    "isProfitable": false,
+    "hasGoodRisk": false,
+    "passedMonteCarlo": false
+  }
+}

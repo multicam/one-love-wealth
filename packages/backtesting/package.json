@@ -30,7 +30,11 @@
     "build": "bun build ./src/index.ts --outdir ./dist --target node",
     "test": "bun test",
     "dev": "tsc --watch",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "validate": "bun run scripts/validate-vix-hedge.ts",
+    "batch-validate": "bun run scripts/batch-validate.ts",
+    "backtest": "bun run scripts/run-backtest.ts",
+    "vix-hedge": "bun run scripts/run-vix-hedge.ts"
   },
   "dependencies": {
     "@one-love-wealth/data-layer": "workspace:*"

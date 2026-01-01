@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>MA Crossover (50/200) Validation Report</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 900px; margin: 0 auto; padding: 20px; }
+    table { border-collapse: collapse; width: 100%; margin: 20px 0; }
+    th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+    th { background-color: #f4f4f4; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    pre { background: #f4f4f4; padding: 10px; overflow-x: auto; }
+    h1 { border-bottom: 2px solid #333; padding-bottom: 10px; }
+    h2 { color: #444; margin-top: 30px; }
+    h3 { color: #666; }
+  </style>
+</head>
+<body>
+<h1>MA Crossover (50/200) Validation Report</h1>
+<p><strong>Strategy:</strong> MA Crossover (50/200)</p>
+<p><strong>Date:</strong> 2026-01-01</p>
+<h2>Overall Score</h2>
+<table border="1"><tr><td>Component</td><td>Score</td></tr>
+<tr><td><strong>Overall</strong></td><td><strong>45/100</strong></td></tr>
+<tr><td>Profitability</td><td>23.0/25</td></tr>
+<tr><td>Risk-Adjusted</td><td>7.6/25</td></tr>
+<tr><td>Consistency</td><td>0.0/25</td></tr>
+<tr><td>Robustness</td><td>4.5/15</td></tr>
+<tr><td>Degradation</td><td>10.0/10</td></tr>
+</table><p><strong>Recommendation:</strong> ⚠️ <strong>MARGINAL</strong> - Strategy shows some promise but needs improvement</p>
+<h3>Validation Flags</h3>
+<ul><li>✅ Profitable</li>
+<li>✅ Positive Sharpe Ratio</li>
+<li>❌ Consistent Returns</li>
+<li>✅ Low Degradation</li>
+<li>✅ Passed Monte Carlo</li>
+</ul><h2>Train/Test Split Results</h2>
+<table border="1"><tr><td>Metric</td><td>Train</td><td>Test</td></tr>
+<tr><td>Total Return</td><td>164.74%</td><td>22.98%</td></tr>
+<tr><td>Sharpe Ratio</td><td>1.19</td><td>0.61</td></tr>
+<tr><td>Max Drawdown</td><td>-0.32%</td><td>-0.22%</td></tr>
+<tr><td>Win Rate</td><td>0.0%</td><td>0.0%</td></tr>
+</table><h2>Cross-Validation Results</h2>
+<p><strong>Folds:</strong> 5</p>
+<p><strong>Consistency Score:</strong> 0.0%</p>
+<table border="1"><tr><td>Metric</td><td>Mean</td><td>Std Dev</td></tr>
+<tr><td>Total Return</td><td>0.00%</td><td>0.00%</td></tr>
+<tr><td>Sharpe Ratio</td><td>0.00</td><td>0.00</td></tr>
+</table><h2>Walk-Forward Analysis</h2>
+<p><strong>Windows:</strong> 5</p>
+<p><strong>Robustness Score:</strong> 30/100</p>
+<table border="1"><tr><td>Window</td><td>In-Sample Return</td><td>Out-of-Sample Return</td><td>Degradation</td></tr>
+<tr><td>1</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr>
+<tr><td>2</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr>
+<tr><td>3</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr>
+<tr><td>4</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr>
+<tr><td>5</td><td>0.0%</td><td>0.0%</td><td>0.0%</td></tr>
+</table><h2>Monte Carlo Simulation</h2>
+<p><strong>Simulations:</strong> 500</p>
+<p><strong>Method:</strong> bootstrap-returns</p>
+<table border="1"><tr><td>Statistic</td><td>Value</td></tr>
+<tr><td>Probability of Profit</td><td>90.6%</td></tr>
+<tr><td>Value at Risk (95%)</td><td>-18.3%</td></tr>
+<tr><td>Expected Return (Mean)</td><td>299.1%</td></tr>
+<tr><td>Return Std Dev</td><td>427.9%</td></tr>
+</table><h2>Benchmark Comparisons</h2>
+<h3>vs Buy & Hold (First Symbol)</h3>
+<table border="1"><tr><td>Metric</td><td>Strategy</td><td>Benchmark</td></tr>
+<tr><td>Total Return</td><td>161.0%</td><td>135.4%</td></tr>
+<tr><td>Sharpe Ratio</td><td>0.60</td><td>0.29</td></tr>
+</table><ul><li><strong>Excess Return:</strong> 25.7%</li>
+<li><strong>Alpha:</strong> 14.14%</li>
+<li><strong>Beta:</strong> 0.31</li>
+<li><strong>Information Ratio:</strong> 0.48</li>
+</ul>
+</body>
+</html>
