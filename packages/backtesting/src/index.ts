@@ -37,10 +37,32 @@ export {
   BuyAndHoldStrategy,
   DEFAULT_BUY_AND_HOLD_PARAMS,
   type BuyAndHoldParams,
+  VIXHedgeStrategy,
+  DEFAULT_VIX_HEDGE_PARAMS,
+  type VIXHedgeParams,
+  BollingerBreakoutStrategy,
+  DEFAULT_BOLLINGER_BREAKOUT_PARAMS,
+  type BollingerBreakoutParams,
+  MACDDivergenceStrategy,
+  DEFAULT_MACD_DIVERGENCE_PARAMS,
+  type MACDDivergenceParams,
+  PairsTradingStrategy,
+  DEFAULT_PAIRS_TRADING_PARAMS,
+  type PairsTradingParams,
 } from './strategies';
 
 // Metrics
 export { calculateMetrics, formatMetrics } from './metrics';
+
+// Data Loading
+export {
+  BacktestDataLoader,
+  loadBacktestData,
+  loadSymbol,
+  type DataLoaderConfig,
+  type DataLoaderResult,
+  type GapFillStrategy,
+} from './data';
 
 // Indicators
 export {

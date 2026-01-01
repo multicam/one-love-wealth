@@ -35,6 +35,9 @@
   "dependencies": {
     "@one-love-wealth/data-layer": "workspace:*"
   },
+  "peerDependencies": {
+    "@one-love-wealth/data-layer": "workspace:*"
+  },
   "devDependencies": {
     "@types/bun": "latest",
     "typescript": "^5.3.0"
