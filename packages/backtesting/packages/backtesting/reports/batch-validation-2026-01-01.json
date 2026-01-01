@@ -1,0 +1,1411 @@
+{
+  "timestamp": "2026-01-01T23:05:01.445Z",
+  "period": "10y",
+  "initialCapital": 100000,
+  "results": [
+    {
+      "symbol": "TQQQ",
+      "strategy": "Buy & Hold",
+      "metrics": {
+        "totalReturn": 21.464023711037598,
+        "totalReturnPercent": 2146.40237110376,
+        "cagr": 0.36606481507423805,
+        "maxDrawdown": -1539327.9817562103,
+        "maxDrawdownPercent": -0.8154207481428031,
+        "maxDrawdownDuration": 767,
+        "volatility": 0.6529754025548897,
+        "sharpeRatio": 0.5606104206099345,
+        "sortinoRatio": 0.5207482888835956,
+        "calmarRatio": 0.4489275210472445,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 1,
+        "totalTrades": 0,
+        "winningTrades": 0,
+        "losingTrades": 0,
+        "winRate": 0,
+        "profitFactor": 0,
+        "averageWin": 0,
+        "averageLoss": 0,
+        "averageTrade": 0,
+        "largestWin": 0,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.005473042535939406,
+        "consistency": 0.6666666666666666,
+        "robustness": 22
+      },
+      "monteCarlo": {
+        "probProfit": 0.95,
+        "var95": 0.015560443699520548
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    {
+      "symbol": "TQQQ",
+      "strategy": "MA Crossover (50/200)",
+      "metrics": {
+        "totalReturn": 4.206369769593593,
+        "totalReturnPercent": 420.6369769593593,
+        "cagr": 0.1798437918763911,
+        "maxDrawdown": -248600.9365940094,
+        "maxDrawdownPercent": -0.3800159244852369,
+        "maxDrawdownDuration": 832,
+        "volatility": 0.45431964530526836,
+        "sharpeRatio": 0.3958529941084756,
+        "sortinoRatio": 0.25640543713114,
+        "calmarRatio": 0.47325330410825395,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.5127287191726333,
+        "totalTrades": 3,
+        "winningTrades": 2,
+        "losingTrades": 1,
+        "winRate": 0.6666666666666666,
+        "profitFactor": 115.97344436115993,
+        "averageWin": 163074.8423559456,
+        "averageLoss": -2812.279022223473,
+        "averageTrade": 107779.13522988925,
+        "largestWin": 223890.31079578403,
+        "largestLoss": -2812.279022223473
+      },
+      "walkForward": {
+        "avgOOSReturn": -0.011762228596274023,
+        "consistency": 0,
+        "robustness": 20
+      },
+      "monteCarlo": {
+        "probProfit": 0.84,
+        "var95": -0.5879474162126834
+      },
+      "score": 2,
+      "rating": "📊 Fair"
+    },
+    {
+      "symbol": "TQQQ",
+      "strategy": "MA Crossover (20/50)",
+      "metrics": {
+        "totalReturn": 2.0664652384755122,
+        "totalReturnPercent": 206.64652384755124,
+        "cagr": 0.11887081913682485,
+        "maxDrawdown": -392609.6615544212,
+        "maxDrawdownPercent": -0.7541429134051182,
+        "maxDrawdownDuration": 1226,
+        "volatility": 0.41949430714932817,
+        "sharpeRatio": 0.2833669423182665,
+        "sortinoRatio": 0.20568534166884536,
+        "calmarRatio": 0.15762373022919146,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.6595067621320605,
+        "totalTrades": 23,
+        "winningTrades": 12,
+        "losingTrades": 11,
+        "winRate": 0.5217391304347826,
+        "profitFactor": 1.4958884046396808,
+        "averageWin": 54146.73765613807,
+        "averageLoss": -39487.68381982264,
+        "averageTrade": 9365.057819809037,
+        "largestWin": 161595.80046165086,
+        "largestLoss": -100589.7457455711
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.15478314198542764,
+        "consistency": 0.6666666666666666,
+        "robustness": 57
+      },
+      "monteCarlo": {
+        "probProfit": 0.77,
+        "var95": -0.694960236657118
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    {
+      "symbol": "TQQQ",
+      "strategy": "RSI Reversion",
+      "metrics": {
+        "totalReturn": 1.9267106257622986,
+        "totalReturnPercent": 192.67106257622984,
+        "cagr": 0.11365144844499486,
+        "maxDrawdown": -223848.3429922676,
+        "maxDrawdownPercent": -0.6777814317372567,
+        "maxDrawdownDuration": 981,
+        "volatility": 0.46011745517520974,
+        "sharpeRatio": 0.24700529651003378,
+        "sortinoRatio": 0.12613250209452573,
+        "calmarRatio": 0.16768156093283487,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.2911694510739857,
+        "totalTrades": 14,
+        "winningTrades": 9,
+        "losingTrades": 5,
+        "winRate": 0.6428571428571429,
+        "profitFactor": 1.8795252687645125,
+        "averageWin": 45748.18099571989,
+        "averageLoss": -43812.5132770498,
+        "averageTrade": 13762.218755445001,
+        "largestWin": 84673.98871625523,
+        "largestLoss": -125378.1631091537
+      },
+      "walkForward": {
+        "avgOOSReturn": -0.17819779380010267,
+        "consistency": 0,
+        "robustness": 0
+      },
+      "monteCarlo": {
+        "probProfit": 0.79,
+        "var95": -0.6769160335576715
+      },
+      "score": 2,
+      "rating": "📊 Fair"
+    },
+    {
+      "symbol": "TQQQ",
+      "strategy": "RSI Aggressive",
+      "metrics": {
+        "totalReturn": 0.43716841351136737,
+        "totalReturnPercent": 43.716841351136736,
+        "cagr": 0.03702292604787427,
+        "maxDrawdown": -153648.6904850006,
+        "maxDrawdownPercent": -0.718869026928838,
+        "maxDrawdownDuration": 981,
+        "volatility": 0.34822282496413576,
+        "sharpeRatio": 0.10631964188932,
+        "sortinoRatio": 0.04421792499384711,
+        "calmarRatio": 0.05150162917165053,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.16706443914081145,
+        "totalTrades": 5,
+        "winningTrades": 3,
+        "losingTrades": 2,
+        "winRate": 0.6,
+        "profitFactor": 1.4630829221951287,
+        "averageWin": 46040.25249586632,
+        "averageLoss": -47201.95806823109,
+        "averageTrade": 8743.368270227355,
+        "largestWin": 57547.30616503144,
+        "largestLoss": -91660.12768291852
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.10510100048785224,
+        "consistency": 0.3333333333333333,
+        "robustness": 28
+      },
+      "monteCarlo": {
+        "probProfit": 0.56,
+        "var95": -0.7066862020283451
+      },
+      "score": 2,
+      "rating": "📊 Fair"
+    },
+    {
+      "symbol": "TQQQ",
+      "strategy": "Bollinger Breakout",
+      "metrics": {
+        "totalReturn": 2.020554512269659,
+        "totalReturnPercent": 202.05545122696589,
+        "cagr": 0.11718024356759704,
+        "maxDrawdown": -159366.9673976888,
+        "maxDrawdownPercent": -0.6368700473252176,
+        "maxDrawdownDuration": 673,
+        "volatility": 0.47584267430613497,
+        "sharpeRatio": 0.24625837465810968,
+        "sortinoRatio": 0.12850813697931524,
+        "calmarRatio": 0.18399396244138166,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.31026252983293556,
+        "totalTrades": 50,
+        "winningTrades": 36,
+        "losingTrades": 14,
+        "winRate": 0.72,
+        "profitFactor": 1.488425248215522,
+        "averageWin": 17103.972650686836,
+        "averageLoss": -29549.11172841145,
+        "averageTrade": 4041.1090245393175,
+        "largestWin": 60697.96790312582,
+        "largestLoss": -85228.47021078107
+      },
+      "walkForward": {
+        "avgOOSReturn": -0.019944095961458904,
+        "consistency": 0.3333333333333333,
+        "robustness": 10
+      },
+      "monteCarlo": {
+        "probProfit": 0.77,
+        "var95": -0.8010422029423911
+      },
+      "score": 2,
+      "rating": "📊 Fair"
+    },
+    {
+      "symbol": "QQQ",
+      "strategy": "Buy & Hold",
+      "metrics": {
+        "totalReturn": 4.375753313833008,
+        "totalReturnPercent": 437.5753313833008,
+        "cagr": 0.18363626348462248,
+        "maxDrawdown": -124752.6162414551,
+        "maxDrawdownPercent": -0.35119038087281484,
+        "maxDrawdownDuration": 519,
+        "volatility": 0.21824814120088104,
+        "sharpeRatio": 0.8414104352696369,
+        "sortinoRatio": 0.7867670249452263,
+        "calmarRatio": 0.5228966209957987,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 1,
+        "totalTrades": 0,
+        "winningTrades": 0,
+        "losingTrades": 0,
+        "winRate": 0,
+        "profitFactor": 0,
+        "averageWin": 0,
+        "averageLoss": 0,
+        "averageTrade": 0,
+        "largestWin": 0,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.04807277153747569,
+        "consistency": 0.6666666666666666,
+        "robustness": 29
+      },
+      "monteCarlo": {
+        "probProfit": 0.98,
+        "var95": 0.5618734925353914
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    {
+      "symbol": "QQQ",
+      "strategy": "MA Crossover (50/200)",
+      "metrics": {
+        "totalReturn": 2.027391559393159,
+        "totalReturnPercent": 202.7391559393159,
+        "cagr": 0.11743346389867826,
+        "maxDrawdown": -70001.83245849606,
+        "maxDrawdownPercent": -0.2224640256510581,
+        "maxDrawdownDuration": 817,
+        "volatility": 0.16402037496610358,
+        "sharpeRatio": 0.7159687564605741,
+        "sortinoRatio": 0.4880637291654405,
+        "calmarRatio": 0.5278761973087567,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.5469371519490851,
+        "totalTrades": 3,
+        "winningTrades": 3,
+        "losingTrades": 0,
+        "winRate": 1,
+        "profitFactor": null,
+        "averageWin": 55963.259093948385,
+        "averageLoss": 0,
+        "averageTrade": 55963.259093948385,
+        "largestWin": 94145.72244735721,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.008991285554656982,
+        "consistency": 0.3333333333333333,
+        "robustness": 31
+      },
+      "monteCarlo": {
+        "probProfit": 0.99,
+        "var95": 0.5846910429958204
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    },
+    {
+      "symbol": "QQQ",
+      "strategy": "MA Crossover (20/50)",
+      "metrics": {
+        "totalReturn": 1.7901409603707923,
+        "totalReturnPercent": 179.01409603707924,
+        "cagr": 0.10832969476888077,
+        "maxDrawdown": -59985.18232226558,
+        "maxDrawdownPercent": -0.2626054381942151,
+        "maxDrawdownDuration": 594,
+        "volatility": 0.14656147126689245,
+        "sharpeRatio": 0.7391416982407978,
+        "sortinoRatio": 0.5603749836152526,
+        "calmarRatio": 0.4125188553359789,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.700079554494829,
+        "totalTrades": 21,
+        "winningTrades": 13,
+        "losingTrades": 8,
+        "winRate": 0.6190476190476191,
+        "profitFactor": 4.0985048283880765,
+        "averageWin": 17629.90389038088,
+        "averageLoss": -6990.010997043595,
+        "averageTrade": 8250.888695171554,
+        "largestWin": 45385.79546667482,
+        "largestLoss": -18544.7293882141
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.0824163394412233,
+        "consistency": 0.6666666666666666,
+        "robustness": 38
+      },
+      "monteCarlo": {
+        "probProfit": 0.98,
+        "var95": 0.3868772384612408
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    {
+      "symbol": "QQQ",
+      "strategy": "RSI Reversion",
+      "metrics": {
+        "totalReturn": 1.1304149059055355,
+        "totalReturnPercent": 113.04149059055355,
+        "cagr": 0.07875994288635879,
+        "maxDrawdown": -45708.39440917969,
+        "maxDrawdownPercent": -0.2559263122549422,
+        "maxDrawdownDuration": 590,
+        "volatility": 0.15641138123215972,
+        "sharpeRatio": 0.5035435546052512,
+        "sortinoRatio": 0.260436371118253,
+        "calmarRatio": 0.3077446089556501,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.284805091487669,
+        "totalTrades": 14,
+        "winningTrades": 12,
+        "losingTrades": 2,
+        "winRate": 0.8571428571428571,
+        "profitFactor": 6.209038304752111,
+        "averageWin": 11228.543287646628,
+        "averageLoss": -10850.51443060303,
+        "averageTrade": 8074.3921850395345,
+        "largestWin": 22001.522291839614,
+        "largestLoss": -20595.83294519045
+      },
+      "walkForward": {
+        "avgOOSReturn": -0.005550961235758392,
+        "consistency": 0.3333333333333333,
+        "robustness": 10
+      },
+      "monteCarlo": {
+        "probProfit": 0.96,
+        "var95": 0.07973058136173902
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    },
+    {
+      "symbol": "QQQ",
+      "strategy": "RSI Aggressive",
+      "metrics": {
+        "totalReturn": 0.2770713849295047,
+        "totalReturnPercent": 27.707138492950474,
+        "cagr": 0.024818288540100042,
+        "maxDrawdown": -37548.418762207046,
+        "maxDrawdownPercent": -0.28553486355017477,
+        "maxDrawdownDuration": 943,
+        "volatility": 0.11984756503501838,
+        "sharpeRatio": 0.2070821258057964,
+        "sortinoRatio": 0.0856408975607309,
+        "calmarRatio": 0.08691859281743688,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.15990453460620524,
+        "totalTrades": 5,
+        "winningTrades": 4,
+        "losingTrades": 1,
+        "winRate": 0.8,
+        "profitFactor": 2.8283026810690934,
+        "averageWin": 10715.426785697948,
+        "averageLoss": -15154.568649841303,
+        "averageTrade": 5541.427698590097,
+        "largestWin": 20058.05974050905,
+        "largestLoss": -15154.568649841303
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.0429198312552898,
+        "consistency": 0.6666666666666666,
+        "robustness": 39
+      },
+      "monteCarlo": {
+        "probProfit": 0.74,
+        "var95": -0.28109939388454486
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    },
+    {
+      "symbol": "QQQ",
+      "strategy": "Bollinger Breakout",
+      "metrics": {
+        "totalReturn": 1.1794391765260388,
+        "totalReturnPercent": 117.94391765260389,
+        "cagr": 0.08122287636609848,
+        "maxDrawdown": -33362.768738342245,
+        "maxDrawdownPercent": -0.2045207609220602,
+        "maxDrawdownDuration": 436,
+        "volatility": 0.15587863685805423,
+        "sharpeRatio": 0.5210648361010588,
+        "sortinoRatio": 0.2591757733115027,
+        "calmarRatio": 0.3971375619761717,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.2863961813842482,
+        "totalTrades": 49,
+        "winningTrades": 38,
+        "losingTrades": 11,
+        "winRate": 0.7755102040816326,
+        "profitFactor": 2.397366661912666,
+        "averageWin": 5324.956160353422,
+        "averageLoss": -7673.128767347836,
+        "averageTrade": 2407.01872760416,
+        "largestWin": 16188.752342651373,
+        "largestLoss": -19470.75305863951
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.04573901604014124,
+        "consistency": 1,
+        "robustness": 42
+      },
+      "monteCarlo": {
+        "probProfit": 0.95,
+        "var95": 0.031388091415977835
+      },
+      "score": 5,
+      "rating": "🏆 Excellent"
+    },
+    {
+      "symbol": "SPY",
+      "strategy": "Buy & Hold",
+      "metrics": {
+        "totalReturn": 2.2688990847497563,
+        "totalReturnPercent": 226.88990847497564,
+        "cagr": 0.12606360020520735,
+        "maxDrawdown": -57182.797119140625,
+        "maxDrawdownPercent": -0.24807854385153125,
+        "maxDrawdownDuration": 512,
+        "volatility": 0.1749683031896153,
+        "sharpeRatio": 0.7204939289408933,
+        "sortinoRatio": 0.6742538570943407,
+        "calmarRatio": 0.5081600296745261,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 1,
+        "totalTrades": 0,
+        "winningTrades": 0,
+        "losingTrades": 0,
+        "winRate": 0,
+        "profitFactor": 0,
+        "averageWin": 0,
+        "averageLoss": 0,
+        "averageTrade": 0,
+        "largestWin": 0,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.04819356643452969,
+        "consistency": 0.6666666666666666,
+        "robustness": 29
+      },
+      "monteCarlo": {
+        "probProfit": 0.99,
+        "var95": 0.3997327467547258
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    {
+      "symbol": "SPY",
+      "strategy": "MA Crossover (50/200)",
+      "metrics": {
+        "totalReturn": 0.6810977625698859,
+        "totalReturnPercent": 68.10977625698858,
+        "cagr": 0.0534480845713563,
+        "maxDrawdown": -38309.47979736328,
+        "maxDrawdownPercent": -0.3264870729278005,
+        "maxDrawdownDuration": 817,
+        "volatility": 0.130486034306594,
+        "sharpeRatio": 0.4096077013557868,
+        "sortinoRatio": 0.27456948971641026,
+        "calmarRatio": 0.1637065874984148,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.5377883850437549,
+        "totalTrades": 3,
+        "winningTrades": 2,
+        "losingTrades": 1,
+        "winRate": 0.6666666666666666,
+        "profitFactor": 7.474370949529715,
+        "averageWin": 30680.50234400942,
+        "averageLoss": -8209.520921874991,
+        "averageTrade": 17717.161255381285,
+        "largestWin": 33137.85830191042,
+        "largestLoss": -8209.520921874991
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.0056043549027506865,
+        "consistency": 0.3333333333333333,
+        "robustness": 31
+      },
+      "monteCarlo": {
+        "probProfit": 0.91,
+        "var95": -0.16937192185731342
+      },
+      "score": 2,
+      "rating": "📊 Fair"
+    },
+    {
+      "symbol": "SPY",
+      "strategy": "MA Crossover (20/50)",
+      "metrics": {
+        "totalReturn": 0.8177684765502953,
+        "totalReturnPercent": 81.77684765502953,
+        "cagr": 0.06173418119844998,
+        "maxDrawdown": -53833.723751312165,
+        "maxDrawdownPercent": -0.29195412715405206,
+        "maxDrawdownDuration": 1086,
+        "volatility": 0.10817251641872631,
+        "sharpeRatio": 0.5707011655297209,
+        "sortinoRatio": 0.42544394719343137,
+        "calmarRatio": 0.21145164755925994,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.6964996022275258,
+        "totalTrades": 20,
+        "winningTrades": 12,
+        "losingTrades": 8,
+        "winRate": 0.6,
+        "profitFactor": 2.1114301676334093,
+        "averageWin": 9161.906846771253,
+        "averageLoss": -6508.7922304153335,
+        "averageTrade": 2893.627215896618,
+        "largestWin": 33484.5102518616,
+        "largestLoss": -14857.792341064434
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.0407947629489137,
+        "consistency": 0.6666666666666666,
+        "robustness": 34
+      },
+      "monteCarlo": {
+        "probProfit": 0.96,
+        "var95": 0.02433373181640025
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    {
+      "symbol": "SPY",
+      "strategy": "RSI Reversion",
+      "metrics": {
+        "totalReturn": 0.3884458847097785,
+        "totalReturnPercent": 38.84458847097785,
+        "cagr": 0.03344391446592243,
+        "maxDrawdown": -32944.62878082275,
+        "maxDrawdownPercent": -0.2734562297253175,
+        "maxDrawdownDuration": 562,
+        "volatility": 0.13640129301643594,
+        "sharpeRatio": 0.2451876644739177,
+        "sortinoRatio": 0.13283956705115427,
+        "calmarRatio": 0.12230079563196025,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.3027048528241846,
+        "totalTrades": 11,
+        "winningTrades": 8,
+        "losingTrades": 3,
+        "winRate": 0.7272727272727273,
+        "profitFactor": 3.300509164357112,
+        "averageWin": 6966.225250289922,
+        "averageLoss": -5628.404510447171,
+        "averageTrade": 3531.326224634351,
+        "largestWin": 13571.940103454614,
+        "largestLoss": -10366.934067382806
+      },
+      "walkForward": {
+        "avgOOSReturn": -0.018310829237569076,
+        "consistency": 0.3333333333333333,
+        "robustness": 10
+      },
+      "monteCarlo": {
+        "probProfit": 0.75,
+        "var95": -0.2439693789071658
+      },
+      "score": 2,
+      "rating": "📊 Fair"
+    },
+    {
+      "symbol": "SPY",
+      "strategy": "RSI Aggressive",
+      "metrics": {
+        "totalReturn": 0.27407657448852624,
+        "totalReturnPercent": 27.407657448852625,
+        "cagr": 0.02457713429118491,
+        "maxDrawdown": -28141.826370239258,
+        "maxDrawdownPercent": -0.27388585339749116,
+        "maxDrawdownDuration": 759,
+        "volatility": 0.11866704223591369,
+        "sharpeRatio": 0.20711002674461895,
+        "sortinoRatio": 0.07584362391829476,
+        "calmarRatio": 0.08973495339869218,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.13842482100238662,
+        "totalTrades": 5,
+        "winningTrades": 3,
+        "losingTrades": 2,
+        "winRate": 0.6,
+        "profitFactor": 8.62087854071306,
+        "averageWin": 10334.682748616555,
+        "averageLoss": -1798.195398498517,
+        "averageTrade": 5481.531489770527,
+        "largestWin": 16811.95171646121,
+        "largestLoss": -1961.2211540222013
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.05843058455413828,
+        "consistency": 0.6666666666666666,
+        "robustness": 49
+      },
+      "monteCarlo": {
+        "probProfit": 0.72,
+        "var95": -0.38651863732909647
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    {
+      "symbol": "SPY",
+      "strategy": "Bollinger Breakout",
+      "metrics": {
+        "totalReturn": 0.5481835468032901,
+        "totalReturnPercent": 54.81835468032901,
+        "cagr": 0.04478649071506191,
+        "maxDrawdown": -38719.46535925291,
+        "maxDrawdownPercent": -0.2936561258681702,
+        "maxDrawdownDuration": 905,
+        "volatility": 0.1334360977231446,
+        "sharpeRatio": 0.33563999157098895,
+        "sortinoRatio": 0.17227049628906774,
+        "calmarRatio": 0.15251338817691726,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.2844073190135243,
+        "totalTrades": 51,
+        "winningTrades": 37,
+        "losingTrades": 14,
+        "winRate": 0.7254901960784313,
+        "profitFactor": 1.8207940267564755,
+        "averageWin": 3286.63068123525,
+        "averageLoss": -4770.498608955372,
+        "averageTrade": 1074.869699614294,
+        "largestWin": 10498.951349975596,
+        "largestLoss": -19006.74828833005
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.01292027802307183,
+        "consistency": 0.6666666666666666,
+        "robustness": 24
+      },
+      "monteCarlo": {
+        "probProfit": 0.87,
+        "var95": -0.18570373237596854
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    },
+    {
+      "symbol": "AAPL",
+      "strategy": "Buy & Hold",
+      "metrics": {
+        "totalReturn": 8.855046066779233,
+        "totalReturnPercent": 885.5046066779232,
+        "cagr": 0.2577751668958552,
+        "maxDrawdown": -312366.1669769287,
+        "maxDrawdownPercent": -0.33259076533746595,
+        "maxDrawdownDuration": 360,
+        "volatility": 0.2854602090049687,
+        "sharpeRatio": 0.903016107899537,
+        "sortinoRatio": 0.9060158209972217,
+        "calmarRatio": 0.7750520873130724,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 1,
+        "totalTrades": 0,
+        "winningTrades": 0,
+        "losingTrades": 0,
+        "winRate": 0,
+        "profitFactor": 0,
+        "averageWin": 0,
+        "averageLoss": 0,
+        "averageTrade": 0,
+        "largestWin": 0,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.09918879403483088,
+        "consistency": 1,
+        "robustness": 45
+      },
+      "monteCarlo": {
+        "probProfit": 1,
+        "var95": 2.1750900728981692
+      },
+      "score": 5,
+      "rating": "🏆 Excellent"
+    },
+    {
+      "symbol": "AAPL",
+      "strategy": "MA Crossover (50/200)",
+      "metrics": {
+        "totalReturn": 1.6661715617222235,
+        "totalReturnPercent": 166.61715617222234,
+        "cagr": 0.10329195936607571,
+        "maxDrawdown": -111961.42358317555,
+        "maxDrawdownPercent": -0.32375585651280137,
+        "maxDrawdownDuration": 1002,
+        "volatility": 0.21253809934023835,
+        "sharpeRatio": 0.4859926746626372,
+        "sortinoRatio": 0.3427334170964617,
+        "calmarRatio": 0.3190427517779637,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.5175019888623708,
+        "totalTrades": 4,
+        "winningTrades": 2,
+        "losingTrades": 2,
+        "winRate": 0.5,
+        "profitFactor": 3.1857338318911133,
+        "averageWin": 97550.64739788628,
+        "averageLoss": -30621.091574363676,
+        "averageTrade": 33464.7779117613,
+        "largestWin": 176940.26791527937,
+        "largestLoss": -40308.47403167723
+      },
+      "walkForward": {
+        "avgOOSReturn": 0,
+        "consistency": 0,
+        "robustness": 20
+      },
+      "monteCarlo": {
+        "probProfit": 0.93,
+        "var95": -0.029079205847087723
+      },
+      "score": 2,
+      "rating": "📊 Fair"
+    },
+    {
+      "symbol": "AAPL",
+      "strategy": "MA Crossover (20/50)",
+      "metrics": {
+        "totalReturn": 3.0277193703630316,
+        "totalReturnPercent": 302.77193703630314,
+        "cagr": 0.14987418990697243,
+        "maxDrawdown": -105118.27148146031,
+        "maxDrawdownPercent": -0.2844394133066662,
+        "maxDrawdownDuration": 625,
+        "volatility": 0.19019841762488066,
+        "sharpeRatio": 0.7879886267117228,
+        "sortinoRatio": 0.6384533690807905,
+        "calmarRatio": 0.5269107686753196,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.6276849642004774,
+        "totalTrades": 26,
+        "winningTrades": 13,
+        "losingTrades": 13,
+        "winRate": 0.5,
+        "profitFactor": 2.233106567079661,
+        "averageWin": 30178.37307957006,
+        "averageLoss": -13514.07654451339,
+        "averageTrade": 8332.148267528335,
+        "largestWin": 103578.68311424261,
+        "largestLoss": -31518.96578033442
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.1736722384693529,
+        "consistency": 0.6666666666666666,
+        "robustness": 60
+      },
+      "monteCarlo": {
+        "probProfit": 0.99,
+        "var95": 0.4200252999553815
+      },
+      "score": 5,
+      "rating": "🏆 Excellent"
+    },
+    {
+      "symbol": "AAPL",
+      "strategy": "RSI Reversion",
+      "metrics": {
+        "totalReturn": 1.3204463051310371,
+        "totalReturnPercent": 132.0446305131037,
+        "cagr": 0.08803884538228135,
+        "maxDrawdown": -56675.110610961914,
+        "maxDrawdownPercent": -0.2610935893497785,
+        "maxDrawdownDuration": 709,
+        "volatility": 0.19214243511579376,
+        "sharpeRatio": 0.4581957407234125,
+        "sortinoRatio": 0.25462167934797175,
+        "calmarRatio": 0.33719267333039954,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.3031026252983294,
+        "totalTrades": 16,
+        "winningTrades": 13,
+        "losingTrades": 3,
+        "winRate": 0.8125,
+        "profitFactor": 9.256094358719311,
+        "averageWin": 11387.555818557461,
+        "averageLoss": -5331.198376047736,
+        "averageTrade": 8252.789407068989,
+        "largestWin": 20626.379703613304,
+        "largestLoss": -10466.04042938231
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.03237565517705312,
+        "consistency": 0.6666666666666666,
+        "robustness": 31
+      },
+      "monteCarlo": {
+        "probProfit": 0.92,
+        "var95": -0.13259307952589544
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    },
+    {
+      "symbol": "AAPL",
+      "strategy": "RSI Aggressive",
+      "metrics": {
+        "totalReturn": 1.519875365886728,
+        "totalReturnPercent": 151.98753658867278,
+        "cagr": 0.09706838690072828,
+        "maxDrawdown": -23038.097534179688,
+        "maxDrawdownPercent": -0.11477241780887629,
+        "maxDrawdownDuration": 536,
+        "volatility": 0.12014004763341248,
+        "sharpeRatio": 0.8079602831265428,
+        "sortinoRatio": 0.3881314923700241,
+        "calmarRatio": 0.8457466415177427,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.18973747016706444,
+        "totalTrades": 8,
+        "winningTrades": 8,
+        "losingTrades": 0,
+        "winRate": 1,
+        "profitFactor": null,
+        "averageWin": 18998.442073584094,
+        "averageLoss": 0,
+        "averageTrade": 18998.442073584094,
+        "largestWin": 28819.360141754183,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.03476079476356516,
+        "consistency": 0.3333333333333333,
+        "robustness": 16
+      },
+      "monteCarlo": {
+        "probProfit": 1,
+        "var95": 0.4222254227597537
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    },
+    {
+      "symbol": "AAPL",
+      "strategy": "Bollinger Breakout",
+      "metrics": {
+        "totalReturn": 0.1395183941916503,
+        "totalReturnPercent": 13.95183941916503,
+        "cagr": 0.01317781406048213,
+        "maxDrawdown": -58786.71444005579,
+        "maxDrawdownPercent": -0.44152305496678956,
+        "maxDrawdownDuration": 1806,
+        "volatility": 0.19556087667670696,
+        "sharpeRatio": 0.06738471561603367,
+        "sortinoRatio": 0.0365920770455249,
+        "calmarRatio": 0.02984626490563066,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.3058870326173429,
+        "totalTrades": 43,
+        "winningTrades": 27,
+        "losingTrades": 16,
+        "winRate": 0.627906976744186,
+        "profitFactor": 1.1394771649015605,
+        "averageWin": 4146.987643906074,
+        "averageLoss": -6141.4496618684425,
+        "averageTrade": 318.7319022225323,
+        "largestWin": 13409.592981304171,
+        "largestLoss": -28844.842506053905
+      },
+      "walkForward": {
+        "avgOOSReturn": -0.05597472821610727,
+        "consistency": 0.6666666666666666,
+        "robustness": 35
+      },
+      "monteCarlo": {
+        "probProfit": 0.64,
+        "var95": -0.5135455452010954
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    }
+  ],
+  "bestBySymbol": {
+    "TQQQ": {
+      "symbol": "TQQQ",
+      "strategy": "Buy & Hold",
+      "metrics": {
+        "totalReturn": 21.464023711037598,
+        "totalReturnPercent": 2146.40237110376,
+        "cagr": 0.36606481507423805,
+        "maxDrawdown": -1539327.9817562103,
+        "maxDrawdownPercent": -0.8154207481428031,
+        "maxDrawdownDuration": 767,
+        "volatility": 0.6529754025548897,
+        "sharpeRatio": 0.5606104206099345,
+        "sortinoRatio": 0.5207482888835956,
+        "calmarRatio": 0.4489275210472445,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 1,
+        "totalTrades": 0,
+        "winningTrades": 0,
+        "losingTrades": 0,
+        "winRate": 0,
+        "profitFactor": 0,
+        "averageWin": 0,
+        "averageLoss": 0,
+        "averageTrade": 0,
+        "largestWin": 0,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.005473042535939406,
+        "consistency": 0.6666666666666666,
+        "robustness": 22
+      },
+      "monteCarlo": {
+        "probProfit": 0.95,
+        "var95": 0.015560443699520548
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    "QQQ": {
+      "symbol": "QQQ",
+      "strategy": "Bollinger Breakout",
+      "metrics": {
+        "totalReturn": 1.1794391765260388,
+        "totalReturnPercent": 117.94391765260389,
+        "cagr": 0.08122287636609848,
+        "maxDrawdown": -33362.768738342245,
+        "maxDrawdownPercent": -0.2045207609220602,
+        "maxDrawdownDuration": 436,
+        "volatility": 0.15587863685805423,
+        "sharpeRatio": 0.5210648361010588,
+        "sortinoRatio": 0.2591757733115027,
+        "calmarRatio": 0.3971375619761717,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.2863961813842482,
+        "totalTrades": 49,
+        "winningTrades": 38,
+        "losingTrades": 11,
+        "winRate": 0.7755102040816326,
+        "profitFactor": 2.397366661912666,
+        "averageWin": 5324.956160353422,
+        "averageLoss": -7673.128767347836,
+        "averageTrade": 2407.01872760416,
+        "largestWin": 16188.752342651373,
+        "largestLoss": -19470.75305863951
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.04573901604014124,
+        "consistency": 1,
+        "robustness": 42
+      },
+      "monteCarlo": {
+        "probProfit": 0.95,
+        "var95": 0.031388091415977835
+      },
+      "score": 5,
+      "rating": "🏆 Excellent"
+    },
+    "SPY": {
+      "symbol": "SPY",
+      "strategy": "Buy & Hold",
+      "metrics": {
+        "totalReturn": 2.2688990847497563,
+        "totalReturnPercent": 226.88990847497564,
+        "cagr": 0.12606360020520735,
+        "maxDrawdown": -57182.797119140625,
+        "maxDrawdownPercent": -0.24807854385153125,
+        "maxDrawdownDuration": 512,
+        "volatility": 0.1749683031896153,
+        "sharpeRatio": 0.7204939289408933,
+        "sortinoRatio": 0.6742538570943407,
+        "calmarRatio": 0.5081600296745261,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 1,
+        "totalTrades": 0,
+        "winningTrades": 0,
+        "losingTrades": 0,
+        "winRate": 0,
+        "profitFactor": 0,
+        "averageWin": 0,
+        "averageLoss": 0,
+        "averageTrade": 0,
+        "largestWin": 0,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.04819356643452969,
+        "consistency": 0.6666666666666666,
+        "robustness": 29
+      },
+      "monteCarlo": {
+        "probProfit": 0.99,
+        "var95": 0.3997327467547258
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    "AAPL": {
+      "symbol": "AAPL",
+      "strategy": "Buy & Hold",
+      "metrics": {
+        "totalReturn": 8.855046066779233,
+        "totalReturnPercent": 885.5046066779232,
+        "cagr": 0.2577751668958552,
+        "maxDrawdown": -312366.1669769287,
+        "maxDrawdownPercent": -0.33259076533746595,
+        "maxDrawdownDuration": 360,
+        "volatility": 0.2854602090049687,
+        "sharpeRatio": 0.903016107899537,
+        "sortinoRatio": 0.9060158209972217,
+        "calmarRatio": 0.7750520873130724,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 1,
+        "totalTrades": 0,
+        "winningTrades": 0,
+        "losingTrades": 0,
+        "winRate": 0,
+        "profitFactor": 0,
+        "averageWin": 0,
+        "averageLoss": 0,
+        "averageTrade": 0,
+        "largestWin": 0,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.09918879403483088,
+        "consistency": 1,
+        "robustness": 45
+      },
+      "monteCarlo": {
+        "probProfit": 1,
+        "var95": 2.1750900728981692
+      },
+      "score": 5,
+      "rating": "🏆 Excellent"
+    }
+  },
+  "bestByStrategy": {
+    "Buy & Hold": {
+      "symbol": "AAPL",
+      "strategy": "Buy & Hold",
+      "metrics": {
+        "totalReturn": 8.855046066779233,
+        "totalReturnPercent": 885.5046066779232,
+        "cagr": 0.2577751668958552,
+        "maxDrawdown": -312366.1669769287,
+        "maxDrawdownPercent": -0.33259076533746595,
+        "maxDrawdownDuration": 360,
+        "volatility": 0.2854602090049687,
+        "sharpeRatio": 0.903016107899537,
+        "sortinoRatio": 0.9060158209972217,
+        "calmarRatio": 0.7750520873130724,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 1,
+        "totalTrades": 0,
+        "winningTrades": 0,
+        "losingTrades": 0,
+        "winRate": 0,
+        "profitFactor": 0,
+        "averageWin": 0,
+        "averageLoss": 0,
+        "averageTrade": 0,
+        "largestWin": 0,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.09918879403483088,
+        "consistency": 1,
+        "robustness": 45
+      },
+      "monteCarlo": {
+        "probProfit": 1,
+        "var95": 2.1750900728981692
+      },
+      "score": 5,
+      "rating": "🏆 Excellent"
+    },
+    "MA Crossover (50/200)": {
+      "symbol": "QQQ",
+      "strategy": "MA Crossover (50/200)",
+      "metrics": {
+        "totalReturn": 2.027391559393159,
+        "totalReturnPercent": 202.7391559393159,
+        "cagr": 0.11743346389867826,
+        "maxDrawdown": -70001.83245849606,
+        "maxDrawdownPercent": -0.2224640256510581,
+        "maxDrawdownDuration": 817,
+        "volatility": 0.16402037496610358,
+        "sharpeRatio": 0.7159687564605741,
+        "sortinoRatio": 0.4880637291654405,
+        "calmarRatio": 0.5278761973087567,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.5469371519490851,
+        "totalTrades": 3,
+        "winningTrades": 3,
+        "losingTrades": 0,
+        "winRate": 1,
+        "profitFactor": null,
+        "averageWin": 55963.259093948385,
+        "averageLoss": 0,
+        "averageTrade": 55963.259093948385,
+        "largestWin": 94145.72244735721,
+        "largestLoss": 0
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.008991285554656982,
+        "consistency": 0.3333333333333333,
+        "robustness": 31
+      },
+      "monteCarlo": {
+        "probProfit": 0.99,
+        "var95": 0.5846910429958204
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    },
+    "MA Crossover (20/50)": {
+      "symbol": "AAPL",
+      "strategy": "MA Crossover (20/50)",
+      "metrics": {
+        "totalReturn": 3.0277193703630316,
+        "totalReturnPercent": 302.77193703630314,
+        "cagr": 0.14987418990697243,
+        "maxDrawdown": -105118.27148146031,
+        "maxDrawdownPercent": -0.2844394133066662,
+        "maxDrawdownDuration": 625,
+        "volatility": 0.19019841762488066,
+        "sharpeRatio": 0.7879886267117228,
+        "sortinoRatio": 0.6384533690807905,
+        "calmarRatio": 0.5269107686753196,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.6276849642004774,
+        "totalTrades": 26,
+        "winningTrades": 13,
+        "losingTrades": 13,
+        "winRate": 0.5,
+        "profitFactor": 2.233106567079661,
+        "averageWin": 30178.37307957006,
+        "averageLoss": -13514.07654451339,
+        "averageTrade": 8332.148267528335,
+        "largestWin": 103578.68311424261,
+        "largestLoss": -31518.96578033442
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.1736722384693529,
+        "consistency": 0.6666666666666666,
+        "robustness": 60
+      },
+      "monteCarlo": {
+        "probProfit": 0.99,
+        "var95": 0.4200252999553815
+      },
+      "score": 5,
+      "rating": "🏆 Excellent"
+    },
+    "RSI Reversion": {
+      "symbol": "QQQ",
+      "strategy": "RSI Reversion",
+      "metrics": {
+        "totalReturn": 1.1304149059055355,
+        "totalReturnPercent": 113.04149059055355,
+        "cagr": 0.07875994288635879,
+        "maxDrawdown": -45708.39440917969,
+        "maxDrawdownPercent": -0.2559263122549422,
+        "maxDrawdownDuration": 590,
+        "volatility": 0.15641138123215972,
+        "sharpeRatio": 0.5035435546052512,
+        "sortinoRatio": 0.260436371118253,
+        "calmarRatio": 0.3077446089556501,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.284805091487669,
+        "totalTrades": 14,
+        "winningTrades": 12,
+        "losingTrades": 2,
+        "winRate": 0.8571428571428571,
+        "profitFactor": 6.209038304752111,
+        "averageWin": 11228.543287646628,
+        "averageLoss": -10850.51443060303,
+        "averageTrade": 8074.3921850395345,
+        "largestWin": 22001.522291839614,
+        "largestLoss": -20595.83294519045
+      },
+      "walkForward": {
+        "avgOOSReturn": -0.005550961235758392,
+        "consistency": 0.3333333333333333,
+        "robustness": 10
+      },
+      "monteCarlo": {
+        "probProfit": 0.96,
+        "var95": 0.07973058136173902
+      },
+      "score": 3,
+      "rating": "✅ Good"
+    },
+    "RSI Aggressive": {
+      "symbol": "SPY",
+      "strategy": "RSI Aggressive",
+      "metrics": {
+        "totalReturn": 0.27407657448852624,
+        "totalReturnPercent": 27.407657448852625,
+        "cagr": 0.02457713429118491,
+        "maxDrawdown": -28141.826370239258,
+        "maxDrawdownPercent": -0.27388585339749116,
+        "maxDrawdownDuration": 759,
+        "volatility": 0.11866704223591369,
+        "sharpeRatio": 0.20711002674461895,
+        "sortinoRatio": 0.07584362391829476,
+        "calmarRatio": 0.08973495339869218,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.13842482100238662,
+        "totalTrades": 5,
+        "winningTrades": 3,
+        "losingTrades": 2,
+        "winRate": 0.6,
+        "profitFactor": 8.62087854071306,
+        "averageWin": 10334.682748616555,
+        "averageLoss": -1798.195398498517,
+        "averageTrade": 5481.531489770527,
+        "largestWin": 16811.95171646121,
+        "largestLoss": -1961.2211540222013
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.05843058455413828,
+        "consistency": 0.6666666666666666,
+        "robustness": 49
+      },
+      "monteCarlo": {
+        "probProfit": 0.72,
+        "var95": -0.38651863732909647
+      },
+      "score": 4,
+      "rating": "🌟 Very Good"
+    },
+    "Bollinger Breakout": {
+      "symbol": "QQQ",
+      "strategy": "Bollinger Breakout",
+      "metrics": {
+        "totalReturn": 1.1794391765260388,
+        "totalReturnPercent": 117.94391765260389,
+        "cagr": 0.08122287636609848,
+        "maxDrawdown": -33362.768738342245,
+        "maxDrawdownPercent": -0.2045207609220602,
+        "maxDrawdownDuration": 436,
+        "volatility": 0.15587863685805423,
+        "sharpeRatio": 0.5210648361010588,
+        "sortinoRatio": 0.2591757733115027,
+        "calmarRatio": 0.3971375619761717,
+        "tradingDays": 2514,
+        "yearsTraded": 9.976190476190476,
+        "exposurePercent": 0.2863961813842482,
+        "totalTrades": 49,
+        "winningTrades": 38,
+        "losingTrades": 11,
+        "winRate": 0.7755102040816326,
+        "profitFactor": 2.397366661912666,
+        "averageWin": 5324.956160353422,
+        "averageLoss": -7673.128767347836,
+        "averageTrade": 2407.01872760416,
+        "largestWin": 16188.752342651373,
+        "largestLoss": -19470.75305863951
+      },
+      "walkForward": {
+        "avgOOSReturn": 0.04573901604014124,
+        "consistency": 1,
+        "robustness": 42
+      },
+      "monteCarlo": {
+        "probProfit": 0.95,
+        "var95": 0.031388091415977835
+      },
+      "score": 5,
+      "rating": "🏆 Excellent"
+    }
+  },
+  "overallBest": {
+    "symbol": "AAPL",
+    "strategy": "Buy & Hold",
+    "metrics": {
+      "totalReturn": 8.855046066779233,
+      "totalReturnPercent": 885.5046066779232,
+      "cagr": 0.2577751668958552,
+      "maxDrawdown": -312366.1669769287,
+      "maxDrawdownPercent": -0.33259076533746595,
+      "maxDrawdownDuration": 360,
+      "volatility": 0.2854602090049687,
+      "sharpeRatio": 0.903016107899537,
+      "sortinoRatio": 0.9060158209972217,
+      "calmarRatio": 0.7750520873130724,
+      "tradingDays": 2514,
+      "yearsTraded": 9.976190476190476,
+      "exposurePercent": 1,
+      "totalTrades": 0,
+      "winningTrades": 0,
+      "losingTrades": 0,
+      "winRate": 0,
+      "profitFactor": 0,
+      "averageWin": 0,
+      "averageLoss": 0,
+      "averageTrade": 0,
+      "largestWin": 0,
+      "largestLoss": 0
+    },
+    "walkForward": {
+      "avgOOSReturn": 0.09918879403483088,
+      "consistency": 1,
+      "robustness": 45
+    },
+    "monteCarlo": {
+      "probProfit": 1,
+      "var95": 2.1750900728981692
+    },
+    "score": 5,
+    "rating": "🏆 Excellent"
+  }
+}
