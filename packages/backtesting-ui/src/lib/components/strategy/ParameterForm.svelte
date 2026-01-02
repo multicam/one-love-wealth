@@ -1,11 +1,14 @@
 <script lang="ts">
-	import { RotateCcw, ChevronDown, ChevronUp } from 'lucide-svelte';
+	import { RotateCcw, ChevronDown, ChevronUp, Settings } from 'lucide-svelte';
 	import { strategy } from '$lib/stores/strategy.svelte';
 	import FieldRenderer from './FieldRenderer.svelte';
+	import BacktestConfig from '$lib/components/config/BacktestConfig.svelte';
 	import type { StrategyField } from '$lib/strategies/types';
 
 	// Show/hide advanced parameters
 	let showAdvanced = $state(false);
+	// Show/hide backtest config
+	let showConfig = $state(false);
 
 	// Get visible fields (showByDefault !== false)
 	const visibleFields = $derived<StrategyField[]>(() => {
@@ -131,6 +134,32 @@
 					</div>
 				</div>
 			{/if}
+
+			<!-- Backtest Configuration Toggle -->
+			<div class="pt-4 mt-4 border-t border-border">
+				<button
+					type="button"
+					onclick={() => (showConfig = !showConfig)}
+					class="flex items-center justify-between w-full text-sm font-medium text-text-secondary hover:text-text-primary transition-colors"
+				>
+					<div class="flex items-center gap-2">
+						<Settings size={16} />
+						<span>Backtest Configuration</span>
+					</div>
+					{#if showConfig}
+						<ChevronUp size={16} />
+					{:else}
+						<ChevronDown size={16} />
+					{/if}
+				</button>
+
+				<!-- Backtest Config -->
+				{#if showConfig}
+					<div class="mt-4 -mx-4">
+						<BacktestConfig />
+					</div>
+				{/if}
+			</div>
 		</div>
 	</div>
 {:else}
