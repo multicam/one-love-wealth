@@ -14,22 +14,22 @@
 
 	// Get visible fields (showByDefault !== false)
 	const visibleFields = $derived<StrategyField[]>(() => {
-		if (!strategy.selectedStrategy) return [];
-		return strategy.selectedStrategy.fields.filter((f) => f.showByDefault !== false);
+		if (!$strategy.selectedStrategy) return [];
+		return $strategy.selectedStrategy.fields.filter((f) => f.showByDefault !== false);
 	});
 
 	// Get advanced fields (showByDefault === false)
 	const advancedFields = $derived<StrategyField[]>(() => {
-		if (!strategy.selectedStrategy) return [];
-		return strategy.selectedStrategy.fields.filter((f) => f.showByDefault === false);
+		if (!$strategy.selectedStrategy) return [];
+		return $strategy.selectedStrategy.fields.filter((f) => f.showByDefault === false);
 	});
 
 	// Check if current params match recommended preset
 	const isUsingRecommended = $derived(() => {
-		if (!strategy.selectedStrategy) return false;
-		const recommended = strategy.selectedStrategy.defaults;
+		if (!$strategy.selectedStrategy) return false;
+		const recommended = $strategy.selectedStrategy.defaults;
 		for (const key in recommended) {
-			if (strategy.params[key] !== recommended[key]) {
+			if ($strategy.params[key] !== recommended[key]) {
 				return false;
 			}
 		}
@@ -38,8 +38,8 @@
 
 	// Reset to recommended preset
 	function resetToRecommended() {
-		if (strategy.selectedStrategy) {
-			strategy.updateParams({ ...strategy.selectedStrategy.defaults });
+		if ($strategy.selectedStrategy) {
+			strategy.updateParams({ ...$strategy.selectedStrategy.defaults });
 		}
 	}
 
@@ -49,7 +49,7 @@
 	}
 </script>
 
-{#if strategy.selectedStrategy}
+{#if $strategy.selectedStrategy}
 	<div class="h-full flex flex-col">
 		<!-- Header -->
 		<div class="p-4 border-b border-border">
@@ -71,7 +71,7 @@
 			</div>
 
 			<!-- Preset Badge -->
-			{#if strategy.selectedStrategy.preset}
+			{#if $strategy.selectedStrategy.preset}
 				<div class="flex items-center gap-2 text-xs text-text-secondary">
 					<span class="w-2 h-2 rounded-full {isUsingRecommended() ? 'bg-green-500' : 'bg-orange-500'}"></span>
 					<span>
@@ -87,7 +87,7 @@
 			{#each visibleFields() as field (field.key)}
 				<FieldRenderer
 					{field}
-					value={strategy.params[field.key]}
+					value={$strategy.params[field.key]}
 					onUpdate={(val) => handleFieldUpdate(field.key, val)}
 				/>
 			{/each}
@@ -114,7 +114,7 @@
 							{#each advancedFields() as field (field.key)}
 								<FieldRenderer
 									{field}
-									value={strategy.params[field.key]}
+									value={$strategy.params[field.key]}
 									onUpdate={(val) => handleFieldUpdate(field.key, val)}
 								/>
 							{/each}
@@ -124,14 +124,14 @@
 			{/if}
 
 			<!-- Preset Information -->
-			{#if strategy.selectedStrategy.preset}
+			{#if $strategy.selectedStrategy.preset}
 				<div class="pt-4 mt-4 border-t border-border">
 					<div class="bg-primary/5 rounded-lg p-3 border border-primary/20">
 						<h3 class="text-xs font-semibold text-primary mb-2">
 							💡 About These Defaults
 						</h3>
 						<p class="text-xs text-text-secondary">
-							{strategy.selectedStrategy.preset.rationale}
+							{$strategy.selectedStrategy.preset.rationale}
 						</p>
 					</div>
 				</div>

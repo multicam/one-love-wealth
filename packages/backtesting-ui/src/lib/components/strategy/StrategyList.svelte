@@ -107,7 +107,7 @@
 
 					<!-- Strategies -->
 					{#each strategiesInCategory as strategyDef}
-						{@const isSelected = strategy.selectedStrategyId === strategyDef.id}
+						{@const isSelected = $strategy.selectedStrategyId === strategyDef.id}
 						<button
 							type="button"
 							class="w-full px-4 py-3 text-left hover:bg-surface transition-colors group relative {isSelected ? 'bg-primary/10 border-l-2 border-primary' : ''}"

@@ -11,7 +11,7 @@
 	// Listen for keyboard shortcut event
 	onMount(() => {
 		const handleRunEvent = () => {
-			if (isValid && !backtest.isRunning) {
+			if (isValid && !$backtest.isRunning) {
 				handleRunBacktest();
 			}
 		};
@@ -25,23 +25,23 @@
 		const errors: string[] = [];
 
 		// Check if strategy is selected
-		if (!strategy.selectedStrategyId || !strategy.selectedStrategy) {
+		if (!$strategy.selectedStrategyId || !$strategy.selectedStrategy) {
 			errors.push('Please select a strategy');
 			return errors;
 		}
 
 		// Validate strategy parameters
-		const paramValidation = validateStrategyParams(strategy.selectedStrategy, strategy.params);
+		const paramValidation = validateStrategyParams($strategy.selectedStrategy, $strategy.params);
 		if (!paramValidation.valid) {
 			errors.push(...paramValidation.errors);
 		}
 
 		// Validate date range
-		if (!config.dateRange.start || !config.dateRange.end) {
+		if (!$config.dateRange.start || !$config.dateRange.end) {
 			errors.push('Date range is required');
 		} else {
-			const start = new Date(config.dateRange.start);
-			const end = new Date(config.dateRange.end);
+			const start = new Date($config.dateRange.start);
+			const end = new Date($config.dateRange.end);
 			if (start >= end) {
 				errors.push('Start date must be before end date');
 			}
@@ -53,7 +53,7 @@
 		}
 
 		// Validate initial capital
-		if (!config.initialCapital || config.initialCapital <= 0) {
+		if (!$config.initialCapital || $config.initialCapital <= 0) {
 			errors.push('Initial capital must be greater than 0');
 		}
 
@@ -65,7 +65,7 @@
 
 	// Handle run backtest
 	async function handleRunBacktest() {
-		if (!isValid || !strategy.selectedStrategy) return;
+		if (!isValid || !$strategy.selectedStrategy) return;
 
 		try {
 			// Start backtest with loading state
@@ -74,12 +74,12 @@
 			// Execute backtest with progress tracking
 			const result = await executeBacktest(
 				{
-					strategy: strategy.selectedStrategy,
-					strategyParams: strategy.params,
-					dateRange: config.dateRange,
-					interval: config.interval,
-					initialCapital: config.initialCapital,
-					gapFillStrategy: config.gapFillStrategy,
+					strategy: $strategy.selectedStrategy,
+					strategyParams: $strategy.params,
+					dateRange: $config.dateRange,
+					interval: $config.interval,
+					initialCapital: $config.initialCapital,
+					gapFillStrategy: $config.gapFillStrategy,
 				},
 				(progress, message) => {
 					backtest.setProgress(progress);
@@ -90,8 +90,8 @@
 			// Set result in store with strategy info for history
 			backtest.setResult(
 				result,
-				strategy.selectedStrategyId!,
-				strategy.selectedStrategy!.name
+				$strategy.selectedStrategyId!,
+				$strategy.selectedStrategy!.name
 			);
 
 			// Show success toast
@@ -112,12 +112,12 @@
 	<button
 		type="button"
 		onclick={handleRunBacktest}
-		disabled={!isValid || backtest.isRunning}
-		class="w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 {isValid && !backtest.isRunning
+		disabled={!isValid || $backtest.isRunning}
+		class="w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 {isValid && !$backtest.isRunning
 			? 'bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20'
 			: 'bg-surface text-text-secondary cursor-not-allowed'}"
 	>
-		{#if backtest.isRunning}
+		{#if $backtest.isRunning}
 			<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 			<span>Running Backtest...</span>
 		{:else}
@@ -146,23 +146,23 @@
 	{/if}
 
 	<!-- Progress Indicator -->
-	{#if backtest.isRunning && backtest.progress > 0}
+	{#if $backtest.isRunning && $backtest.progress > 0}
 		<div class="space-y-1">
 			<div class="flex justify-between text-xs text-text-secondary">
 				<span>Progress</span>
-				<span>{backtest.progress}%</span>
+				<span>{$backtest.progress}%</span>
 			</div>
 			<div class="h-1 bg-background rounded-full overflow-hidden">
 				<div
 					class="h-full bg-primary transition-all duration-300"
-					style="width: {backtest.progress}%"
+					style="width: {$backtest.progress}%"
 				></div>
 			</div>
 		</div>
 	{/if}
 
 	<!-- Error Display -->
-	{#if backtest.hasError}
+	{#if $backtest.hasError}
 		<div class="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
 			<div class="flex items-start gap-2">
 				<AlertCircle size={16} class="text-red-500 flex-shrink-0 mt-0.5" />
@@ -171,7 +171,7 @@
 						Backtest failed:
 					</div>
 					<div class="text-xs text-red-500/80">
-						{backtest.error}
+						{$backtest.error}
 					</div>
 				</div>
 			</div>
@@ -179,7 +179,7 @@
 	{/if}
 
 	<!-- Keyboard Shortcut Hint -->
-	{#if isValid && !backtest.isRunning}
+	{#if isValid && !$backtest.isRunning}
 		<div class="text-xs text-text-secondary text-center">
 			Press <kbd
 				class="px-1.5 py-0.5 bg-background border border-border rounded text-text-primary font-mono"

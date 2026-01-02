@@ -6,195 +6,245 @@
  * - Anchored vs Rolling mode
  * - Analysis execution state
  * - Results and history
+ *
+ * Uses traditional writable store pattern for reliable reactivity
  */
 
+import { writable, derived } from 'svelte/store';
+import { browser } from '$app/environment';
+
 export interface WalkForwardConfig {
-  inSamplePercent: number; // 60 = 60%
-  outSamplePercent: number; // 40 = 40%
-  stepSizePercent: number; // 20 = 20%
-  anchored: boolean; // true = anchored, false = rolling
+	inSamplePercent: number; // 60 = 60%
+	outSamplePercent: number; // 40 = 40%
+	stepSizePercent: number; // 20 = 20%
+	anchored: boolean; // true = anchored, false = rolling
 }
 
 export interface WindowMetrics {
-  sharpe: number;
-  sortino: number;
-  totalReturn: number;
-  maxDrawdown: number;
-  winRate: number;
-  cagr: number;
+	sharpe: number;
+	sortino: number;
+	totalReturn: number;
+	maxDrawdown: number;
+	winRate: number;
+	cagr: number;
 }
 
 export interface WalkForwardWindow {
-  windowNumber: number;
-  inSampleStart: string; // ISO date
-  inSampleEnd: string;
-  outSampleStart: string;
-  outSampleEnd: string;
-  bestParams: Record<string, number>; // Optimized on in-sample
-  inSampleMetrics: WindowMetrics;
-  outSampleMetrics: WindowMetrics;
-  degradationPercent: number; // (in-sample - out-sample) / in-sample * 100
+	windowNumber: number;
+	inSampleStart: string; // ISO date
+	inSampleEnd: string;
+	outSampleStart: string;
+	outSampleEnd: string;
+	bestParams: Record<string, number>; // Optimized on in-sample
+	inSampleMetrics: WindowMetrics;
+	outSampleMetrics: WindowMetrics;
+	degradationPercent: number; // (in-sample - out-sample) / in-sample * 100
 }
 
 export interface WalkForwardOutput {
-  config: WalkForwardConfig;
-  strategyId: string;
-  strategyName: string;
-  windows: WalkForwardWindow[];
-  aggregateInSample: WindowMetrics;
-  aggregateOutSample: WindowMetrics;
-  averageDegradation: number;
-  passFailStatus: 'pass' | 'fail'; // pass if degradation < 20%
-  equityCurveStitched: Array<{ date: string; value: number }>; // Out-of-sample only
+	config: WalkForwardConfig;
+	strategyId: string;
+	strategyName: string;
+	windows: WalkForwardWindow[];
+	aggregateInSample: WindowMetrics;
+	aggregateOutSample: WindowMetrics;
+	averageDegradation: number;
+	passFailStatus: 'pass' | 'fail'; // pass if degradation < 20%
+	equityCurveStitched: Array<{ date: string; value: number }>; // Out-of-sample only
 }
 
 interface CompressedWalkForward {
-  id: string;
-  timestamp: number;
-  strategyId: string;
-  strategyName: string;
-  windowCount: number;
-  averageDegradation: number;
-  passFailStatus: 'pass' | 'fail';
-  aggregateOutSample: WindowMetrics;
+	id: string;
+	timestamp: number;
+	strategyId: string;
+	strategyName: string;
+	windowCount: number;
+	averageDegradation: number;
+	passFailStatus: 'pass' | 'fail';
+	aggregateOutSample: WindowMetrics;
 }
 
-class WalkForwardState {
-  // Configuration
-  config = $state<WalkForwardConfig>({
-    inSamplePercent: 60,
-    outSamplePercent: 40,
-    stepSizePercent: 20,
-    anchored: false,
-  });
-
-  // Execution state
-  isRunning = $state(false);
-  currentWindow = $state(0);
-  totalWindows = $state(0);
-
-  // Results
-  result = $state<WalkForwardOutput | null>(null);
-  error = $state<string | null>(null);
-
-  // History (persisted to localStorage)
-  history = $state<CompressedWalkForward[]>([]);
-
-  // Computed
-  hasResult = $derived(this.result !== null);
-  progress = $derived(() => {
-    if (this.totalWindows === 0) return 0;
-    return (this.currentWindow / this.totalWindows) * 100;
-  });
-
-  constructor() {
-    this.loadHistory();
-  }
-
-  // Configuration methods
-  updateConfig(updates: Partial<WalkForwardConfig>): void {
-    this.config = { ...this.config, ...updates };
-  }
-
-  resetConfig(): void {
-    this.config = {
-      inSamplePercent: 60,
-      outSamplePercent: 40,
-      stepSizePercent: 20,
-      anchored: false,
-    };
-  }
-
-  // Execution methods
-  startAnalysis(totalWindows: number): void {
-    this.isRunning = true;
-    this.currentWindow = 0;
-    this.totalWindows = totalWindows;
-    this.error = null;
-  }
-
-  updateProgress(windowNumber: number): void {
-    this.currentWindow = windowNumber;
-  }
-
-  setResult(newResult: WalkForwardOutput, strategyId?: string, strategyName?: string): void {
-    this.isRunning = false;
-    this.result = newResult;
-    this.currentWindow = 0;
-    this.totalWindows = 0;
-
-    if (strategyId && strategyName) {
-      this.addToHistory(newResult, strategyId, strategyName);
-    }
-  }
-
-  setError(errorMessage: string): void {
-    this.isRunning = false;
-    this.error = errorMessage;
-    this.currentWindow = 0;
-    this.totalWindows = 0;
-  }
-
-  stopAnalysis(): void {
-    this.isRunning = false;
-    this.currentWindow = 0;
-    this.totalWindows = 0;
-  }
-
-  clearResult(): void {
-    this.result = null;
-    this.error = null;
-    this.currentWindow = 0;
-    this.totalWindows = 0;
-  }
-
-  // History methods
-  private addToHistory(result: WalkForwardOutput, strategyId: string, strategyName: string): void {
-    const compressed: CompressedWalkForward = {
-      id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      timestamp: Date.now(),
-      strategyId,
-      strategyName,
-      windowCount: result.windows.length,
-      averageDegradation: result.averageDegradation,
-      passFailStatus: result.passFailStatus,
-      aggregateOutSample: result.aggregateOutSample,
-    };
-
-    this.history = [compressed, ...this.history.slice(0, 9)]; // Keep last 10
-    this.saveHistory();
-  }
-
-  loadHistoryItem(id: string): void {
-    // TODO: Implement full result loading from localStorage
-    // For now, this is a placeholder
-    console.log(`Loading walk-forward history item: ${id}`);
-  }
-
-  clearHistory(): void {
-    this.history = [];
-    this.saveHistory();
-  }
-
-  private saveHistory(): void {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem('walkforward-history', JSON.stringify(this.history));
-    }
-  }
-
-  private loadHistory(): void {
-    if (typeof localStorage !== 'undefined') {
-      const stored = localStorage.getItem('walkforward-history');
-      if (stored) {
-        try {
-          this.history = JSON.parse(stored);
-        } catch (e) {
-          console.error('Failed to load walk-forward history:', e);
-          this.history = [];
-        }
-      }
-    }
-  }
+interface WalkForwardState {
+	config: WalkForwardConfig;
+	isRunning: boolean;
+	currentWindow: number;
+	totalWindows: number;
+	result: WalkForwardOutput | null;
+	error: string | null;
+	history: CompressedWalkForward[];
 }
 
-export const walkforward = new WalkForwardState();
+// Initial state
+const initialState: WalkForwardState = {
+	config: {
+		inSamplePercent: 60,
+		outSamplePercent: 40,
+		stepSizePercent: 20,
+		anchored: false,
+	},
+	isRunning: false,
+	currentWindow: 0,
+	totalWindows: 0,
+	result: null,
+	error: null,
+	history: [],
+};
+
+function createWalkForwardStore() {
+	const { subscribe, set, update } = writable<WalkForwardState>(initialState);
+
+	// Helper functions for history persistence
+	function saveHistory(history: CompressedWalkForward[]): void {
+		if (!browser) return;
+		try {
+			localStorage.setItem('walkforward-history', JSON.stringify(history));
+		} catch (error) {
+			console.error('Failed to save walk-forward history to localStorage:', error);
+		}
+	}
+
+	return {
+		subscribe,
+
+		// Configuration methods
+		updateConfig: (updates: Partial<WalkForwardConfig>) => {
+			update((state) => ({
+				...state,
+				config: { ...state.config, ...updates },
+			}));
+		},
+
+		resetConfig: () => {
+			update((state) => ({
+				...state,
+				config: {
+					inSamplePercent: 60,
+					outSamplePercent: 40,
+					stepSizePercent: 20,
+					anchored: false,
+				},
+			}));
+		},
+
+		// Execution methods
+		startAnalysis: (totalWindows: number) => {
+			update((state) => ({
+				...state,
+				isRunning: true,
+				currentWindow: 0,
+				totalWindows,
+				error: null,
+			}));
+		},
+
+		updateProgress: (windowNumber: number) => {
+			update((state) => ({
+				...state,
+				currentWindow: windowNumber,
+			}));
+		},
+
+		setResult: (newResult: WalkForwardOutput, strategyId?: string, strategyName?: string) => {
+			update((state) => {
+				const newState = {
+					...state,
+					isRunning: false,
+					result: newResult,
+					currentWindow: 0,
+					totalWindows: 0,
+				};
+
+				if (strategyId && strategyName) {
+					const compressed: CompressedWalkForward = {
+						id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+						timestamp: Date.now(),
+						strategyId,
+						strategyName,
+						windowCount: newResult.windows.length,
+						averageDegradation: newResult.averageDegradation,
+						passFailStatus: newResult.passFailStatus,
+						aggregateOutSample: newResult.aggregateOutSample,
+					};
+
+					newState.history = [compressed, ...state.history.slice(0, 9)]; // Keep last 10
+					saveHistory(newState.history);
+				}
+
+				return newState;
+			});
+		},
+
+		setError: (errorMessage: string) => {
+			update((state) => ({
+				...state,
+				isRunning: false,
+				error: errorMessage,
+				currentWindow: 0,
+				totalWindows: 0,
+			}));
+		},
+
+		stopAnalysis: () => {
+			update((state) => ({
+				...state,
+				isRunning: false,
+				currentWindow: 0,
+				totalWindows: 0,
+			}));
+		},
+
+		clearResult: () => {
+			update((state) => ({
+				...state,
+				result: null,
+				error: null,
+				currentWindow: 0,
+				totalWindows: 0,
+			}));
+		},
+
+		// History methods
+		loadHistoryItem: (id: string) => {
+			// TODO: Implement full result loading from localStorage
+			// For now, this is a placeholder
+			console.log(`Loading walk-forward history item: ${id}`);
+		},
+
+		clearHistory: () => {
+			update((state) => {
+				const newState = { ...state, history: [] };
+				saveHistory(newState.history);
+				return newState;
+			});
+		},
+
+		loadHistory: () => {
+			if (!browser) return;
+			try {
+				const stored = localStorage.getItem('walkforward-history');
+				if (stored) {
+					const history = JSON.parse(stored);
+					if (Array.isArray(history)) {
+						update((state) => ({
+							...state,
+							history,
+						}));
+					}
+				}
+			} catch (error) {
+				console.error('Failed to load walk-forward history from localStorage:', error);
+			}
+		},
+	};
+}
+
+// Export store instance
+export const walkforward = createWalkForwardStore();
+
+// Derived stores for convenient access
+export const hasResult = derived(walkforward, ($walkforward) => $walkforward.result !== null);
+export const progress = derived(walkforward, ($walkforward) =>
+	$walkforward.totalWindows === 0
+		? 0
+		: ($walkforward.currentWindow / $walkforward.totalWindows) * 100
+);

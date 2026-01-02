@@ -1,142 +1,176 @@
 /**
  * Config Store
  * Manages backtest configuration (symbols, dates, intervals)
- * Uses Svelte 5 runes with proper module state pattern
+ * Uses traditional writable store pattern for reliable reactivity
  * Persists to localStorage automatically
  */
 
+import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 import { DEFAULT_CONFIG } from '$lib/config/defaults';
 import type { DateRange } from '$lib/utils/date-range';
 
 const STORAGE_KEY = 'backtest-config';
 
-class ConfigState {
-	symbols = $state<string[]>([DEFAULT_CONFIG.defaultSymbol]);
-	dateRange = $state<DateRange>({
+interface ConfigState {
+	symbols: string[];
+	dateRange: DateRange;
+	interval: '1d' | '1wk' | '1mo';
+	gapFillStrategy: 'forward-fill' | 'backward-fill' | 'drop';
+	initialCapital: number;
+}
+
+// Initial state
+const initialState: ConfigState = {
+	symbols: [DEFAULT_CONFIG.defaultSymbol],
+	dateRange: {
 		start: DEFAULT_CONFIG.dateRange.start,
 		end: DEFAULT_CONFIG.dateRange.end,
-	});
-	interval = $state<'1d' | '1wk' | '1mo'>(DEFAULT_CONFIG.interval);
-	gapFillStrategy = $state<'forward-fill' | 'backward-fill' | 'drop'>(
-		DEFAULT_CONFIG.gapFillStrategy
-	);
-	initialCapital = $state<number>(DEFAULT_CONFIG.initialCapital);
+	},
+	interval: DEFAULT_CONFIG.interval,
+	gapFillStrategy: DEFAULT_CONFIG.gapFillStrategy,
+	initialCapital: DEFAULT_CONFIG.initialCapital,
+};
 
-	// Derived properties
-	get isSingleSymbol() {
-		return this.symbols.length === 1;
-	}
+function createConfigStore() {
+	const { subscribe, set, update } = writable<ConfigState>(initialState);
 
-	get isMultiSymbol() {
-		return this.symbols.length > 1;
-	}
-
-	get primarySymbol() {
-		return this.symbols[0] ?? null;
-	}
-
-	// Actions
-	setSymbols(newSymbols: string[]): void {
-		this.symbols = newSymbols;
-		this.save();
-	}
-
-	addSymbol(symbol: string): void {
-		if (!this.symbols.includes(symbol)) {
-			this.symbols = [...this.symbols, symbol];
-			this.save();
-		}
-	}
-
-	removeSymbol(symbol: string): void {
-		this.symbols = this.symbols.filter((s) => s !== symbol);
-		this.save();
-	}
-
-	setDateRange(range: DateRange): void {
-		this.dateRange = range;
-		this.save();
-	}
-
-	setInterval(newInterval: '1d' | '1wk' | '1mo'): void {
-		this.interval = newInterval;
-		this.save();
-	}
-
-	setGapFillStrategy(strategy: 'forward-fill' | 'backward-fill' | 'drop'): void {
-		this.gapFillStrategy = strategy;
-		this.save();
-	}
-
-	setInitialCapital(capital: number): void {
-		this.initialCapital = capital;
-		this.save();
-	}
-
-	resetToDefaults(): void {
-		this.symbols = [DEFAULT_CONFIG.defaultSymbol];
-		this.dateRange = {
-			start: DEFAULT_CONFIG.dateRange.start,
-			end: DEFAULT_CONFIG.dateRange.end,
-		};
-		this.interval = DEFAULT_CONFIG.interval;
-		this.gapFillStrategy = DEFAULT_CONFIG.gapFillStrategy;
-		this.initialCapital = DEFAULT_CONFIG.initialCapital;
-		this.save();
-	}
-
-	// Persistence
-	save(): void {
+	// Helper function for persistence
+	function save(state: ConfigState): void {
 		if (!browser) return;
 
 		try {
-			const state = {
-				symbols: this.symbols,
-				dateRange: this.dateRange,
-				interval: this.interval,
-				gapFillStrategy: this.gapFillStrategy,
-				initialCapital: this.initialCapital,
-			};
 			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 		} catch (error) {
 			console.error('Failed to save config to localStorage:', error);
 		}
 	}
 
-	load(): void {
-		if (!browser) return;
+	return {
+		subscribe,
 
-		try {
-			const stored = localStorage.getItem(STORAGE_KEY);
-			if (!stored) return;
+		// Actions
+		setSymbols: (newSymbols: string[]) => {
+			update((state) => {
+				const newState = { ...state, symbols: newSymbols };
+				save(newState);
+				return newState;
+			});
+		},
 
-			const state = JSON.parse(stored);
+		addSymbol: (symbol: string) => {
+			update((state) => {
+				if (state.symbols.includes(symbol)) return state;
+				const newState = { ...state, symbols: [...state.symbols, symbol] };
+				save(newState);
+				return newState;
+			});
+		},
 
-			// Validate and restore state
-			if (Array.isArray(state.symbols) && state.symbols.length > 0) {
-				this.symbols = state.symbols;
-			}
-			if (state.dateRange?.start && state.dateRange?.end) {
-				this.dateRange = {
-					start: new Date(state.dateRange.start),
-					end: new Date(state.dateRange.end),
+		removeSymbol: (symbol: string) => {
+			update((state) => {
+				const newState = {
+					...state,
+					symbols: state.symbols.filter((s) => s !== symbol),
 				};
+				save(newState);
+				return newState;
+			});
+		},
+
+		setDateRange: (range: DateRange) => {
+			update((state) => {
+				const newState = { ...state, dateRange: range };
+				save(newState);
+				return newState;
+			});
+		},
+
+		setInterval: (newInterval: '1d' | '1wk' | '1mo') => {
+			update((state) => {
+				const newState = { ...state, interval: newInterval };
+				save(newState);
+				return newState;
+			});
+		},
+
+		setGapFillStrategy: (strategy: 'forward-fill' | 'backward-fill' | 'drop') => {
+			update((state) => {
+				const newState = { ...state, gapFillStrategy: strategy };
+				save(newState);
+				return newState;
+			});
+		},
+
+		setInitialCapital: (capital: number) => {
+			update((state) => {
+				const newState = { ...state, initialCapital: capital };
+				save(newState);
+				return newState;
+			});
+		},
+
+		resetToDefaults: () => {
+			const newState = {
+				symbols: [DEFAULT_CONFIG.defaultSymbol],
+				dateRange: {
+					start: DEFAULT_CONFIG.dateRange.start,
+					end: DEFAULT_CONFIG.dateRange.end,
+				},
+				interval: DEFAULT_CONFIG.interval,
+				gapFillStrategy: DEFAULT_CONFIG.gapFillStrategy,
+				initialCapital: DEFAULT_CONFIG.initialCapital,
+			};
+			save(newState);
+			set(newState);
+		},
+
+		// Persistence
+		load: () => {
+			if (!browser) return;
+
+			try {
+				const stored = localStorage.getItem(STORAGE_KEY);
+				if (!stored) return;
+
+				const state = JSON.parse(stored);
+
+				update((current) => {
+					const newState = { ...current };
+
+					// Validate and restore state
+					if (Array.isArray(state.symbols) && state.symbols.length > 0) {
+						newState.symbols = state.symbols;
+					}
+					if (state.dateRange?.start && state.dateRange?.end) {
+						newState.dateRange = {
+							start: new Date(state.dateRange.start),
+							end: new Date(state.dateRange.end),
+						};
+					}
+					if (state.interval) {
+						newState.interval = state.interval;
+					}
+					if (state.gapFillStrategy) {
+						newState.gapFillStrategy = state.gapFillStrategy;
+					}
+					if (typeof state.initialCapital === 'number') {
+						newState.initialCapital = state.initialCapital;
+					}
+
+					return newState;
+				});
+			} catch (error) {
+				console.error('Failed to load config from localStorage:', error);
 			}
-			if (state.interval) {
-				this.interval = state.interval;
-			}
-			if (state.gapFillStrategy) {
-				this.gapFillStrategy = state.gapFillStrategy;
-			}
-			if (typeof state.initialCapital === 'number') {
-				this.initialCapital = state.initialCapital;
-			}
-		} catch (error) {
-			console.error('Failed to load config from localStorage:', error);
-		}
-	}
+		},
+	};
 }
 
-// Export a single instance
-export const config = new ConfigState();
+// Export store instance
+export const config = createConfigStore();
+
+// Derived stores for convenient access
+export const isSingleSymbol = derived(config, ($config) => $config.symbols.length === 1);
+export const isMultiSymbol = derived(config, ($config) => $config.symbols.length > 1);
+export const primarySymbol = derived(config, ($config) => $config.symbols[0] ?? null);

@@ -16,11 +16,11 @@
 	// ETA calculation
 	let startTime = $state<number>(0);
 	const estimatedTimeRemaining = $derived(() => {
-		if (!optimization.isRunning || optimization.currentIteration === 0) return null;
+		if (!$optimization.isRunning || $optimization.currentIteration === 0) return null;
 
 		const elapsed = Date.now() - startTime;
-		const avgTimePerIteration = elapsed / optimization.currentIteration;
-		const remaining = optimization.totalIterations - optimization.currentIteration;
+		const avgTimePerIteration = elapsed / $optimization.currentIteration;
+		const remaining = $optimization.totalIterations - $optimization.currentIteration;
 		const eta = avgTimePerIteration * remaining;
 
 		return eta;
@@ -67,7 +67,7 @@
 		if (method !== 'grid') return null;
 
 		let total = 1;
-		const ranges = optimization.paramRanges;
+		const ranges = $optimization.paramRanges;
 		for (const key in ranges) {
 			const range = ranges[key];
 			if (range && range.min !== undefined && range.max !== undefined && range.step) {
@@ -80,7 +80,7 @@
 
 	// Validation
 	const isValid = $derived(() => {
-		if (!strategy.selectedStrategy) return false;
+		if (!$strategy.selectedStrategy) return false;
 		if (method === 'random' || method === 'genetic') {
 			if (iterations < 10 || iterations > 10000) return false;
 		}
@@ -89,7 +89,7 @@
 
 	// Handle run optimization
 	async function handleRunOptimization() {
-		if (!isValid() || !strategy.selectedStrategy) return;
+		if (!isValid() || !$strategy.selectedStrategy) return;
 
 		try {
 			// Calculate total iterations
@@ -102,22 +102,22 @@
 
 			// Start optimization and track start time
 			startTime = Date.now();
-			optimization.startOptimization(optimization.paramRanges, totalIterations);
+			optimization.startOptimization($optimization.paramRanges, totalIterations);
 
 			// Execute optimization with progress callback
 			const result = await executeOptimization(
 				{
 					method,
 					objective,
-					paramRanges: optimization.paramRanges,
+					paramRanges: $optimization.paramRanges,
 					iterations: method !== 'grid' ? iterations : undefined,
-					strategy: strategy.selectedStrategy!,
-					strategyParams: strategy.params,
-					dateRange: config.dateRange,
-					interval: config.interval,
-					initialCapital: config.initialCapital,
-					gapFillStrategy: config.gapFillStrategy,
-					symbols: config.symbols
+					strategy: $strategy.selectedStrategy!,
+					strategyParams: $strategy.params,
+					dateRange: $config.dateRange,
+					interval: $config.interval,
+					initialCapital: $config.initialCapital,
+					gapFillStrategy: $config.gapFillStrategy,
+					symbols: $config.symbols
 				},
 				(iteration, total) => {
 					optimization.updateProgress(iteration);
@@ -127,8 +127,8 @@
 			// Set result with strategy info for history
 			optimization.setResult(
 				result,
-				strategy.selectedStrategyId!,
-				strategy.selectedStrategy!.name
+				$strategy.selectedStrategyId!,
+				$strategy.selectedStrategy!.name
 			);
 
 			// Show success toast
@@ -161,7 +161,7 @@
 			<h2 class="text-lg font-semibold text-text-primary">Optimization</h2>
 		</div>
 		<p class="text-sm text-text-secondary">
-			Find optimal parameters for {strategy.selectedStrategy?.name || 'selected strategy'}
+			Find optimal parameters for {$strategy.selectedStrategy?.name || 'selected strategy'}
 		</p>
 	</div>
 
@@ -225,7 +225,7 @@
 		</div>
 
 		<!-- Parameter Ranges -->
-		{#if strategy.selectedStrategy}
+		{#if $strategy.selectedStrategy}
 			<ParameterRanges />
 		{/if}
 
@@ -245,7 +245,7 @@
 	<!-- Footer: Run Button -->
 	<div class="border-t border-border p-4 bg-surface/50 space-y-3">
 		<!-- Run Button -->
-		{#if !optimization.isRunning}
+		{#if !$optimization.isRunning}
 			<button
 				type="button"
 				onclick={handleRunOptimization}
@@ -270,16 +270,16 @@
 		{/if}
 
 		<!-- Progress Bar -->
-		{#if optimization.isRunning}
+		{#if $optimization.isRunning}
 			<div class="space-y-2">
 				<div class="flex justify-between text-xs text-text-secondary">
 					<span>Progress</span>
-					<span>{optimization.currentIteration} / {optimization.totalIterations}</span>
+					<span>{$optimization.currentIteration} / {$optimization.totalIterations}</span>
 				</div>
 				<div class="h-2 bg-background rounded-full overflow-hidden">
 					<div
 						class="h-full bg-primary transition-all duration-300"
-						style="width: {optimization.progress}%"
+						style="width: {$optimization.progress}%"
 					></div>
 				</div>
 				{#if estimatedTimeRemaining()}

@@ -38,37 +38,37 @@
 	}
 </script>
 
-{#if backtest.hasResult && backtest.result}
+{#if $backtest.hasResult && $backtest.result}
 	<div class="h-full flex flex-col">
 		<!-- Header with Strategy Info -->
 		<div class="border-b border-border bg-surface/50 px-6 py-4">
 			<div class="flex items-center justify-between">
 				<div>
 					<h2 class="text-lg font-semibold text-text-primary">
-						{strategy.selectedStrategy?.name || 'Backtest Results'}
+						{$strategy.selectedStrategy?.name || 'Backtest Results'}
 					</h2>
 					<p class="text-sm text-text-secondary mt-1">
-						{backtest.result.trades.length} trades
-						{#if backtest.metrics}
-							• {formatPercent(backtest.metrics.totalReturn)} return
-							• Sharpe {formatNumber(backtest.metrics.sharpeRatio)}
+						{$backtest.result.trades.length} trades
+						{#if $backtest.metrics}
+							• {formatPercent($backtest.metrics.totalReturn)} return
+							• Sharpe {formatNumber($backtest.metrics.sharpeRatio)}
 						{/if}
 					</p>
 				</div>
 
 				<!-- Quick Stats -->
-				{#if backtest.metrics}
+				{#if $backtest.metrics}
 					<div class="flex gap-6">
 						<div class="text-right">
 							<div class="text-xs text-text-secondary">Final Value</div>
-							<div class="text-lg font-semibold {backtest.metrics.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}">
-								{formatCurrency(backtest.metrics.finalValue)}
+							<div class="text-lg font-semibold {$backtest.metrics.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}">
+								{formatCurrency($backtest.metrics.finalValue)}
 							</div>
 						</div>
 						<div class="text-right">
 							<div class="text-xs text-text-secondary">Total Return</div>
-							<div class="text-lg font-semibold {backtest.metrics.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}">
-								{formatPercent(backtest.metrics.totalReturn)}
+							<div class="text-lg font-semibold {$backtest.metrics.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}">
+								{formatPercent($backtest.metrics.totalReturn)}
 							</div>
 						</div>
 					</div>
@@ -107,8 +107,8 @@
 			{#if activeTab === 'overview'}
 				<!-- Overview Tab -->
 				<div class="p-6">
-					{#if backtest.metrics}
-						<MetricsGrid metrics={backtest.metrics} showAdvanced={true} />
+					{#if $backtest.metrics}
+						<MetricsGrid metrics={$backtest.metrics} showAdvanced={true} />
 					{:else}
 						<div class="bg-surface/50 rounded-lg p-8 border border-border">
 							<div class="text-center">
@@ -126,28 +126,28 @@
 		{:else if activeTab === 'charts'}
 			<!-- Charts Tab -->
 			<div class="p-6">
-				{#if backtest.result}
+				{#if $backtest.result}
 					<div class="space-y-6">
 						<EquityCurve
-							equityCurve={backtest.result.equityCurve}
-							trades={backtest.result.trades}
+							equityCurve={$backtest.result.equityCurve}
+							trades={$backtest.result.trades}
 						/>
-						<PriceChart trades={backtest.result.trades} />
+						<PriceChart trades={$backtest.result.trades} />
 					</div>
 				{/if}
 			</div>
 		{:else if activeTab === 'trades'}
 			<!-- Trades Tab -->
 			<div class="p-6">
-				{#if backtest.result}
-					<TradeLog trades={backtest.result.trades} />
+				{#if $backtest.result}
+					<TradeLog trades={$backtest.result.trades} />
 				{/if}
 			</div>
 		{:else if activeTab === 'drawdowns'}
 			<!-- Drawdowns Tab -->
 			<div class="p-6">
-				{#if backtest.result}
-					<DrawdownChart equityCurve={backtest.result.equityCurve} />
+				{#if $backtest.result}
+					<DrawdownChart equityCurve={$backtest.result.equityCurve} />
 				{/if}
 			</div>
 			{/if}
@@ -162,9 +162,9 @@
 			<p class="text-sm text-text-secondary mb-6">
 				Configure your strategy parameters and run a backtest to see results here.
 			</p>
-			{#if strategy.selectedStrategyId}
+			{#if $strategy.selectedStrategyId}
 				<p class="text-xs text-text-secondary">
-					Selected: <span class="font-medium">{strategy.selectedStrategy?.name}</span>
+					Selected: <span class="font-medium">{$strategy.selectedStrategy?.name}</span>
 				</p>
 			{/if}
 		</div>

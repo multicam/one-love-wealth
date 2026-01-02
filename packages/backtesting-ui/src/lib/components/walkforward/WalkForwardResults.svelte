@@ -24,7 +24,7 @@
   }
 </script>
 
-{#if !walkforward.hasResult}
+{#if !$walkforward.hasResult}
   <div class="h-full flex flex-col items-center justify-center p-6">
     <svg
       class="w-16 h-16 text-text-tertiary mb-4"
@@ -90,12 +90,12 @@
           <div class="flex items-center justify-between mb-4">
             <h3 class="text-lg font-semibold text-text-primary">Aggregate Performance</h3>
             <div
-              class="px-3 py-1 rounded-full text-sm font-semibold {walkforward.result.passFailStatus ===
+              class="px-3 py-1 rounded-full text-sm font-semibold {$walkforward.result!.passFailStatus ===
               'pass'
                 ? 'bg-success/20 text-success'
                 : 'bg-error/20 text-error'}"
             >
-              {walkforward.result.passFailStatus === 'pass' ? 'PASS' : 'FAIL'}
+              {$walkforward.result!.passFailStatus === 'pass' ? 'PASS' : 'FAIL'}
             </div>
           </div>
 
@@ -107,19 +107,19 @@
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Sharpe Ratio:</span>
                   <span class="text-sm font-semibold text-text-primary">
-                    {formatNumber(walkforward.result.aggregateInSample.sharpe)}
+                    {formatNumber($walkforward.result.aggregateInSample.sharpe)}
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Total Return:</span>
                   <span class="text-sm font-semibold text-text-primary">
-                    {formatPercent(walkforward.result.aggregateInSample.totalReturn)}
+                    {formatPercent($walkforward.result.aggregateInSample.totalReturn)}
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Max Drawdown:</span>
                   <span class="text-sm font-semibold text-error">
-                    {formatPercent(walkforward.result.aggregateInSample.maxDrawdown)}
+                    {formatPercent($walkforward.result.aggregateInSample.maxDrawdown)}
                   </span>
                 </div>
               </div>
@@ -134,19 +134,19 @@
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Sharpe Ratio:</span>
                   <span class="text-sm font-semibold text-text-primary">
-                    {formatNumber(walkforward.result.aggregateOutSample.sharpe)}
+                    {formatNumber($walkforward.result.aggregateOutSample.sharpe)}
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Total Return:</span>
                   <span class="text-sm font-semibold text-text-primary">
-                    {formatPercent(walkforward.result.aggregateOutSample.totalReturn)}
+                    {formatPercent($walkforward.result.aggregateOutSample.totalReturn)}
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Max Drawdown:</span>
                   <span class="text-sm font-semibold text-error">
-                    {formatPercent(walkforward.result.aggregateOutSample.maxDrawdown)}
+                    {formatPercent($walkforward.result.aggregateOutSample.maxDrawdown)}
                   </span>
                 </div>
               </div>
@@ -159,23 +159,23 @@
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Average Degradation:</span>
                   <span
-                    class="text-sm font-semibold {walkforward.result.averageDegradation < 20
+                    class="text-sm font-semibold {$walkforward.result.averageDegradation < 20
                       ? 'text-success'
                       : 'text-error'}"
                   >
-                    {formatNumber(walkforward.result.averageDegradation, 1)}%
+                    {formatNumber($walkforward.result.averageDegradation, 1)}%
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Total Windows:</span>
                   <span class="text-sm font-semibold text-text-primary">
-                    {walkforward.result.windows.length}
+                    {$walkforward.result.windows.length}
                   </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="text-sm text-text-secondary">Strategy:</span>
                   <span class="text-sm font-semibold text-text-primary truncate">
-                    {walkforward.result.strategyName}
+                    {$walkforward.result.strategyName}
                   </span>
                 </div>
               </div>
@@ -184,19 +184,19 @@
 
           <!-- Interpretation -->
           <div
-            class="p-4 rounded-lg border {walkforward.result.passFailStatus === 'pass'
+            class="p-4 rounded-lg border {$walkforward.result.passFailStatus === 'pass'
               ? 'bg-success/5 border-success/30'
               : 'bg-error/5 border-error/30'}"
           >
-            <h4 class="text-sm font-semibold mb-2 {walkforward.result.passFailStatus === 'pass' ? 'text-success' : 'text-error'}">
-              {#if walkforward.result.passFailStatus === 'pass'}
+            <h4 class="text-sm font-semibold mb-2 {$walkforward.result.passFailStatus === 'pass' ? 'text-success' : 'text-error'}">
+              {#if $walkforward.result.passFailStatus === 'pass'}
                 ✓ Strategy Shows Robustness
               {:else}
                 ✗ Strategy Shows Degradation
               {/if}
             </h4>
             <p class="text-sm text-text-secondary">
-              {#if walkforward.result.passFailStatus === 'pass'}
+              {#if $walkforward.result.passFailStatus === 'pass'}
                 Average degradation is below 20%, indicating the strategy maintains performance on
                 out-of-sample data. This suggests the strategy is not overfitted and may generalize well to
                 future data.
@@ -215,7 +215,7 @@
             <div class="text-xs text-text-tertiary uppercase mb-1">Best Window (Out-Sample)</div>
             <div class="text-xl font-bold text-text-primary">
               {formatNumber(
-                Math.max(...walkforward.result.windows.map((w) => w.outSampleMetrics.sharpe))
+                Math.max(...$walkforward.result.windows.map((w) => w.outSampleMetrics.sharpe))
               )}
             </div>
             <div class="text-xs text-text-secondary">Sharpe Ratio</div>
@@ -225,14 +225,14 @@
             <div class="text-xs text-text-tertiary uppercase mb-1">Worst Window (Out-Sample)</div>
             <div class="text-xl font-bold text-text-primary">
               {formatNumber(
-                Math.min(...walkforward.result.windows.map((w) => w.outSampleMetrics.sharpe))
+                Math.min(...$walkforward.result.windows.map((w) => w.outSampleMetrics.sharpe))
               )}
             </div>
             <div class="text-xs text-text-secondary">Sharpe Ratio</div>
           </div>
         </div>
       {:else if activeTab === 'timeline'}
-        <WalkForwardTimeline windows={walkforward.result.windows} {handleWindowClick} />
+        <WalkForwardTimeline windows={$walkforward.result.windows} {handleWindowClick} />
 
         {#if selectedWindow}
           <div class="mt-6 p-4 bg-surface-secondary rounded-lg border border-border">
@@ -278,7 +278,7 @@
           </div>
         {/if}
       {:else if activeTab === 'windows'}
-        <WindowResults windows={walkforward.result.windows} />
+        <WindowResults windows={$walkforward.result.windows} />
       {:else if activeTab === 'equity'}
         <div>
           <h3 class="text-lg font-semibold mb-3 text-text-primary">
@@ -288,8 +288,8 @@
             This shows the equity curve created by stitching together all out-of-sample periods. This
             represents how the strategy would have performed in "live" trading.
           </p>
-          {#if walkforward.result.equityCurveStitched.length > 0}
-            <EquityCurve data={walkforward.result.equityCurveStitched} />
+          {#if $walkforward.result.equityCurveStitched.length > 0}
+            <EquityCurve data={$walkforward.result.equityCurveStitched} />
           {:else}
             <div class="h-64 flex items-center justify-center bg-surface-secondary rounded-lg">
               <p class="text-text-secondary">No equity curve data available</p>

@@ -1,10 +1,11 @@
 /**
  * Backtest Store
  * Manages backtest execution state and results
- * Uses Svelte 5 runes with proper module state pattern
+ * Uses traditional writable store pattern for reliable reactivity
  * Stores result history in compressed format
  */
 
+import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { BacktestResult } from '@one-love-wealth/backtesting';
 
@@ -25,139 +26,176 @@ interface CompressedResult {
 	finalValue: number;
 }
 
-class BacktestState {
-	result = $state<BacktestResult | null>(null);
-	isRunning = $state(false);
-	error = $state<string | null>(null);
-	progress = $state<number>(0); // 0-100
-	history = $state<CompressedResult[]>([]);
+interface BacktestState {
+	result: BacktestResult | null;
+	isRunning: boolean;
+	error: string | null;
+	progress: number; // 0-100
+	history: CompressedResult[];
+}
 
-	// Derived properties
-	get hasResult() {
-		return this.result !== null;
-	}
+// Initial state
+const initialState: BacktestState = {
+	result: null,
+	isRunning: false,
+	error: null,
+	progress: 0,
+	history: [],
+};
 
-	get hasError() {
-		return this.error !== null;
-	}
+function createBacktestStore() {
+	const { subscribe, set, update } = writable<BacktestState>(initialState);
 
-	get metrics() {
-		return this.result?.metrics ?? null;
-	}
-
-	get trades() {
-		return this.result?.trades ?? [];
-	}
-
-	get equity() {
-		return this.result?.equity ?? [];
-	}
-
-	// Actions
-	startBacktest(): void {
-		this.isRunning = true;
-		this.error = null;
-		this.progress = 0;
-	}
-
-	setProgress(value: number): void {
-		this.progress = Math.min(100, Math.max(0, value));
-	}
-
-	setResult(newResult: BacktestResult, strategyId?: string, strategyName?: string): void {
-		this.result = newResult;
-		this.isRunning = false;
-		this.error = null;
-		this.progress = 100;
-
-		// Add to history
-		if (strategyId && strategyName) {
-			this.addToHistory(newResult, strategyId, strategyName);
-		}
-	}
-
-	setError(errorMessage: string): void {
-		this.error = errorMessage;
-		this.isRunning = false;
-		this.progress = 0;
-	}
-
-	clearResult(): void {
-		this.result = null;
-		this.error = null;
-		this.progress = 0;
-	}
-
-	clearError(): void {
-		this.error = null;
-	}
-
-	cancelBacktest(): void {
-		this.isRunning = false;
-		this.progress = 0;
-	}
-
-	// History management
-	private addToHistory(result: BacktestResult, strategyId: string, strategyName: string): void {
-		const compressed: CompressedResult = {
-			id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-			timestamp: Date.now(),
-			strategyId,
-			strategyName,
-			symbols: result.config.symbols,
-			dateRange: {
-				start: result.startDate.toISOString(),
-				end: result.endDate.toISOString(),
-			},
-			totalReturn: result.metrics.totalReturnPercent,
-			sharpeRatio: result.metrics.sharpeRatio,
-			maxDrawdown: result.metrics.maxDrawdownPercent,
-			totalTrades: result.metrics.totalTrades,
-			finalValue: result.metrics.finalValue,
-		};
-
-		// Add to beginning, limit to MAX_HISTORY
-		this.history = [compressed, ...this.history.slice(0, MAX_HISTORY - 1)];
-		this.saveHistory();
-	}
-
-	clearHistory(): void {
-		this.history = [];
-		this.saveHistory();
-	}
-
-	removeFromHistory(id: string): void {
-		this.history = this.history.filter((h) => h.id !== id);
-		this.saveHistory();
-	}
-
-	// Persistence
-	private saveHistory(): void {
+	// Helper functions for history persistence
+	function saveHistory(history: CompressedResult[]): void {
 		if (!browser) return;
 
 		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(this.history));
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
 		} catch (error) {
 			console.error('Failed to save backtest history to localStorage:', error);
 		}
 	}
 
-	loadHistory(): void {
-		if (!browser) return;
+	return {
+		subscribe,
 
-		try {
-			const stored = localStorage.getItem(STORAGE_KEY);
-			if (!stored) return;
+		// Actions
+		startBacktest: () => {
+			update((state) => ({
+				...state,
+				isRunning: true,
+				error: null,
+				progress: 0,
+			}));
+		},
 
-			const history = JSON.parse(stored);
-			if (Array.isArray(history)) {
-				this.history = history.slice(0, MAX_HISTORY);
+		setProgress: (value: number) => {
+			update((state) => ({
+				...state,
+				progress: Math.min(100, Math.max(0, value)),
+			}));
+		},
+
+		setResult: (newResult: BacktestResult, strategyId?: string, strategyName?: string) => {
+			update((state) => {
+				const newState = {
+					...state,
+					result: newResult,
+					isRunning: false,
+					error: null,
+					progress: 100,
+				};
+
+				// Add to history
+				if (strategyId && strategyName) {
+					const compressed: CompressedResult = {
+						id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+						timestamp: Date.now(),
+						strategyId,
+						strategyName,
+						symbols: newResult.config.symbols,
+						dateRange: {
+							start: newResult.startDate.toISOString(),
+							end: newResult.endDate.toISOString(),
+						},
+						totalReturn: newResult.metrics.totalReturnPercent,
+						sharpeRatio: newResult.metrics.sharpeRatio,
+						maxDrawdown: newResult.metrics.maxDrawdownPercent,
+						totalTrades: newResult.metrics.totalTrades,
+						finalValue: newResult.metrics.finalValue,
+					};
+
+					// Add to beginning, limit to MAX_HISTORY
+					newState.history = [compressed, ...state.history.slice(0, MAX_HISTORY - 1)];
+					saveHistory(newState.history);
+				}
+
+				return newState;
+			});
+		},
+
+		setError: (errorMessage: string) => {
+			update((state) => ({
+				...state,
+				error: errorMessage,
+				isRunning: false,
+				progress: 0,
+			}));
+		},
+
+		clearResult: () => {
+			update((state) => ({
+				...state,
+				result: null,
+				error: null,
+				progress: 0,
+			}));
+		},
+
+		clearError: () => {
+			update((state) => ({
+				...state,
+				error: null,
+			}));
+		},
+
+		cancelBacktest: () => {
+			update((state) => ({
+				...state,
+				isRunning: false,
+				progress: 0,
+			}));
+		},
+
+		// History management
+		clearHistory: () => {
+			update((state) => {
+				const newState = { ...state, history: [] };
+				saveHistory(newState.history);
+				return newState;
+			});
+		},
+
+		removeFromHistory: (id: string) => {
+			update((state) => {
+				const newState = {
+					...state,
+					history: state.history.filter((h) => h.id !== id),
+				};
+				saveHistory(newState.history);
+				return newState;
+			});
+		},
+
+		// Persistence
+		loadHistory: () => {
+			if (!browser) return;
+
+			try {
+				const stored = localStorage.getItem(STORAGE_KEY);
+				if (!stored) return;
+
+				const history = JSON.parse(stored);
+				if (Array.isArray(history)) {
+					update((state) => ({
+						...state,
+						history: history.slice(0, MAX_HISTORY),
+					}));
+				}
+			} catch (error) {
+				console.error('Failed to load backtest history from localStorage:', error);
 			}
-		} catch (error) {
-			console.error('Failed to load backtest history from localStorage:', error);
-		}
-	}
+		},
+	};
 }
 
-// Export a single instance
-export const backtest = new BacktestState();
+// Export store instance
+export const backtest = createBacktestStore();
+
+// Derived stores for convenient access
+export const hasResult = derived(backtest, ($backtest) => $backtest.result !== null);
+export const hasError = derived(backtest, ($backtest) => $backtest.error !== null);
+export const metrics = derived(backtest, ($backtest) => $backtest.result?.metrics ?? null);
+export const trades = derived(backtest, ($backtest) => $backtest.result?.trades ?? []);
+export const equity = derived(backtest, ($backtest) => $backtest.result?.equity ?? []);

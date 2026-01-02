@@ -9,7 +9,6 @@
  */
 
 import type { Strategy } from '@one-love-wealth/backtesting';
-import type { DateRange, TimeInterval, GapFillStrategy } from '$lib/types/backtest';
 import type {
   WalkForwardConfig,
   WalkForwardOutput,
@@ -17,6 +16,11 @@ import type {
   WindowMetrics,
 } from '$lib/stores/walkforward.svelte';
 import { walkforward } from '$lib/stores/walkforward.svelte';
+
+// Local type definitions (temporary until types are properly exported)
+export type DateRange = { start: string; end: string };
+export type TimeInterval = '1d' | '1wk' | '1mo';
+export type GapFillStrategy = 'forward-fill' | 'backward-fill' | 'drop';
 
 // import { loadBacktestDataBySymbols } from '@one-love-wealth/data-layer'; // TODO: uncomment when available
 
@@ -138,7 +142,7 @@ export async function executeWalkForward(
 
   return {
     config: params.wfConfig,
-    strategyId: params.strategy.id,
+    strategyId: (params.strategy as any).id || 'unknown',
     strategyName: params.strategy.name,
     windows: analyzedWindows,
     aggregateInSample,

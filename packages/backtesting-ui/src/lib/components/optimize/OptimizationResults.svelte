@@ -21,9 +21,9 @@
 
 	// Get results
 	const results = $derived(() => {
-		if (!optimization.hasResult) return [];
+		if (!$optimization.result) return [];
 
-		let sorted = [...optimization.allResults];
+		let sorted = [...$optimization.result.allResults];
 
 		// Sort
 		switch (sortField) {
@@ -74,10 +74,10 @@
 
 	// Apply best parameters
 	function applyBestParameters() {
-		if (!optimization.hasResult || !optimization.bestParams) return;
+		if (!$optimization.result || !$optimization.result?.bestParams) return;
 
 		// Copy best params to strategy store
-		strategy.updateParams({ ...optimization.bestParams });
+		strategy.updateParams({ ...$optimization.result.bestParams });
 
 		// Switch to backtest mode
 		ui.setMode('backtest');
@@ -102,7 +102,7 @@
 	}
 </script>
 
-{#if optimization.hasResult && optimization.result}
+{#if $optimization.result}
 	<div class="h-full flex flex-col">
 		<!-- Header -->
 		<div class="p-4 border-b border-border">
@@ -118,10 +118,10 @@
 				</button>
 			</div>
 			<div class="text-sm text-text-secondary">
-				Found {optimization.allResults.length} results
-				{#if optimization.result.method === 'grid'}
+				Found {$optimization.result.allResults.length} results
+				{#if $optimization.result.method === 'grid'}
 					(exhaustive search)
-				{:else if optimization.result.method === 'random'}
+				{:else if $optimization.result.method === 'random'}
 					(random sampling)
 				{:else}
 					(genetic evolution)
@@ -135,17 +135,17 @@
 			<div class="flex items-center justify-between">
 				<div>
 					<div class="text-sm font-medium text-text-primary">
-						{optimization.result.objective === 'sharpe'
+						{$optimization.result.objective === 'sharpe'
 							? 'Sharpe Ratio'
-							: optimization.result.objective === 'sortino'
+							: $optimization.result.objective === 'sortino'
 								? 'Sortino Ratio'
 								: 'Total Return'}:
 						<span class="text-primary ml-1">
-							{optimization.result.bestObjectiveValue.toFixed(2)}
+							{$optimization.result.bestObjectiveValue.toFixed(2)}
 						</span>
 					</div>
 					<div class="text-xs text-text-secondary mt-1">
-						{formatParams(optimization.result.bestParams)}
+						{formatParams($optimization.result.bestParams)}
 					</div>
 				</div>
 			</div>

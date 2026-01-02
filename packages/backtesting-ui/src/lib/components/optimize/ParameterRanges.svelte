@@ -1,12 +1,12 @@
 <script lang="ts">
-	import { strategy } from '$lib/stores/strategy.svelte';
+	import { strategy, selectedStrategy } from '$lib/stores/strategy.svelte';
 	import { optimization } from '$lib/stores/optimization.svelte';
 	import type { StrategyField } from '$lib/strategies/types';
 
 	// Get numeric parameters from selected strategy
 	const numericFields = $derived(() => {
-		if (!strategy.selectedStrategy) return [];
-		return strategy.selectedStrategy.fields.filter(
+		if (!$selectedStrategy) return [];
+		return $selectedStrategy.fields.filter(
 			(f) =>
 				f.type === 'number' ||
 				f.type === 'slider' ||
@@ -24,12 +24,12 @@
 
 		for (const field of fields) {
 			// Use existing range if available, otherwise create default
-			const existing = optimization.paramRanges[field.key];
+			const existing = $optimization.paramRanges[field.key];
 			if (existing) {
 				ranges[field.key] = existing;
 			} else {
 				// Create sensible defaults based on field type
-				const currentValue = strategy.params[field.key] ?? field.default ?? 0;
+				const currentValue = $strategy.params[field.key] ?? field.default ?? 0;
 				let min: number, max: number, step: number;
 
 				if (field.type === 'percent') {
@@ -57,11 +57,11 @@
 
 	// Handle range updates
 	function updateRange(key: string, prop: 'min' | 'max' | 'step', value: number) {
-		const current = optimization.paramRanges[key];
+		const current = $optimization.paramRanges[key];
 		if (!current) return;
 
 		optimization.paramRanges = {
-			...optimization.paramRanges,
+			...$optimization.paramRanges,
 			[key]: {
 				...current,
 				[prop]: value
@@ -86,7 +86,7 @@
 
 		<div class="space-y-4">
 			{#each numericFields() as field}
-				{@const range = optimization.paramRanges[field.key]}
+				{@const range = $optimization.paramRanges[field.key]}
 				{@const valid = range ? isRangeValid(range) : false}
 
 				<div

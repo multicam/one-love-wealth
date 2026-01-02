@@ -2,11 +2,7 @@
     import { ui, type AppMode } from '$lib/stores/ui.svelte';
     import { backtest } from '$lib/stores/backtest.svelte';
     import { optimization } from '$lib/stores/optimization.svelte';
-
-    // Derived state: is any operation currently loading?
-    const isAnyLoading = $derived(
-        backtest.isRunning || optimization.isRunning
-    );
+    import { walkforward } from '$lib/stores/walkforward.svelte';
 
     // Handle mode switch
     function switchMode(newMode: AppMode) {
@@ -15,12 +11,13 @@
         // Clear results when switching modes (Q14 decision)
         backtest.clearResult();
         optimization.clearResult();
+        walkforward.clearResult();
     }
 
     const modes: { value: AppMode; label: string }[] = [
         { value: 'backtest', label: 'Backtest' },
         { value: 'optimize', label: 'Optimize' },
-        { value: 'validate', label: 'Walk-Forward' }
+        { value: 'walk-forward', label: 'Walk-Forward' }
     ];
 </script>
 
@@ -54,11 +51,11 @@
             <button
                 type="button"
                 class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                class:bg-primary={ui.mode === value}
-                class:text-white={ui.mode === value}
-                class:text-text-secondary={ui.mode !== value}
-                class:hover:text-text-primary={ui.mode !== value}
-                class:hover:bg-surface={ui.mode !== value}
+                class:bg-primary={$ui.mode === value}
+                class:text-white={$ui.mode === value}
+                class:text-text-secondary={$ui.mode !== value}
+                class:hover:text-text-primary={$ui.mode !== value}
+                class:hover:bg-surface={$ui.mode !== value}
                 onclick={() => switchMode(value)}
             >
                 {label}
@@ -69,7 +66,7 @@
     <!-- Right Section: Loading Indicator & Settings -->
     <div class="flex items-center gap-4">
         <!-- Global Loading Indicator -->
-        {#if isAnyLoading}
+        {#if $backtest.isRunning || $optimization.isRunning || $walkforward.isRunning}
             <div class="flex items-center gap-2 text-sm text-text-secondary">
                 <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
                 <span>Processing...</span>
