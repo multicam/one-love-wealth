@@ -118,6 +118,9 @@
 				</button>
 			</div>
 			<div class="text-sm text-text-secondary">
+				{#if $optimization.result.symbols && $optimization.result.symbols.length > 0}
+					{$optimization.result.symbols.join(', ')} •
+				{/if}
 				Found {$optimization.result.allResults.length} results
 				{#if $optimization.result.method === 'grid'}
 					(exhaustive search)

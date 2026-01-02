@@ -49,6 +49,9 @@
 						{$selectedStrategy?.name || 'Backtest Results'}
 					</h2>
 					<p class="text-sm text-text-secondary mt-1">
+						{#if $backtest.result.symbols && $backtest.result.symbols.length > 0}
+							{$backtest.result.symbols.join(', ')} •
+						{/if}
 						{$backtest.result.trades.length} trades
 						{#if $backtest.metrics}
 							• {formatPercent($backtest.metrics.totalReturn)} return

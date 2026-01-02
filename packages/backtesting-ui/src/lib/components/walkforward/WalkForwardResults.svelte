@@ -46,6 +46,20 @@
   </div>
 {:else}
   <div class="h-full flex flex-col bg-surface-primary">
+    <!-- Header -->
+    <div class="border-b border-border bg-surface/50 px-6 py-3">
+      <h2 class="text-lg font-semibold text-text-primary">Walk-Forward Analysis Results</h2>
+      <p class="text-sm text-text-secondary mt-1">
+        {#if $walkforward.result.symbols && $walkforward.result.symbols.length > 0}
+          {$walkforward.result.symbols.join(', ')} •
+        {/if}
+        {$walkforward.result.windows.length} windows
+        {#if $walkforward.result.aggregateOutSample}
+          • {formatPercent($walkforward.result.aggregateOutSample.totalReturn)} out-of-sample return
+        {/if}
+      </p>
+    </div>
+
     <!-- Tabs -->
     <div class="border-b border-border flex items-center gap-1 px-4 py-2">
       <button
