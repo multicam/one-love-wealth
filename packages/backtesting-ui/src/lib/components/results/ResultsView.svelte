@@ -3,6 +3,7 @@
 	import { backtest } from '$lib/stores/backtest.svelte';
 	import { strategy } from '$lib/stores/strategy.svelte';
 	import MetricsGrid from './MetricsGrid.svelte';
+	import TradeLog from './TradeLog.svelte';
 
 	// Tab state
 	let activeTab = $state<'overview' | 'charts' | 'trades' | 'drawdowns'>('overview');
@@ -137,29 +138,13 @@
 						</div>
 					</div>
 				</div>
-			{:else if activeTab === 'trades'}
-				<!-- Trades Tab -->
-				<div class="p-6">
-					<div class="space-y-6">
-						<!-- Placeholder: TradeLog will go here -->
-						<div class="bg-surface/50 rounded-lg p-8 border border-border">
-							<div class="text-center">
-								<List size={48} class="mx-auto text-text-secondary mb-4" />
-								<h3 class="text-lg font-semibold text-text-primary mb-2">
-									Trade Log
-								</h3>
-								<p class="text-sm text-text-secondary">
-									TradeLog component will be implemented here
-								</p>
-								{#if backtest.result}
-									<p class="text-xs text-text-secondary mt-2">
-										{backtest.result.trades.length} trades to display
-									</p>
-								{/if}
-							</div>
-						</div>
-					</div>
-				</div>
+		{:else if activeTab === 'trades'}
+			<!-- Trades Tab -->
+			<div class="p-6">
+				{#if backtest.result}
+					<TradeLog trades={backtest.result.trades} />
+				{/if}
+			</div>
 			{:else if activeTab === 'drawdowns'}
 				<!-- Drawdowns Tab -->
 				<div class="p-6">
