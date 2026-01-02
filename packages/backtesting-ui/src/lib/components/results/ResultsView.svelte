@@ -2,6 +2,7 @@
 	import { BarChart3, TrendingUp, List, TrendingDown } from 'lucide-svelte';
 	import { backtest } from '$lib/stores/backtest.svelte';
 	import { strategy } from '$lib/stores/strategy.svelte';
+	import MetricsGrid from './MetricsGrid.svelte';
 
 	// Tab state
 	let activeTab = $state<'overview' | 'charts' | 'trades' | 'drawdowns'>('overview');
@@ -102,20 +103,21 @@
 			{#if activeTab === 'overview'}
 				<!-- Overview Tab -->
 				<div class="p-6">
-					<div class="space-y-6">
-						<!-- Placeholder: MetricsGrid will go here -->
+					{#if backtest.metrics}
+						<MetricsGrid metrics={backtest.metrics} showAdvanced={true} />
+					{:else}
 						<div class="bg-surface/50 rounded-lg p-8 border border-border">
 							<div class="text-center">
 								<BarChart3 size={48} class="mx-auto text-text-secondary mb-4" />
 								<h3 class="text-lg font-semibold text-text-primary mb-2">
-									Metrics Grid
+									No Metrics Available
 								</h3>
 								<p class="text-sm text-text-secondary">
-									MetricsGrid component will be implemented here
+									Metrics will appear here after running a backtest
 								</p>
 							</div>
 						</div>
-					</div>
+					{/if}
 				</div>
 			{:else if activeTab === 'charts'}
 				<!-- Charts Tab -->
