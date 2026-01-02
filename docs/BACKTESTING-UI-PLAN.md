@@ -1,56 +1,38 @@
 # Backtesting UI Package Plan
 
 > **Package:** `@one-love-wealth/backtesting-ui`  
-> **Framework:** SvelteKit 2 + Svelte 5 (matching crypto-viz)  
-> **Layout:** Three-column layout inspired by crypto-viz  
-> **Status:** Planning Phase  
-> **Last Updated:** 2026-01-02
-
----
-
-## Table of Contents
-
-1. [Overview](#overview)
-2. [Design Principles](#design-principles)
-3. [Architecture](#architecture)
-4. [Data Flow](#data-flow)
-5. [Configuration Types](#configuration-types)
-6. [Visualizations](#visualizations)
-7. [State Management](#state-management)
-8. [Component Structure](#component-structure)
-9. [UI Modes & Workflows](#ui-modes--workflows)
-10. [Technical Considerations](#technical-considerations)
-11. [Dependencies](#dependencies)
-12. [Implementation Phases](#implementation-phases)
+> **Framework:** SvelteKit 2 + Svelte 5  
+> **Status:** Planning  
+> **Updated:** 2026-01-02
 
 ---
 
 ## Overview
 
-The `backtesting-ui` package provides a web interface for the `@one-love-wealth/backtesting` engine.
+Web interface for `@one-love-wealth/backtesting`. Single-page app with three modes: Backtest, Optimize, Validate.
 
-**Core Features:**
-- Strategy backtesting with configurable parameters
-- Parameter optimization (grid, random, genetic)
-- Walk-forward analysis & Monte Carlo simulation
-- Benchmark comparison & validation scoring
-- Report generation (JSON, Markdown, HTML)
+**MVP Scope:**
+- Run backtests with configurable strategy parameters
+- View equity curve, metrics, trade log
+- Parameter optimization with results table
 
-**Non-Goals (for MVP):**
-- Real-time/live trading
-- Custom strategy code editor
-- Multi-user collaboration
+**Post-MVP:**
+- Walk-forward analysis, Monte Carlo simulation
+- Benchmark comparison, validation scoring
+- Report export (MD/HTML)
+
+**Out of Scope:**
+- Live trading, custom strategy code, multi-user
 
 ---
 
 ## Design Principles
 
-1. **Single-page app with modes** - No separate routes for optimize/validate; use tabs/modes instead (simpler, matches crypto-viz)
-2. **Leverage shared-ui** - Use existing toast, spinner, button components from `@one-love-wealth/shared-ui`
-3. **Progressive disclosure** - Show basic options first, advanced in collapsible sections
-4. **URL state** - Encode strategy + params in URL for shareability
-5. **Offline-first** - Cache data and results in localStorage/IndexedDB
-6. **Web Workers** - Heavy computations (optimization, Monte Carlo) run in workers
+1. **Copy crypto-viz patterns** - Reuse `ThreeColumnLayout`, `SettingsView`, store patterns directly
+2. **Leverage shared-ui** - `Button`, `Spinner`, `Toast` from workspace package
+3. **Progressive disclosure** - Basic options visible, advanced in collapsible sections
+4. **Web Workers for heavy ops** - Optimization, Monte Carlo run off main thread
+5. **LocalStorage persistence** - Settings survive refresh (same pattern as crypto-viz)
 
 ---
 
@@ -60,429 +42,193 @@ The `backtesting-ui` package provides a web interface for the `@one-love-wealth/
 packages/backtesting-ui/
 ├── src/
 │   ├── lib/
-│   │   ├── components/
-│   │   │   ├── charts/           # lightweight-charts + d3 visualizations
-│   │   │   ├── controls/         # Sliders, selectors, toggles
-│   │   │   ├── layout/           # ThreeColumnLayout, panels
-│   │   │   ├── results/          # Metrics, trade log, validation
-│   │   │   └── settings/         # Config sections
+│   │   ├── components/           # ~20 components total
+│   │   │   ├── layout/           # ThreeColumnLayout (copy from crypto-viz)
+│   │   │   ├── charts/           # EquityCurve, PriceChart, Heatmap
+│   │   │   ├── results/          # MetricsGrid, TradeLog, TopResults
+│   │   │   └── settings/         # StrategyParams, BacktestConfig
 │   │   ├── services/
-│   │   │   ├── backtest.ts       # Run backtests (wraps engine)
-│   │   │   ├── data.ts           # Load data from data-layer
-│   │   │   └── storage.ts        # LocalStorage persistence
-│   │   ├── stores/               # Svelte 5 runes-based stores
-│   │   ├── workers/              # Web Workers for heavy ops
-│   │   └── utils/
-│   │       ├── constants.ts      # Strategy definitions, defaults
-│   │       ├── url-state.ts      # URL encoding/decoding
-│   │       └── formatters.ts     # Number/date formatting
+│   │   │   ├── backtest.ts       # Wraps BacktestEngine
+│   │   │   └── data.ts           # Wraps data-layer
+│   │   ├── stores/
+│   │   │   └── index.ts          # Single store file (see below)
+│   │   └── workers/
+│   │       └── optimizer.worker.ts
 │   └── routes/
-│       ├── +page.svelte          # Single-page app
-│       └── +layout.svelte        # App shell
+│       └── +page.svelte          # Single page, mode switching
 ├── static/
 └── package.json
 ```
 
----
-
-## Data Flow
-
-```
-┌─────────────┐     ┌──────────────┐     ┌─────────────────┐
-│ data-layer  │────▶│ BacktestData │────▶│ BacktestEngine  │
-└─────────────┘     └──────────────┘     └────────┬────────┘
-                                                  │
-                    ┌─────────────────────────────┼─────────────────────────────┐
-                    ▼                             ▼                             ▼
-            ┌───────────────┐           ┌─────────────────┐           ┌─────────────────┐
-            │ BacktestResult│           │OptimizationOutput│          │ ValidationOutput│
-            └───────┬───────┘           └────────┬────────┘           └────────┬────────┘
-                    │                            │                             │
-                    └────────────────────────────┼─────────────────────────────┘
-                                                 ▼
-                                          ┌─────────────┐
-                                          │   UI State  │
-                                          │  (stores)   │
-                                          └─────────────┘
-```
+**Files to copy from crypto-viz:**
+- `src/lib/components/layout/ThreeColumnLayout.svelte`
+- `src/lib/components/layout/SettingsView.svelte` → adapt for backtest settings
+- `src/lib/stores/settings.js` → adapt store pattern
 
 ---
 
-## Configuration Types
+## Strategy Registry
 
-All configuration types are imported from `@one-love-wealth/backtesting`. The UI dynamically generates forms based on these types.
-
-### Backtest Configuration
+Dynamic form generation from a registry. Each strategy defines its parameters with UI metadata:
 
 ```typescript
-interface BacktestConfig {
-  initialCapital: number;      // $1K - $10M, default $100K
-  commission?: number;         // $0 - $10/share
-  commissionPercent?: number;  // 0% - 1%
-  slippage?: number;           // 0% - 1%, default 0.1%
-  maxPositionSize?: number;    // 10% - 100%
-  allowShort?: boolean;        // default false
-  marginRequirement?: number;  // 1.0 - 3.0
-}
-```
+// utils/strategies.ts
+import { 
+  MACrossoverStrategy, BollingerBreakoutStrategy, /* ... */
+  type MACrossoverParams, type BollingerBreakoutParams,
+} from '@one-love-wealth/backtesting';
 
-### Strategy Registry
-
-Strategies are defined in a registry with metadata for UI generation:
-
-```typescript
-const STRATEGY_REGISTRY = {
-  'buy-and-hold': {
-    name: 'Buy & Hold',
-    factory: BuyAndHoldStrategy,
-    defaults: DEFAULT_BUY_AND_HOLD_PARAMS,
-    params: [
-      { key: 'symbol', type: 'symbol', label: 'Symbol' },
-      { key: 'positionSize', type: 'percent', label: 'Position Size', min: 0.1, max: 1, step: 0.05 },
-    ],
-  },
+export const STRATEGIES = {
   'ma-crossover': {
     name: 'MA Crossover',
-    factory: MACrossoverStrategy,
-    defaults: DEFAULT_MA_CROSSOVER_PARAMS,
-    params: [
-      { key: 'symbol', type: 'symbol', label: 'Symbol' },
-      { key: 'fastPeriod', type: 'number', label: 'Fast Period', min: 5, max: 100, step: 5 },
-      { key: 'slowPeriod', type: 'number', label: 'Slow Period', min: 20, max: 300, step: 10 },
-      { key: 'positionSize', type: 'percent', label: 'Position Size', min: 0.1, max: 1, step: 0.05 },
+    create: (p: MACrossoverParams) => new MACrossoverStrategy(p),
+    defaults: { symbol: 'SPY', fastPeriod: 50, slowPeriod: 200, positionSize: 0.95 },
+    fields: [
+      { key: 'symbol', type: 'symbol' },
+      { key: 'fastPeriod', type: 'slider', min: 5, max: 100, step: 5 },
+      { key: 'slowPeriod', type: 'slider', min: 20, max: 300, step: 10 },
+      { key: 'positionSize', type: 'percent' },
     ],
   },
-  'rsi-reversion': { /* ... */ },
-  'bollinger-breakout': { /* ... */ },
-  'vix-hedge': { /* ... */ },
-  'macd-divergence': { /* ... */ },
-  'pairs-trading': { /* ... */ },
+  'bollinger-breakout': {
+    name: 'Bollinger Breakout',
+    create: (p: BollingerBreakoutParams) => new BollingerBreakoutStrategy(p),
+    defaults: { symbol: 'SPY', period: 20, stdDev: 2, mode: 'breakout', positionSize: 0.95 },
+    fields: [
+      { key: 'symbol', type: 'symbol' },
+      { key: 'period', type: 'slider', min: 10, max: 50, step: 5 },
+      { key: 'stdDev', type: 'slider', min: 1, max: 3, step: 0.5 },
+      { key: 'mode', type: 'radio', options: ['breakout', 'reversion'] },
+      { key: 'positionSize', type: 'percent' },
+    ],
+  },
+  // ... other strategies follow same pattern
 } as const;
+
+export type StrategyKey = keyof typeof STRATEGIES;
 ```
 
-**Parameter Types:**
-- `symbol` → Dropdown (from available symbols)
-- `number` → Slider with min/max/step
-- `percent` → Slider (0-1) with % display
-- `boolean` → Toggle
-- `enum` → Radio or dropdown
-
-### Testing Configuration
-
-```typescript
-// Optimization
-interface OptimizationConfig {
-  method: 'grid' | 'random' | 'genetic';
-  objective: OptimizationObjective;  // sharpeRatio, totalReturn, etc.
-  parameters: ParameterRange[];
-  iterations?: number;      // 10-1000 for random/genetic
-  populationSize?: number;  // 10-200 for genetic
-  mutationRate?: number;    // 0.01-0.5 for genetic
-  topN?: number;            // 5-50
-}
-
-// Walk-Forward
-interface WalkForwardConfig {
-  numWindows: number;        // 2-20
-  inSampleRatio: number;     // 0.5-0.9
-  optimizePerWindow: boolean;
-  anchored?: boolean;
-}
-
-// Monte Carlo
-interface MonteCarloConfig {
-  numSimulations: number;    // 100-10000
-  method: 'trade-shuffle' | 'bootstrap-returns' | 'random-entry';
-  confidenceLevel?: number;  // 0.90-0.99
-  seed?: number;
-}
-
-// Full Validation (combines above)
-interface ValidationConfig {
-  trainTestSplit?: number;   // 0.5-0.9
-  numFolds?: number;         // 2-10
-  walkForward?: WalkForwardConfig;
-  monteCarlo?: MonteCarloConfig;
-  benchmarks?: BenchmarkDefinition[];
-}
-```
+**Field types:** `symbol` (dropdown), `slider` (number), `percent` (0-1), `radio` (enum), `toggle` (boolean)
 
 ---
 
-## Visualizations
+## Components
 
-Prioritized by MVP importance. All charts use **lightweight-charts** for financial data and **d3** for statistical visualizations.
+### Charts (lightweight-charts)
 
-### MVP (Phase 1-2)
+| Component | Data | Notes |
+|-----------|------|-------|
+| `EquityCurve.svelte` | `equityCurve[]` | Line + drawdown shading, trade markers |
+| `PriceChart.svelte` | OHLC + trades | Candlesticks, entry/exit arrows |
+| `Heatmap.svelte` | optimization results | d3, for grid search (Phase 3) |
 
-| Component | Library | Data Source |
-|-----------|---------|-------------|
-| **Equity Curve** | lightweight-charts | `equityCurve[]` |
-| **Price Chart** | lightweight-charts | OHLC bars + trades |
-| **Metrics Cards** | Tailwind | `PerformanceMetrics` |
-| **Trade Log** | HTML table | `trades[]` |
+### Results
 
-### Phase 3 (Optimization)
+| Component | Data | Notes |
+|-----------|------|-------|
+| `MetricsGrid.svelte` | `PerformanceMetrics` | 6 cards: Return, Sharpe, MaxDD, CAGR, WinRate, PF |
+| `TradeLog.svelte` | `trades[]` | Sortable table, CSV export |
+| `TopResults.svelte` | `OptimizationOutput` | Ranked params table (Phase 3) |
 
-| Component | Library | Data Source |
-|-----------|---------|-------------|
-| **Parameter Heatmap** | d3 | `OptimizationOutput.allResults` |
-| **Top Results Table** | HTML table | `OptimizationOutput.topResults` |
+### Settings
 
-### Phase 4 (Validation)
-
-| Component | Library | Data Source |
-|-----------|---------|-------------|
-| **Score Gauge** | SVG/CSS | `ValidationScore.overall` |
-| **WF Timeline** | d3 | `WalkForwardOutput.windows` |
-| **MC Distribution** | d3 histogram | `MonteCarloOutput.simulations` |
-| **Benchmark Overlay** | lightweight-charts | `BenchmarkComparison[]` |
-
-### Chart Features
-
-**Equity Curve:**
-- Line with optional drawdown shading
-- Trade markers (triangles for buy/sell)
-- Benchmark overlay toggle
-- Synchronized crosshair
-
-**Price Chart:**
-- Candlesticks with volume
-- Entry/exit markers
-- Strategy-specific overlays (MAs, bands)
-
-**Metrics Dashboard:**
-```
-┌─────────────┬─────────────┬─────────────┐
-│ Total Return│ Sharpe      │ Max DD      │
-│ +45.2%      │ 1.85        │ -12.3%      │
-├─────────────┼─────────────┼─────────────┤
-│ CAGR        │ Win Rate    │ Profit Factor│
-│ 18.5%       │ 62%         │ 2.1         │
-└─────────────┴─────────────┴─────────────┘
-```
-
-### Deferred (Post-MVP)
-
-- 3D surface plots (rarely needed)
-- Radar charts (tables work better)
-- Equity fan charts (complex, low value)
+| Component | Purpose |
+|-----------|---------|
+| `StrategyParams.svelte` | Dynamic form from registry fields |
+| `BacktestConfig.svelte` | Capital, commission, slippage |
+| `OptimizationConfig.svelte` | Method, objective, ranges (Phase 3) |
 
 ---
 
 ## State Management
 
-Using Svelte 5 runes. Consolidated into 3 store files to reduce complexity.
-
-### stores/app.svelte.ts
+Single store file using Svelte's `writable` (same pattern as crypto-viz `settings.js`):
 
 ```typescript
-// UI Mode
-export const mode = $state<'backtest' | 'optimize' | 'validate'>('backtest');
+// stores/index.ts
+import { writable, derived } from 'svelte/store';
+import { browser } from '$app/environment';
 
-// Loading states
-export const isRunning = $state(false);
-export const error = $state<string | null>(null);
+// Load from localStorage
+const stored = browser ? JSON.parse(localStorage.getItem('backtesting-ui') || '{}') : {};
 
-// Selected strategy
-export const selectedStrategy = $state<keyof typeof STRATEGY_REGISTRY>('ma-crossover');
-export const strategyParams = $state<Record<string, any>>({});
+// App state
+export const mode = writable<'backtest' | 'optimize' | 'validate'>('backtest');
+export const selectedStrategy = writable<StrategyKey>('ma-crossover');
+export const strategyParams = writable<Record<string, any>>({});
+export const isRunning = writable(false);
 
-// Data
-export const symbols = $state<string[]>(['SPY']);
-export const dateRange = $state({ start: new Date('2020-01-01'), end: new Date() });
-export const backtestData = $state<BacktestData | null>(null);
-```
+// Results
+export const backtestResult = writable<BacktestResult | null>(null);
+export const optimizationResult = writable<OptimizationOutput | null>(null);
 
-### stores/results.svelte.ts
-
-```typescript
-// All result types in one place
-export const backtestResult = $state<BacktestResult | null>(null);
-export const optimizationResult = $state<OptimizationOutput | null>(null);
-export const validationResult = $state<ValidationOutput | null>(null);
-
-// Derived
-export const hasResults = $derived(
-  backtestResult !== null || optimizationResult !== null || validationResult !== null
-);
-```
-
-### stores/config.svelte.ts
-
-```typescript
-// Persisted to localStorage
-export const config = $state({
-  backtest: { ...DEFAULT_BACKTEST_CONFIG },
-  optimization: {
-    method: 'grid' as const,
-    objective: 'sharpeRatio' as const,
-    iterations: 100,
-    topN: 10,
-  },
-  validation: {
-    trainTestSplit: 0.7,
-    numFolds: 5,
-    walkForward: { numWindows: 5, inSampleRatio: 0.7, optimizePerWindow: false },
-    monteCarlo: { numSimulations: 1000, method: 'bootstrap-returns' as const },
-  },
-  ui: {
-    showDrawdown: true,
-    showBenchmark: true,
-    equityHeight: 300,
-  },
+// Config (persisted)
+export const config = writable({
+  initialCapital: stored.initialCapital ?? 100000,
+  commission: stored.commission ?? 0,
+  slippage: stored.slippage ?? 0.001,
+  showDrawdown: stored.showDrawdown ?? true,
 });
 
-// Auto-persist on change
-$effect(() => {
-  localStorage.setItem('backtesting-ui-config', JSON.stringify(config));
-});
-```
-
----
-
-## Component Structure
-
-Flattened hierarchy (max 2 levels deep). Components are organized by feature, not by type.
-
-```
-src/lib/components/
-├── layout/
-│   ├── ThreeColumnLayout.svelte    # Main layout shell
-│   ├── LeftNav.svelte              # Strategy list + mode tabs
-│   ├── MainPanel.svelte            # Results area
-│   └── SettingsPanel.svelte        # Config forms
-│
-├── charts/
-│   ├── EquityCurve.svelte          # Primary chart
-│   ├── PriceChart.svelte           # Candlesticks + signals
-│   ├── Heatmap.svelte              # Optimization results
-│   └── Distribution.svelte         # Monte Carlo histograms
-│
-├── results/
-│   ├── MetricsGrid.svelte          # 6-card metrics display
-│   ├── TradeLog.svelte             # Sortable trade table
-│   ├── ValidationScore.svelte      # Score gauge + flags
-│   └── TopResults.svelte           # Optimization rankings
-│
-├── settings/
-│   ├── StrategyParams.svelte       # Dynamic param form
-│   ├── BacktestConfig.svelte       # Capital, commission, etc.
-│   ├── OptimizationConfig.svelte   # Method, objective, ranges
-│   └── ValidationConfig.svelte     # Train/test, WF, MC options
-│
-└── controls/
-    ├── SymbolSelect.svelte         # Multi-symbol picker
-    ├── DateRange.svelte            # Start/end date pickers
-    ├── ParamSlider.svelte          # Reusable slider
-    └── RunButton.svelte            # Execute action
-```
-
-**Shared UI imports:** `Button`, `Spinner`, `Toast` from `@one-love-wealth/shared-ui`
-
----
-
-## UI Modes & Workflows
-
-Single-page app with 3 modes (tabs in left nav):
-
-### Mode: Backtest (default)
-
-```
-┌─────────┬────────────────────────────────┬──────────────┐
-│ Left    │ Center                         │ Right        │
-├─────────┼────────────────────────────────┼──────────────┤
-│ [Modes] │ EquityCurve + PriceChart       │ BacktestCfg  │
-│ Strategy│ MetricsGrid                    │ StrategyParams│
-│ List    │ TradeLog                       │ [Run]        │
-└─────────┴────────────────────────────────┴──────────────┘
-```
-
-**Flow:** Select strategy → Configure → Run → View results
-
-### Mode: Optimize
-
-```
-┌─────────┬────────────────────────────────┬──────────────┐
-│ Left    │ Center                         │ Right        │
-├─────────┼────────────────────────────────┼──────────────┤
-│ [Modes] │ Heatmap (if grid)              │ OptimizeCfg  │
-│ Strategy│ TopResults table               │ ParamRanges  │
-│ List    │ Selected result details        │ [Optimize]   │
-└─────────┴────────────────────────────────┴──────────────┘
-```
-
-**Flow:** Define ranges → Choose method → Run → Click result → Apply to backtest
-
-### Mode: Validate
-
-```
-┌─────────┬────────────────────────────────┬──────────────┐
-│ Left    │ Center                         │ Right        │
-├─────────┼────────────────────────────────┼──────────────┤
-│ [Modes] │ ValidationScore gauge          │ ValidateCfg  │
-│ Strategy│ WF Timeline / MC Distribution  │ (collapsible)│
-│ List    │ Benchmark comparison           │ [Validate]   │
-│         │ [Export Report]                │ [Quick]      │
-└─────────┴────────────────────────────────┴──────────────┘
-```
-
-**Flow:** Configure → Run (or Quick Validate) → View score → Export report
-
----
-
-## Technical Considerations
-
-### Web Workers
-
-Heavy computations run in workers to keep UI responsive:
-
-```typescript
-// workers/backtest.worker.ts
-self.onmessage = async (e) => {
-  const { strategy, data, config } = e.data;
-  const result = runBacktest(strategy, data, config);
-  self.postMessage(result);
-};
-```
-
-**Worker-bound operations:**
-- `runBacktest()` - for large datasets
-- `optimizeStrategy()` - always (can take minutes)
-- `monteCarloSimulation()` - always (1000+ iterations)
-- `validateStrategy()` - always (combines above)
-
-### Data Loading
-
-Integration with `@one-love-wealth/data-layer`:
-
-```typescript
-// services/data.ts
-import { loadBacktestData } from '@one-love-wealth/backtesting';
-
-export async function loadData(symbols: string[], start: Date, end: Date) {
-  return loadBacktestData({
-    symbols,
-    startDate: start,
-    endDate: end,
-    source: 'yahoo',  // or 'binance', etc.
-  });
+// Auto-save config changes
+if (browser) {
+  config.subscribe(v => localStorage.setItem('backtesting-ui', JSON.stringify(v)));
 }
 ```
 
-### URL State
+---
 
-Shareable URLs encode current state:
+## UI Layout
+
+Three-column layout (copied from crypto-viz):
 
 ```
-/backtest?strategy=ma-crossover&fastPeriod=50&slowPeriod=200&symbols=SPY,QQQ
+┌──────────┬─────────────────────────────┬─────────────┐
+│ Left     │ Center                      │ Right       │
+│ (200px)  │ (flex)                      │ (280px)     │
+├──────────┼─────────────────────────────┼─────────────┤
+│ Mode tabs│ Charts + Results            │ Settings    │
+│ Strategy │ (content varies by mode)    │ [Run]       │
+│ list     │                             │             │
+└──────────┴─────────────────────────────┴─────────────┘
 ```
 
-### Error Handling
+**Mode: Backtest** → EquityCurve, MetricsGrid, TradeLog  
+**Mode: Optimize** → Heatmap, TopResults (Phase 3)  
+**Mode: Validate** → Score gauge, WF timeline (Post-MVP)
 
-- Toast notifications for user-facing errors
-- Console logging for debug
-- Graceful degradation (show partial results if available)
+---
+
+## Services
+
+### backtest.ts
+
+```typescript
+import { BacktestEngine, type BacktestData, type Strategy } from '@one-love-wealth/backtesting';
+
+const engine = new BacktestEngine({ initialCapital: 100000 });
+
+export function runBacktest(strategy: Strategy, data: BacktestData) {
+  return engine.run(strategy, data);
+}
+```
+
+### optimizer.worker.ts (Phase 3)
+
+```typescript
+// Web Worker for optimization - can't pass class instances, so recreate strategy
+import { optimizeStrategy, MACrossoverStrategy } from '@one-love-wealth/backtesting';
+
+self.onmessage = (e) => {
+  const { strategyKey, data, config, paramRanges } = e.data;
+  
+  // Factory function recreates strategy with params
+  const factory = (params) => new MACrossoverStrategy(params);
+  
+  const result = optimizeStrategy(factory, data, { ...config, parameters: paramRanges });
+  self.postMessage(result);
+};
+```
 
 ---
 
@@ -490,116 +236,79 @@ Shareable URLs encode current state:
 
 ```json
 {
-  "name": "@one-love-wealth/backtesting-ui",
-  "version": "0.1.0",
-  "type": "module",
   "dependencies": {
     "@one-love-wealth/backtesting": "workspace:*",
     "@one-love-wealth/data-layer": "workspace:*",
     "@one-love-wealth/shared-ui": "workspace:*",
     "lightweight-charts": "^4.2.0",
     "d3": "^7.9.0"
-  },
-  "devDependencies": {
-    "@sveltejs/kit": "^2.0.0",
-    "@sveltejs/adapter-static": "^3.0.0",
-    "svelte": "^5.0.0",
-    "tailwindcss": "^3.4.0",
-    "typescript": "^5.3.0",
-    "vite": "^5.0.0"
   }
 }
 ```
 
-**Note:** Uses `bun` as package manager (monorepo standard).
+Uses `bun` (monorepo standard). Dev deps: SvelteKit 2, Svelte 5, Tailwind, TypeScript, Vite.
 
 ---
 
 ## Implementation Phases
 
-### Phase 1: Foundation (MVP)
+### Phase 1: MVP (~15h)
 
-**Goal:** Run a backtest and see results
+Run a backtest, see results.
 
-| Task | Est. | Priority |
-|------|------|----------|
-| Package scaffolding (SvelteKit + Tailwind) | 2h | P0 |
-| Copy layout from crypto-viz | 1h | P0 |
-| Strategy registry + param forms | 3h | P0 |
-| Data loading service | 2h | P0 |
-| Backtest execution (main thread) | 2h | P0 |
-| Equity curve chart | 3h | P0 |
-| Metrics grid (6 cards) | 2h | P0 |
+- [ ] Scaffold package (copy crypto-viz structure)
+- [ ] Strategy registry with 2 strategies (MA Crossover, Buy & Hold)
+- [ ] StrategyParams form (dynamic from registry)
+- [ ] BacktestConfig form (capital, commission)
+- [ ] Data loading (hardcoded SPY for now)
+- [ ] EquityCurve chart
+- [ ] MetricsGrid (6 cards)
 
-**Done when:** Can select MA Crossover, run backtest on SPY, see equity curve + metrics.
+**Done:** Select strategy → Run → See equity curve + metrics
 
-### Phase 2: Charts & Polish
+### Phase 2: Polish (~12h)
 
-**Goal:** Full charting experience
+Full charting, persistence.
 
-| Task | Est. | Priority |
-|------|------|----------|
-| Price chart with trade markers | 4h | P1 |
-| Synchronized crosshairs | 2h | P1 |
-| Trade log table | 2h | P1 |
-| Chart resizing | 1h | P2 |
-| URL state encoding | 2h | P2 |
-| LocalStorage persistence | 1h | P2 |
+- [ ] PriceChart with trade markers
+- [ ] TradeLog table
+- [ ] LocalStorage persistence
+- [ ] Add remaining strategies to registry
 
-**Done when:** Charts sync, trades visible, state persists across refresh.
+**Done:** Charts show trades, settings persist
 
-### Phase 3: Optimization
+### Phase 3: Optimization (~16h)
 
-**Goal:** Find optimal parameters
+Find optimal parameters.
 
-| Task | Est. | Priority |
-|------|------|----------|
-| Web Worker setup | 2h | P0 |
-| Optimization config UI | 3h | P0 |
-| Parameter range editor | 2h | P0 |
-| Run optimization in worker | 2h | P0 |
-| Top results table | 2h | P0 |
-| Parameter heatmap (d3) | 4h | P1 |
-| Apply result to backtest | 1h | P1 |
+- [ ] Web Worker for optimization
+- [ ] OptimizationConfig UI (method, objective)
+- [ ] Parameter range editor
+- [ ] TopResults table
+- [ ] Heatmap visualization (d3)
+- [ ] Apply result → run backtest
 
-**Done when:** Can optimize MA Crossover params, see heatmap, apply best to backtest.
+**Done:** Optimize params, see heatmap, apply best
 
-### Phase 4: Validation
+### Phase 4+: Validation (Post-MVP)
 
-**Goal:** Comprehensive strategy validation
-
-| Task | Est. | Priority |
-|------|------|----------|
-| Validation config UI | 3h | P0 |
-| Quick Validate button | 1h | P0 |
-| Score gauge component | 2h | P0 |
-| Walk-forward timeline | 3h | P1 |
-| Monte Carlo distribution | 3h | P1 |
-| Benchmark overlay | 2h | P1 |
-| Report export (MD/HTML) | 3h | P2 |
-
-**Done when:** Can run full validation, see score, export report.
-
-### Phase 5: Future
-
-- Multi-strategy comparison
-- Custom strategy editor
-- Saved runs / history
-- Performance optimizations (virtualized lists, etc.)
+- Validation config UI
+- Score gauge, WF timeline, MC distribution
+- Report export
 
 ---
 
 ## Open Questions
 
-1. **Symbol source** - Where do available symbols come from? data-layer? Hardcoded list?
-2. **Default date range** - Last 5 years? 10 years? User preference?
-3. **Report storage** - Save to file only, or also to cloud/database?
+1. **Symbol list** - Hardcode common symbols or fetch from data-layer?
+2. **Date range default** - Last 5 years? Configurable?
 
 ---
 
-## Revision History
+## Changelog
 
-| Date | Changes |
-|------|---------|
-| 2026-01-02 | Initial plan created |
-| 2026-01-02 | Optimized: consolidated stores, flattened components, added technical details |
+| Date | Notes |
+|------|-------|
+| 2026-01-02 | Created |
+| 2026-01-02 | v2: Consolidated stores, practical code examples |
+| 2026-01-02 | v3: Simplified phases, removed over-engineering |

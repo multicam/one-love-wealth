@@ -73,3 +73,25 @@ export { QuandlBuilder, quandl } from './builders/quandl-builder';
 export { IMFBuilder, imf } from './builders/imf-builder';
 export { OECDBuilder, oecd } from './builders/oecd-builder';
 export { HyperliquidBuilder, hyperliquid } from './builders/hyperliquid-builder';
+
+// Symbol Search
+export {
+  searchSymbols,
+  validateSymbol,
+  searchCuratedSymbols,
+  getSymbolInfo,
+  getSymbolsByType,
+  getSymbolsByProvider,
+  getPopularSymbols,
+  getAvailableTypes,
+  searchYahooFinance,
+  searchCoinGecko,
+  CURATED_SYMBOLS,
+} from './symbols';
+export type {
+  SymbolInfo,
+  SymbolType,
+  SymbolProvider,
+  SymbolSearchOptions,
+  ExternalSymbolResult,
+} from './symbols';
