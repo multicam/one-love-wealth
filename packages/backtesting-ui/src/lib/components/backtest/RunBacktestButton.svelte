@@ -87,8 +87,12 @@
 				}
 			);
 
-			// Set result in store
-			backtest.setResult(result);
+			// Set result in store with strategy info for history
+			backtest.setResult(
+				result,
+				strategy.selectedStrategyId!,
+				strategy.selectedStrategy!.name
+			);
 
 			// Show success toast
 			toastStore.success('Backtest completed successfully!');

@@ -4,6 +4,7 @@
 	import FieldRenderer from './FieldRenderer.svelte';
 	import BacktestConfig from '$lib/components/config/BacktestConfig.svelte';
 	import RunBacktestButton from '$lib/components/backtest/RunBacktestButton.svelte';
+	import RecentResults from '$lib/components/results/RecentResults.svelte';
 	import type { StrategyField } from '$lib/strategies/types';
 
 	// Show/hide advanced parameters
@@ -164,8 +165,13 @@
 		</div>
 
 		<!-- Footer: Run Backtest Button -->
-		<div class="border-t border-border p-4 bg-surface/50">
+		<div class="border-t border-border p-4 bg-surface/50 space-y-4">
 			<RunBacktestButton />
+
+			<!-- Recent Results History -->
+			<div class="pt-4 border-t border-border/50">
+				<RecentResults />
+			</div>
 		</div>
 	</div>
 {:else}
