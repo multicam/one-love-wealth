@@ -2,6 +2,7 @@
 	import { BarChart3, TrendingUp, List, TrendingDown } from 'lucide-svelte';
 	import { backtest } from '$lib/stores/backtest.svelte';
 	import { strategy } from '$lib/stores/strategy.svelte';
+	import { selectedStrategy } from '$lib/stores/strategy.svelte';
 	import MetricsGrid from './MetricsGrid.svelte';
 	import TradeLog from './TradeLog.svelte';
 	import EquityCurve from './EquityCurve.svelte';
@@ -45,7 +46,7 @@
 			<div class="flex items-center justify-between">
 				<div>
 					<h2 class="text-lg font-semibold text-text-primary">
-						{$strategy.selectedStrategy?.name || 'Backtest Results'}
+						{$selectedStrategy?.name || 'Backtest Results'}
 					</h2>
 					<p class="text-sm text-text-secondary mt-1">
 						{$backtest.result.trades.length} trades
@@ -164,7 +165,7 @@
 			</p>
 			{#if $strategy.selectedStrategyId}
 				<p class="text-xs text-text-secondary">
-					Selected: <span class="font-medium">{$strategy.selectedStrategy?.name}</span>
+					Selected: <span class="font-medium">{$selectedStrategy?.name}</span>
 				</p>
 			{/if}
 		</div>

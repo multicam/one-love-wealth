@@ -1,6 +1,6 @@
 <script lang="ts">
   import { walkforward } from '$lib/stores/walkforward.svelte';
-  import { strategy } from '$lib/stores/strategy.svelte';
+  import { strategy, selectedStrategy } from '$lib/stores/strategy.svelte';
   import { config } from '$lib/stores/config.svelte';
   import { toastStore } from '@one-love-wealth/shared-ui';
   import { executeWalkForward } from '$lib/services/walkforward.service';
@@ -38,7 +38,7 @@
 
   // Handle run walk-forward
   async function handleRunWalkForward() {
-    if (!$strategy.selectedStrategy || !$strategy.selectedStrategyId) {
+    if (!$selectedStrategy || !$strategy.selectedStrategyId) {
       toastStore.error('Please select a strategy first');
       return;
     }
@@ -58,7 +58,7 @@
     try {
       const result = await executeWalkForward(
         {
-          strategy: $strategy.selectedStrategy as any, // StrategyDefinition -> Strategy cast
+          strategy: $selectedStrategy as any, // StrategyDefinition -> Strategy cast
           strategyParams: $strategy.params,
           wfConfig: $walkforward.config,
           dateRange: $config.dateRange,
@@ -72,7 +72,7 @@
         }
       );
 
-      walkforward.setResult(result, $strategy.selectedStrategyId, $strategy.selectedStrategy.name);
+      walkforward.setResult(result, $strategy.selectedStrategyId, $selectedStrategy.name);
       toastStore.success(`Walk-forward analysis complete! ${result.windows.length} windows analyzed.`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -238,7 +238,7 @@
     {#if !$walkforward.isRunning}
       <button
         onclick={handleRunWalkForward}
-        disabled={!$strategy.selectedStrategy}
+        disabled={!$selectedStrategy}
         class="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg
                hover:bg-primary-hover transition-colors disabled:opacity-50
                disabled:cursor-not-allowed"
@@ -264,7 +264,7 @@
     {/if}
   </div>
 
-  {#if !$strategy.selectedStrategy}
+  {#if !$selectedStrategy}
     <p class="text-xs text-text-tertiary mt-4 text-center">
       Select a strategy from the left panel to begin
     </p>

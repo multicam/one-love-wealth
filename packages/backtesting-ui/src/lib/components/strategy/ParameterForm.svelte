@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { RotateCcw, ChevronDown, ChevronUp, Settings } from 'lucide-svelte';
 	import { strategy } from '$lib/stores/strategy.svelte';
+	import { selectedStrategy } from '$lib/stores/strategy.svelte';
 	import FieldRenderer from './FieldRenderer.svelte';
 	import BacktestConfig from '$lib/components/config/BacktestConfig.svelte';
 	import RunBacktestButton from '$lib/components/backtest/RunBacktestButton.svelte';
@@ -14,20 +15,20 @@
 
 	// Get visible fields (showByDefault !== false)
 	const visibleFields = $derived<StrategyField[]>(() => {
-		if (!$strategy.selectedStrategy) return [];
-		return $strategy.selectedStrategy.fields.filter((f) => f.showByDefault !== false);
+		if (!$selectedStrategy) return [];
+		return $selectedStrategy.fields.filter((f) => f.showByDefault !== false);
 	});
 
 	// Get advanced fields (showByDefault === false)
 	const advancedFields = $derived<StrategyField[]>(() => {
-		if (!$strategy.selectedStrategy) return [];
-		return $strategy.selectedStrategy.fields.filter((f) => f.showByDefault === false);
+		if (!$selectedStrategy) return [];
+		return $selectedStrategy.fields.filter((f) => f.showByDefault === false);
 	});
 
 	// Check if current params match recommended preset
 	const isUsingRecommended = $derived(() => {
-		if (!$strategy.selectedStrategy) return false;
-		const recommended = $strategy.selectedStrategy.defaults;
+		if (!$selectedStrategy) return false;
+		const recommended = $selectedStrategy.defaults;
 		for (const key in recommended) {
 			if ($strategy.params[key] !== recommended[key]) {
 				return false;
@@ -38,8 +39,8 @@
 
 	// Reset to recommended preset
 	function resetToRecommended() {
-		if ($strategy.selectedStrategy) {
-			strategy.updateParams({ ...$strategy.selectedStrategy.defaults });
+		if ($selectedStrategy) {
+			strategy.updateParams({ ...$selectedStrategy.defaults });
 		}
 	}
 
@@ -49,7 +50,7 @@
 	}
 </script>
 
-{#if $strategy.selectedStrategy}
+{#if $selectedStrategy}
 	<div class="h-full flex flex-col">
 		<!-- Header -->
 		<div class="p-4 border-b border-border">
@@ -71,7 +72,7 @@
 			</div>
 
 			<!-- Preset Badge -->
-			{#if $strategy.selectedStrategy.preset}
+			{#if $selectedStrategy.preset}
 				<div class="flex items-center gap-2 text-xs text-text-secondary">
 					<span class="w-2 h-2 rounded-full {isUsingRecommended() ? 'bg-green-500' : 'bg-orange-500'}"></span>
 					<span>
@@ -124,14 +125,14 @@
 			{/if}
 
 			<!-- Preset Information -->
-			{#if $strategy.selectedStrategy.preset}
+			{#if $selectedStrategy.preset}
 				<div class="pt-4 mt-4 border-t border-border">
 					<div class="bg-primary/5 rounded-lg p-3 border border-primary/20">
 						<h3 class="text-xs font-semibold text-primary mb-2">
 							💡 About These Defaults
 						</h3>
 						<p class="text-xs text-text-secondary">
-							{$strategy.selectedStrategy.preset.rationale}
+							{$selectedStrategy.preset.rationale}
 						</p>
 					</div>
 				</div>

@@ -8,19 +8,20 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should display walk-forward mode when clicking walk-forward tab', async ({ page }) => {
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    // Navigate directly to walk-forward route
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
     // Verify config panel appears
-    await expect(page.getByText('Walk-Forward Analysis')).toBeVisible({ timeout: 10000 });
+    await expect(page.getByRole('heading', { name: 'Walk-Forward Analysis' })).toBeVisible({ timeout: 10000 });
     await expect(page.getByText('Window Configuration')).toBeVisible();
     await expect(page.getByText('In-Sample Period')).toBeVisible();
     await expect(page.getByText('Out-of-Sample Period')).toBeVisible();
   });
 
   test('should show window configuration sliders', async ({ page }) => {
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
     // Check for sliders
     const sliders = page.locator('input[type="range"]');
@@ -32,8 +33,8 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should show empty state in results panel initially', async ({ page }) => {
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
     // Center panel should show "No Results Yet"
     await expect(page.getByText('No Results Yet')).toBeVisible({ timeout: 10000 });
@@ -43,8 +44,8 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should adjust sliders correctly', async ({ page }) => {
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
     await page.waitForSelector('text=In-Sample Period', { timeout: 10000 });
 
@@ -59,8 +60,8 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should show run button disabled when no strategy selected', async ({ page }) => {
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
     await page.waitForSelector('button:has-text("Run Walk-Forward Analysis")', { timeout: 10000 });
 
@@ -69,16 +70,18 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should enable run button when strategy is selected', async ({ page }) => {
-    // First select a strategy
+    // Navigate to walk-forward route
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
+
+    // Select strategy directly from left panel
     const strategy = page.getByRole('button', { name: /MA Crossover/ });
     await strategy.click();
 
-    // Then switch to walk-forward mode
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    // Wait for strategy selection to persist
+    await page.waitForTimeout(500);
 
-    await page.waitForSelector('button:has-text("Run Walk-Forward Analysis")', { timeout: 10000 });
-
+    // Verify run button is enabled
     const runButton = page.getByRole('button', { name: 'Run Walk-Forward Analysis' });
     await expect(runButton).toBeEnabled();
   });
@@ -86,15 +89,15 @@ test.describe('Walk-Forward Analysis', () => {
   test('should display timeline visualization after analysis (mock)', async ({ page }) => {
     // This test assumes mock data returns immediately
 
-    // Select a strategy
-    const strategy = page.getByRole('button', { name: /MA Crossover/ });
-    await strategy.click();
+    // Navigate to walk-forward route
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Switch to walk-forward mode
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    // Select strategy directly from left panel
+    await page.getByRole('button', { name: /MA Crossover/ }).click();
 
-    await page.waitForSelector('button:has-text("Run Walk-Forward Analysis")', { timeout: 10000 });
+    // Wait for strategy selection
+    await page.waitForTimeout(500);
 
     // Run analysis
     const runButton = page.getByRole('button', { name: 'Run Walk-Forward Analysis' });
@@ -111,15 +114,15 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should show aggregate metrics in overview tab', async ({ page }) => {
-    // Select a strategy
-    const strategy = page.getByRole('button', { name: /MA Crossover/ });
-    await strategy.click();
+    // Navigate to walk-forward route
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Switch to walk-forward mode
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    // Select strategy directly from left panel
+    await page.getByRole('button', { name: /MA Crossover/ }).click();
 
-    await page.waitForSelector('button:has-text("Run Walk-Forward Analysis")', { timeout: 10000 });
+    // Wait for strategy selection
+    await page.waitForTimeout(500);
 
     // Run analysis
     const runButton = page.getByRole('button', { name: 'Run Walk-Forward Analysis' });
@@ -136,15 +139,15 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should display timeline graph when clicking timeline tab', async ({ page }) => {
-    // Select a strategy
-    const strategy = page.getByRole('button', { name: /MA Crossover/ });
-    await strategy.click();
+    // Navigate to walk-forward route
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Switch to walk-forward mode
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    // Select strategy directly from left panel
+    await page.getByRole('button', { name: /MA Crossover/ }).click();
 
-    await page.waitForSelector('button:has-text("Run Walk-Forward Analysis")', { timeout: 10000 });
+    // Wait for strategy selection
+    await page.waitForTimeout(500);
 
     // Run analysis
     const runButton = page.getByRole('button', { name: 'Run Walk-Forward Analysis' });
@@ -166,15 +169,15 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should display window results table', async ({ page }) => {
-    // Select a strategy
-    const strategy = page.getByRole('button', { name: /MA Crossover/ });
-    await strategy.click();
+    // Navigate to walk-forward route
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Switch to walk-forward mode
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    // Select strategy directly from left panel
+    await page.getByRole('button', { name: /MA Crossover/ }).click();
 
-    await page.waitForSelector('button:has-text("Run Walk-Forward Analysis")', { timeout: 10000 });
+    // Wait for strategy selection
+    await page.waitForTimeout(500);
 
     // Run analysis
     const runButton = page.getByRole('button', { name: 'Run Walk-Forward Analysis' });
@@ -195,15 +198,15 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should display equity curve chart', async ({ page }) => {
-    // Select a strategy
-    const strategy = page.getByRole('button', { name: /MA Crossover/ });
-    await strategy.click();
+    // Navigate to walk-forward route
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
-    // Switch to walk-forward mode
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    // Select strategy directly from left panel
+    await page.getByRole('button', { name: /MA Crossover/ }).click();
 
-    await page.waitForSelector('button:has-text("Run Walk-Forward Analysis")', { timeout: 10000 });
+    // Wait for strategy selection
+    await page.waitForTimeout(500);
 
     // Run analysis
     const runButton = page.getByRole('button', { name: 'Run Walk-Forward Analysis' });
@@ -225,8 +228,8 @@ test.describe('Walk-Forward Analysis', () => {
   });
 
   test('should allow resetting configuration', async ({ page }) => {
-    const walkForwardBtn = page.getByRole('button', { name: 'Walk-Forward', exact: true });
-    await walkForwardBtn.click();
+    await page.goto('http://localhost:6036/walk-forward');
+    await page.waitForLoadState('domcontentloaded');
 
     await page.waitForSelector('text=Window Configuration', { timeout: 10000 });
 

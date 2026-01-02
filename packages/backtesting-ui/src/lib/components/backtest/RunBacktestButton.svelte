@@ -3,6 +3,7 @@
 	import { Play, AlertCircle } from 'lucide-svelte';
 	import { toastStore } from '@one-love-wealth/shared-ui';
 	import { strategy } from '$lib/stores/strategy.svelte';
+	import { selectedStrategy } from '$lib/stores/strategy.svelte';
 	import { config } from '$lib/stores/config.svelte';
 	import { backtest } from '$lib/stores/backtest.svelte';
 	import { validateStrategyParams } from '$lib/strategies/types';
@@ -25,13 +26,13 @@
 		const errors: string[] = [];
 
 		// Check if strategy is selected
-		if (!$strategy.selectedStrategyId || !$strategy.selectedStrategy) {
+		if (!$strategy.selectedStrategyId || !$selectedStrategy) {
 			errors.push('Please select a strategy');
 			return errors;
 		}
 
 		// Validate strategy parameters
-		const paramValidation = validateStrategyParams($strategy.selectedStrategy, $strategy.params);
+		const paramValidation = validateStrategyParams($selectedStrategy, $strategy.params);
 		if (!paramValidation.valid) {
 			errors.push(...paramValidation.errors);
 		}
@@ -65,7 +66,7 @@
 
 	// Handle run backtest
 	async function handleRunBacktest() {
-		if (!isValid || !$strategy.selectedStrategy) return;
+		if (!isValid || !$selectedStrategy) return;
 
 		try {
 			// Start backtest with loading state
@@ -74,7 +75,7 @@
 			// Execute backtest with progress tracking
 			const result = await executeBacktest(
 				{
-					strategy: $strategy.selectedStrategy,
+					strategy: $selectedStrategy,
 					strategyParams: $strategy.params,
 					dateRange: $config.dateRange,
 					interval: $config.interval,
@@ -91,7 +92,7 @@
 			backtest.setResult(
 				result,
 				$strategy.selectedStrategyId!,
-				$strategy.selectedStrategy!.name
+				$selectedStrategy!.name
 			);
 
 			// Show success toast

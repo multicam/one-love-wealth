@@ -1,24 +1,26 @@
 <script lang="ts">
-    import { ui, type AppMode } from '$lib/stores/ui.svelte';
+    import { page } from '$app/stores';
+    import { goto } from '$app/navigation';
     import { backtest } from '$lib/stores/backtest.svelte';
     import { optimization } from '$lib/stores/optimization.svelte';
     import { walkforward } from '$lib/stores/walkforward.svelte';
 
-    // Handle mode switch
-    function switchMode(newMode: AppMode) {
-        ui.setMode(newMode);
+    // Route definitions
+    const routes = [
+        { path: '/', label: 'Backtest' },
+        { path: '/optimize', label: 'Optimize' },
+        { path: '/walk-forward', label: 'Walk-Forward' }
+    ];
 
-        // Clear results when switching modes (Q14 decision)
-        backtest.clearResult();
-        optimization.clearResult();
-        walkforward.clearResult();
+    // Handle navigation
+    function navigateTo(path: string) {
+        goto(path);
     }
 
-    const modes: { value: AppMode; label: string }[] = [
-        { value: 'backtest', label: 'Backtest' },
-        { value: 'optimize', label: 'Optimize' },
-        { value: 'walk-forward', label: 'Walk-Forward' }
-    ];
+    // Determine if a route is active
+    function isActive(path: string): boolean {
+        return $page.url.pathname === path;
+    }
 </script>
 
 <header class="h-16 border-b border-border bg-surface flex items-center justify-between px-6">
@@ -47,16 +49,16 @@
 
     <!-- Mode Tabs -->
     <nav class="flex gap-1 bg-background rounded-lg p-1">
-        {#each modes as { value, label }}
+        {#each routes as { path, label }}
             <button
                 type="button"
                 class="px-4 py-2 rounded-md text-sm font-medium transition-colors"
-                class:bg-primary={$ui.mode === value}
-                class:text-white={$ui.mode === value}
-                class:text-text-secondary={$ui.mode !== value}
-                class:hover:text-text-primary={$ui.mode !== value}
-                class:hover:bg-surface={$ui.mode !== value}
-                onclick={() => switchMode(value)}
+                class:bg-primary={isActive(path)}
+                class:text-white={isActive(path)}
+                class:text-text-secondary={!isActive(path)}
+                class:hover:text-text-primary={!isActive(path)}
+                class:hover:bg-surface={!isActive(path)}
+                onclick={() => navigateTo(path)}
             >
                 {label}
             </button>

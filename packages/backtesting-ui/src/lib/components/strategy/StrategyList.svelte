@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Search, Info } from 'lucide-svelte';
-	import { strategy } from '$lib/stores/strategy.svelte';
+	import { strategy, selectedStrategy } from '$lib/stores/strategy.svelte';
 	import { STRATEGIES } from '$lib/strategies/registry';
 	import type { StrategyDefinition } from '$lib/strategies/types';
 	import StrategyDescription from './StrategyDescription.svelte';
@@ -107,7 +107,7 @@
 
 					<!-- Strategies -->
 					{#each strategiesInCategory as strategyDef}
-						{@const isSelected = $strategy.selectedStrategyId === strategyDef.id}
+						{@const isSelected = $selectedStrategy?.id === strategyDef.id}
 						<button
 							type="button"
 							class="w-full px-4 py-3 text-left hover:bg-surface transition-colors group relative {isSelected ? 'bg-primary/10 border-l-2 border-primary' : ''}"

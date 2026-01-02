@@ -9,9 +9,9 @@ test.describe('Optimization Flow', () => {
 	});
 
 	test('should display optimization mode when clicking optimize tab', async ({ page }) => {
-		// Click Optimize tab - using a more specific selector
-		const optimizeBtn = page.getByRole('button', { name: 'Optimize', exact: true });
-		await optimizeBtn.click();
+		// Navigate directly to optimize route
+		await page.goto('http://localhost:6036/optimize');
+		await page.waitForLoadState('domcontentloaded');
 
 		// Verify optimization config is visible
 		await expect(page.getByText('Optimization Method')).toBeVisible({ timeout: 10000 });
@@ -23,16 +23,18 @@ test.describe('Optimization Flow', () => {
 		const strategyBtn = page.getByRole('button', { name: /MA Crossover/ });
 		await strategyBtn.click();
 
-		// Switch to optimize mode
-		await page.getByRole('button', { name: 'Optimize', exact: true }).click();
+		// Navigate directly to optimize route
+		await page.goto('http://localhost:6036/optimize');
+		await page.waitForLoadState('domcontentloaded');
 
 		// Verify parameter ranges component is visible
 		await expect(page.getByText('Parameter Ranges')).toBeVisible({ timeout: 10000 });
 	});
 
 	test('should allow selecting different optimization methods', async ({ page }) => {
-		// Switch to optimize mode
-		await page.getByRole('button', { name: 'Optimize', exact: true }).click();
+		// Navigate directly to optimize route
+		await page.goto('http://localhost:6036/optimize');
+		await page.waitForLoadState('domcontentloaded');
 
 		// Wait for panel to load
 		await expect(page.getByText('Optimization Method')).toBeVisible();
@@ -46,8 +48,9 @@ test.describe('Optimization Flow', () => {
 	});
 
 	test('should allow selecting different optimization objectives', async ({ page }) => {
-		// Switch to optimize mode
-		await page.getByRole('button', { name: 'Optimize', exact: true }).click();
+		// Navigate directly to optimize route
+		await page.goto('http://localhost:6036/optimize');
+		await page.waitForLoadState('domcontentloaded');
 		await expect(page.getByText('Optimization Objective')).toBeVisible();
 
 		// Click objectives - they should all be visible
@@ -60,8 +63,9 @@ test.describe('Optimization Flow', () => {
 		// Select a strategy with numeric parameters
 		await page.getByRole('button', { name: /MA Crossover/ }).click();
 
-		// Switch to optimize mode
-		await page.getByRole('button', { name: 'Optimize', exact: true }).click();
+		// Navigate directly to optimize route
+		await page.goto('http://localhost:6036/optimize');
+		await page.waitForLoadState('domcontentloaded');
 
 		// Grid Search should be selected by default
 		await expect(page.getByText('Optimization Method')).toBeVisible();
@@ -74,8 +78,9 @@ test.describe('Optimization Flow', () => {
 	});
 
 	test('should disable run button when strategy not selected', async ({ page }) => {
-		// Switch to optimize mode without selecting strategy
-		await page.getByRole('button', { name: 'Optimize', exact: true }).click();
+		// Navigate directly to optimize route without selecting strategy
+		await page.goto('http://localhost:6036/optimize');
+		await page.waitForLoadState('domcontentloaded');
 
 		// Wait for panel
 		await expect(page.getByText('Optimization Method')).toBeVisible();

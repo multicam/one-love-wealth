@@ -2,6 +2,7 @@
 	import { Settings, Play, X } from 'lucide-svelte';
 	import { toastStore } from '@one-love-wealth/shared-ui';
 	import { strategy } from '$lib/stores/strategy.svelte';
+	import { selectedStrategy } from '$lib/stores/strategy.svelte';
 	import { config } from '$lib/stores/config.svelte';
 	import { optimization } from '$lib/stores/optimization.svelte';
 	import ParameterRanges from './ParameterRanges.svelte';
@@ -80,7 +81,7 @@
 
 	// Validation
 	const isValid = $derived(() => {
-		if (!$strategy.selectedStrategy) return false;
+		if (!$selectedStrategy) return false;
 		if (method === 'random' || method === 'genetic') {
 			if (iterations < 10 || iterations > 10000) return false;
 		}
@@ -89,7 +90,7 @@
 
 	// Handle run optimization
 	async function handleRunOptimization() {
-		if (!isValid() || !$strategy.selectedStrategy) return;
+		if (!isValid() || !$selectedStrategy) return;
 
 		try {
 			// Calculate total iterations
@@ -111,7 +112,7 @@
 					objective,
 					paramRanges: $optimization.paramRanges,
 					iterations: method !== 'grid' ? iterations : undefined,
-					strategy: $strategy.selectedStrategy!,
+					strategy: $selectedStrategy!,
 					strategyParams: $strategy.params,
 					dateRange: $config.dateRange,
 					interval: $config.interval,
@@ -128,7 +129,7 @@
 			optimization.setResult(
 				result,
 				$strategy.selectedStrategyId!,
-				$strategy.selectedStrategy!.name
+				$selectedStrategy!.name
 			);
 
 			// Show success toast
@@ -161,7 +162,7 @@
 			<h2 class="text-lg font-semibold text-text-primary">Optimization</h2>
 		</div>
 		<p class="text-sm text-text-secondary">
-			Find optimal parameters for {$strategy.selectedStrategy?.name || 'selected strategy'}
+			Find optimal parameters for {$selectedStrategy?.name || 'selected strategy'}
 		</p>
 	</div>
 
@@ -225,7 +226,7 @@
 		</div>
 
 		<!-- Parameter Ranges -->
-		{#if $strategy.selectedStrategy}
+		{#if $selectedStrategy}
 			<ParameterRanges />
 		{/if}
 
