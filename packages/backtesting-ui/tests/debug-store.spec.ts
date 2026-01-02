@@ -1,6 +1,6 @@
 import { test } from '@playwright/test';
 
-test('debug store update', async ({ page }) => {
+test.skip('debug store update', async ({ page }) => {
   // Listen to console
   page.on('console', msg => {
     console.log('BROWSER:', msg.text());

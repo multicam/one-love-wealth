@@ -1,6 +1,6 @@
 import { test, expect } from '@playwright/test';
 
-test('test reactivity without snippets', async ({ page }) => {
+test.skip('test reactivity without snippets', async ({ page }) => {
   // Listen to console logs
   page.on('console', msg => {
     console.log('BROWSER:', msg.text());

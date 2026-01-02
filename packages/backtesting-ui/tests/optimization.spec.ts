@@ -19,16 +19,19 @@ test.describe('Optimization Flow', () => {
 	});
 
 	test('should show parameter ranges for selected strategy', async ({ page }) => {
-		// Select a strategy first
-		const strategyBtn = page.getByRole('button', { name: /MA Crossover/ });
-		await strategyBtn.click();
-
 		// Navigate directly to optimize route
 		await page.goto('http://localhost:6036/optimize');
 		await page.waitForLoadState('domcontentloaded');
 
-		// Verify parameter ranges component is visible
-		await expect(page.getByText('Parameter Ranges')).toBeVisible({ timeout: 10000 });
+		// Wait for page to load
+		await expect(page.getByText('Optimization Method')).toBeVisible();
+
+		// Select a strategy from left panel
+		const strategyBtn = page.getByRole('button', { name: /MA Crossover/ });
+		await strategyBtn.click();
+
+		// Verify parameter ranges component is visible (wait for reactivity)
+		await expect(page.getByText('Parameter Ranges')).toBeVisible({ timeout: 5000 });
 	});
 
 	test('should allow selecting different optimization methods', async ({ page }) => {
@@ -43,8 +46,8 @@ test.describe('Optimization Flow', () => {
 		const randomBtn = page.getByRole('button', { name: /Random Search/ });
 		await randomBtn.click();
 
-		// Verify iterations input appears
-		await expect(page.getByText('Number of Iterations')).toBeVisible();
+		// Verify iterations input appears (with timeout for reactivity)
+		await expect(page.getByText('Number of Iterations')).toBeVisible({ timeout: 3000 });
 	});
 
 	test('should allow selecting different optimization objectives', async ({ page }) => {
