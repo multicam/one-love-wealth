@@ -1,0 +1,22 @@
+/* Backtesting UI - App Styles */
+@import 'tailwindcss';
+@import '@one-love-wealth/shared-ui/styles/theme.css';
+@import '@one-love-wealth/shared-ui/styles/animations.css';
+@import '@one-love-wealth/shared-ui/styles/utilities.css';
+
+/* Backtesting-ui specific overrides (if needed) */
+/* The shared theme provides all base colors, but you can override here */
+
+html, body {
+	height: 100%;
+	margin: 0;
+	padding: 0;
+}
+
+body {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+	background-color: var(--color-background);
+	color: var(--color-text-primary);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}

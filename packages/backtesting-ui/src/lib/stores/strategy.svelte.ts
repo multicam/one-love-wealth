@@ -1,48 +1,58 @@
 /**
  * Strategy Store
  * Manages selected strategy and its parameters
+ * Uses Svelte 5 runes with proper module state pattern
  */
 
 import type { StrategyDefinition } from '$lib/strategies/types';
 import { getStrategy } from '$lib/strategies';
 
-// State
-export let selectedStrategyId = $state<string | null>(null);
-export let params = $state<Record<string, any>>({});
+class StrategyState {
+	selectedStrategyId = $state<string | null>(null);
+	params = $state<Record<string, any>>({});
 
-// Derived
-export const selectedStrategy = $derived.by((): StrategyDefinition | null => {
-	if (!selectedStrategyId) return null;
-	return getStrategy(selectedStrategyId);
-});
+	// Derived properties
+	get selectedStrategy(): StrategyDefinition | null {
+		if (!this.selectedStrategyId) return null;
+		return getStrategy(this.selectedStrategyId);
+	}
 
-export const hasStrategy = $derived(selectedStrategyId !== null);
-export const isReady = $derived(hasStrategy && Object.keys(params).length > 0);
+	get hasStrategy() {
+		return this.selectedStrategyId !== null;
+	}
 
-// Actions
-export function selectStrategy(strategyId: string): void {
-	selectedStrategyId = strategyId;
-	const strategy = getStrategy(strategyId);
-	if (strategy) {
-		params = { ...strategy.defaults };
+	get isReady() {
+		return this.hasStrategy && Object.keys(this.params).length > 0;
+	}
+
+	// Actions
+	selectStrategy(strategyId: string): void {
+		this.selectedStrategyId = strategyId;
+		const strategy = getStrategy(strategyId);
+		if (strategy) {
+			this.params = { ...strategy.defaults };
+		}
+	}
+
+	updateParam(key: string, value: any): void {
+		this.params = { ...this.params, [key]: value };
+	}
+
+	updateParams(newParams: Record<string, any>): void {
+		this.params = { ...this.params, ...newParams };
+	}
+
+	resetParams(): void {
+		if (this.selectedStrategy) {
+			this.params = { ...this.selectedStrategy.defaults };
+		}
+	}
+
+	clearStrategy(): void {
+		this.selectedStrategyId = null;
+		this.params = {};
 	}
 }
 
-export function updateParam(key: string, value: any): void {
-	params = { ...params, [key]: value };
-}
-
-export function updateParams(newParams: Record<string, any>): void {
-	params = { ...params, ...newParams };
-}
-
-export function resetParams(): void {
-	if (selectedStrategy) {
-		params = { ...selectedStrategy.defaults };
-	}
-}
-
-export function clearStrategy(): void {
-	selectedStrategyId = null;
-	params = {};
-}
+// Export a single instance
+export const strategy = new StrategyState();

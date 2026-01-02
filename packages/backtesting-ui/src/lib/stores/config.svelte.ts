@@ -1,66 +1,79 @@
 /**
  * Config Store
  * Manages backtest configuration (symbols, dates, intervals)
+ * Uses Svelte 5 runes with proper module state pattern
  */
 
 import { DEFAULT_CONFIG } from '$lib/config/defaults';
 import type { DateRange } from '$lib/utils/date-range';
 
-// State
-export let symbols = $state<string[]>([DEFAULT_CONFIG.defaultSymbol]);
-export let dateRange = $state<DateRange>({
-	start: DEFAULT_CONFIG.dateRange.start,
-	end: DEFAULT_CONFIG.dateRange.end,
-});
-export let interval = $state<'1d' | '1wk' | '1mo'>(DEFAULT_CONFIG.interval);
-export let gapFillStrategy = $state<'forward-fill' | 'backward-fill' | 'drop'>(
-	DEFAULT_CONFIG.gapFillStrategy
-);
-export let initialCapital = $state<number>(DEFAULT_CONFIG.initialCapital);
+class ConfigState {
+	symbols = $state<string[]>([DEFAULT_CONFIG.defaultSymbol]);
+	dateRange = $state<DateRange>({
+		start: DEFAULT_CONFIG.dateRange.start,
+		end: DEFAULT_CONFIG.dateRange.end,
+	});
+	interval = $state<'1d' | '1wk' | '1mo'>(DEFAULT_CONFIG.interval);
+	gapFillStrategy = $state<'forward-fill' | 'backward-fill' | 'drop'>(
+		DEFAULT_CONFIG.gapFillStrategy
+	);
+	initialCapital = $state<number>(DEFAULT_CONFIG.initialCapital);
 
-// Derived
-export const isSingleSymbol = $derived(symbols.length === 1);
-export const isMultiSymbol = $derived(symbols.length > 1);
-export const primarySymbol = $derived(symbols[0] ?? null);
+	// Derived properties
+	get isSingleSymbol() {
+		return this.symbols.length === 1;
+	}
 
-// Actions
-export function setSymbols(newSymbols: string[]): void {
-	symbols = newSymbols;
-}
+	get isMultiSymbol() {
+		return this.symbols.length > 1;
+	}
 
-export function addSymbol(symbol: string): void {
-	if (!symbols.includes(symbol)) {
-		symbols = [...symbols, symbol];
+	get primarySymbol() {
+		return this.symbols[0] ?? null;
+	}
+
+	// Actions
+	setSymbols(newSymbols: string[]): void {
+		this.symbols = newSymbols;
+	}
+
+	addSymbol(symbol: string): void {
+		if (!this.symbols.includes(symbol)) {
+			this.symbols = [...this.symbols, symbol];
+		}
+	}
+
+	removeSymbol(symbol: string): void {
+		this.symbols = this.symbols.filter((s) => s !== symbol);
+	}
+
+	setDateRange(range: DateRange): void {
+		this.dateRange = range;
+	}
+
+	setInterval(newInterval: '1d' | '1wk' | '1mo'): void {
+		this.interval = newInterval;
+	}
+
+	setGapFillStrategy(strategy: 'forward-fill' | 'backward-fill' | 'drop'): void {
+		this.gapFillStrategy = strategy;
+	}
+
+	setInitialCapital(capital: number): void {
+		this.initialCapital = capital;
+	}
+
+	resetToDefaults(): void {
+		this.symbols = [DEFAULT_CONFIG.defaultSymbol];
+		this.dateRange = {
+			start: DEFAULT_CONFIG.dateRange.start,
+			end: DEFAULT_CONFIG.dateRange.end,
+		};
+		this.interval = DEFAULT_CONFIG.interval;
+		this.gapFillStrategy = DEFAULT_CONFIG.gapFillStrategy;
+		this.initialCapital = DEFAULT_CONFIG.initialCapital;
 	}
 }
 
-export function removeSymbol(symbol: string): void {
-	symbols = symbols.filter((s) => s !== symbol);
-}
-
-export function setDateRange(range: DateRange): void {
-	dateRange = range;
-}
-
-export function setInterval(newInterval: '1d' | '1wk' | '1mo'): void {
-	interval = newInterval;
-}
-
-export function setGapFillStrategy(strategy: 'forward-fill' | 'backward-fill' | 'drop'): void {
-	gapFillStrategy = strategy;
-}
-
-export function setInitialCapital(capital: number): void {
-	initialCapital = capital;
-}
-
-export function resetToDefaults(): void {
-	symbols = [DEFAULT_CONFIG.defaultSymbol];
-	dateRange = {
-		start: DEFAULT_CONFIG.dateRange.start,
-		end: DEFAULT_CONFIG.dateRange.end,
-	};
-	interval = DEFAULT_CONFIG.interval;
-	gapFillStrategy = DEFAULT_CONFIG.gapFillStrategy;
-	initialCapital = DEFAULT_CONFIG.initialCapital;
-}
+// Export a single instance
+export const config = new ConfigState();

@@ -7,8 +7,9 @@
     "packages/*"
   ],
   "devDependencies": {
-    "@types/bun": "latest",
     "@playwright/test": "^1.57.0",
+    "@types/bun": "latest",
+    "@types/d3": "^7.4.3",
     "playwright": "^1.57.0"
   },
   "peerDependencies": {
@@ -21,5 +22,9 @@
     "test:e2e:macro-view": "cd packages/macro-view && playwright test",
     "test:e2e:trading-dashboards": "cd packages/trading-dashboards && playwright test",
     "playwright:install": "playwright install chromium"
+  },
+  "dependencies": {
+    "d3": "^7.9.0",
+    "lightweight-charts": "^5.1.0"
   }
 }

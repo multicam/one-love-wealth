@@ -4,42 +4,39 @@
  */
 
 // Strategy store
-export * as strategy from './strategy.svelte';
+export { strategy } from './strategy.svelte';
 
 // Config store
-export * as config from './config.svelte';
+export { config } from './config.svelte';
 
 // Backtest store
-export * as backtest from './backtest.svelte';
+export { backtest } from './backtest.svelte';
 
 // Optimization store
-export * as optimization from './optimization.svelte';
-
-// Validation store (from Q5 validation system)
-// Note: validation.svelte.ts is created by the validation system
-// This export will work once validation is integrated
+export { optimization } from './optimization.svelte';
 
 // UI store
-export * as ui from './ui.svelte';
+export { ui } from './ui.svelte';
+export type { AppMode } from './ui.svelte';
 
 /**
  * Usage Examples:
  *
- * // Import entire store namespace
+ * // Import stores
  * import { strategy, backtest, ui } from '$lib/stores';
  * strategy.selectStrategy('ma-crossover');
  * backtest.startBacktest();
  * ui.setMode('optimize');
  *
- * // Import specific exports
- * import { selectedStrategy, params } from '$lib/stores/strategy.svelte';
- * import { result, isRunning } from '$lib/stores/backtest.svelte';
- * import { mode } from '$lib/stores/ui.svelte';
+ * // Import specific stores
+ * import { strategy } from '$lib/stores/strategy.svelte';
+ * import { backtest } from '$lib/stores/backtest.svelte';
+ * import { ui, type AppMode } from '$lib/stores/ui.svelte';
  *
  * // Use in components
- * {#if isRunning}
+ * {#if backtest.isRunning}
  *   <Spinner />
- * {:else if result}
- *   <ResultsView {result} />
+ * {:else if backtest.result}
+ *   <ResultsView result={backtest.result} />
  * {/if}
  */

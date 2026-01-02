@@ -1,58 +1,77 @@
 /**
  * Backtest Store
  * Manages backtest execution state and results
+ * Uses Svelte 5 runes with proper module state pattern
  */
 
 import type { BacktestResult } from '@one-love-wealth/backtesting';
 
-// State
-export let result = $state<BacktestResult | null>(null);
-export let isRunning = $state(false);
-export let error = $state<string | null>(null);
-export let progress = $state<number>(0); // 0-100
+class BacktestState {
+	result = $state<BacktestResult | null>(null);
+	isRunning = $state(false);
+	error = $state<string | null>(null);
+	progress = $state<number>(0); // 0-100
 
-// Derived
-export const hasResult = $derived(result !== null);
-export const hasError = $derived(error !== null);
-export const metrics = $derived(result?.metrics ?? null);
-export const trades = $derived(result?.trades ?? []);
-export const equity = $derived(result?.equity ?? []);
+	// Derived properties
+	get hasResult() {
+		return this.result !== null;
+	}
 
-// Actions
-export function startBacktest(): void {
-	isRunning = true;
-	error = null;
-	progress = 0;
+	get hasError() {
+		return this.error !== null;
+	}
+
+	get metrics() {
+		return this.result?.metrics ?? null;
+	}
+
+	get trades() {
+		return this.result?.trades ?? [];
+	}
+
+	get equity() {
+		return this.result?.equity ?? [];
+	}
+
+	// Actions
+	startBacktest(): void {
+		this.isRunning = true;
+		this.error = null;
+		this.progress = 0;
+	}
+
+	setProgress(value: number): void {
+		this.progress = Math.min(100, Math.max(0, value));
+	}
+
+	setResult(newResult: BacktestResult): void {
+		this.result = newResult;
+		this.isRunning = false;
+		this.error = null;
+		this.progress = 100;
+	}
+
+	setError(errorMessage: string): void {
+		this.error = errorMessage;
+		this.isRunning = false;
+		this.progress = 0;
+	}
+
+	clearResult(): void {
+		this.result = null;
+		this.error = null;
+		this.progress = 0;
+	}
+
+	clearError(): void {
+		this.error = null;
+	}
+
+	cancelBacktest(): void {
+		this.isRunning = false;
+		this.progress = 0;
+	}
 }
 
-export function setProgress(value: number): void {
-	progress = Math.min(100, Math.max(0, value));
-}
-
-export function setResult(newResult: BacktestResult): void {
-	result = newResult;
-	isRunning = false;
-	error = null;
-	progress = 100;
-}
-
-export function setError(errorMessage: string): void {
-	error = errorMessage;
-	isRunning = false;
-	progress = 0;
-}
-
-export function clearResult(): void {
-	result = null;
-	error = null;
-	progress = 0;
-}
-
-export function clearError(): void {
-	error = null;
-}
-
-export function cancelBacktest(): void {
-	isRunning = false;
-	progress = 0;
-}
+// Export a single instance
+export const backtest = new BacktestState();

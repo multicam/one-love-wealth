@@ -12,6 +12,12 @@ export interface PackageConfig {
 }
 
 export const packages = {
+	'backtesting-ui': {
+		name: 'backtesting-ui',
+		devPort: 6007,
+		previewPort: 6107,
+		testDir: 'e2e'
+	},
 	'crypto-viz': {
 		name: 'crypto-viz',
 		devPort: 6006,
