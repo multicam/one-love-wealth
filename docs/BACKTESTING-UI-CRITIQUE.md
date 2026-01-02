@@ -612,39 +612,39 @@ The plan lists only 2 open questions. Here's an expanded list:
 11. ~~**Strategy comparison** - Can users run multiple strategies on same data?~~ ✅ **RESOLVED** → No comparison (A): Single-strategy focus. Users run one backtest at a time for clear, focused analysis. No comparison table/chart overlays needed. Manual comparison via note-taking or browser tabs. Data caching (Q6) enables fast re-runs with different parameters. See `backtesting-ui/DECISIONS.md` and `SINGLE-STRATEGY-WORKFLOW.md` for rationale and usage guide. Future-proof: Comparison can be added later without breaking single-strategy workflow.
 
 ### UI/UX
-12. **Layout flexibility** - Is ThreeColumnLayout truly the right pattern, or do we need more flexibility?
-13. **Right panel width** - 280px enough for backtest config + strategy params?
-14. **Mode switching behavior** - What happens to results when switching modes?
-15. **Responsive design** - Is mobile/tablet support needed?
-16. **Dark mode** - Is the shared-ui dark theme the only theme?
-17. **Keyboard shortcuts** - Should there be shortcuts (Cmd+Enter to run)?
+12. ~~**Layout flexibility** - Is ThreeColumnLayout truly the right pattern, or do we need more flexibility?~~ ✅ **RESOLVED** → Copy crypto-viz pattern (A): Don't over-engineer for MVP. Copy layout pattern and adapt for backtesting needs.
+13. ~~**Right panel width** - 280px enough for backtest config + strategy params?~~ ✅ **RESOLVED** → Resizable with drag handle (C): Flexibility for different strategies. Some need more space, some less. Let users adjust.
+14. ~~**Mode switching behavior** - What happens to results when switching modes?~~ ✅ **RESOLVED** → Clear results on mode switch (A): Simple, no confusion. Clean slate prevents stale data display.
+15. ~~**Responsive design** - Is mobile/tablet support needed?~~ ✅ **RESOLVED** → Desktop-only for MVP (A): Backtesting is analyst tool, typically desktop workflow. Show min-width warning on mobile.
+16. ~~**Dark mode** - Is the shared-ui dark theme the only theme?~~ ✅ **RESOLVED** → Dark mode only (A): Matches crypto-viz. Trading tools typically dark. Add toggle post-MVP if requested.
+17. ~~**Keyboard shortcuts** - Should there be shortcuts (Cmd+Enter to run)?~~ ✅ **RESOLVED** → Basic shortcuts (B): Enter to run backtest (when params valid), Esc to close dialogs/cancel operations.
 
 ### State & Persistence
-18. **Store architecture** - Single store vs multiple focused stores?
-19. **Svelte version** - Svelte 4 stores or Svelte 5 runes?
-20. **Run history** - Should we keep history of past runs?
-21. **localStorage limits** - Optimization results could be large; how to handle?
-22. **Session vs persistent** - Which state survives browser close?
+18. ~~**Store architecture** - Single store vs multiple focused stores?~~ ✅ **RESOLVED** → Multiple focused stores (B): Clear separation of concerns (strategy, config, backtest, optimization, ui stores). Better performance, easier to test. See `backtesting-ui/src/lib/stores/`.
+19. ~~**Svelte version** - Svelte 4 stores or Svelte 5 runes?~~ ✅ **RESOLVED** → Svelte 5 runes (A): Matches crypto-viz, future-proof, better DX. All components use `$state`, `$derived`, `$effect`. Store files use `.svelte.ts` extension.
+20. ~~**Run history** - Should we keep history of past runs?~~ ✅ **RESOLVED** → Last 10 runs in localStorage (C): Persistent history enables manual comparison workflow from Q11. Store compressed, show in "Recent Results" list.
+21. ~~**localStorage limits** - Optimization results could be large; how to handle?~~ ✅ **RESOLVED** → Store compressed (C): gzip compression before localStorage. 5-10x space savings. Size monitoring and auto-eviction.
+22. ~~**Session vs persistent** - Which state survives browser close?~~ ✅ **RESOLVED** → Config only (B): Persist symbols, dates, interval, gap-fill, capital. Don't persist strategy selection or results. Clean slate for analysis.
 
 ### Results & Visualization
-23. **Chart library choice** - lightweight-charts vs Chart.js (shared-ui)?
-24. **Trade log scale** - Expected max trades? Need virtual scrolling?
-25. **Metrics display** - Which 6 metrics are "core"? Expandable for 25+?
-26. **Heatmap dimensions** - 2D (two params) or N-dimensional?
-27. **Drawdown visualization** - Separate chart or overlay on equity curve?
+23. ~~**Chart library choice** - lightweight-charts vs Chart.js (shared-ui)?~~ ✅ **RESOLVED** → lightweight-charts + d3 (A): Trading-focused charts with built-in trade markers. Professional appearance. ~250KB bundle. d3 for heatmaps. See `DECISIONS.md` Q23.
+24. ~~**Trade log scale** - Expected max trades? Need virtual scrolling?~~ ✅ **RESOLVED** → No pagination for MVP (C): Show all trades in scrollable list. Most strategies <500 trades. Add pagination/virtualization post-MVP if needed.
+25. ~~**Metrics display** - Which 6 metrics are "core"? Expandable for 25+?~~ ✅ **RESOLVED** → Standard six metrics (A): Total Return, Sharpe, Max DD, Win Rate, Total Trades, CAGR. Expandable "Advanced Metrics" section for remaining 19+ metrics.
+26. ~~**Heatmap dimensions** - 2D (two params) or N-dimensional?~~ ✅ **RESOLVED** → 2D only (A): Two parameters (X/Y axis), color represents objective. Standard optimization visualization. Most strategies have 2-3 key params.
+27. ~~**Drawdown visualization** - Separate chart or overlay on equity curve?~~ ✅ **RESOLVED** → Both with toggle (C): Toggle between separate underwater chart and overlay on equity curve. User preference persists in localStorage.
 
 ### Optimization & Validation
-28. **Optimization methods** - All 3 (grid, random, genetic) in MVP, or just grid?
-29. **Optimization objective** - User-selectable (Sharpe, Sortino, Return)?
-30. **Walk-forward in scope?** - It's powerful but complex to visualize
-31. **Monte Carlo simulations** - Default count (1000)? Configurable?
-32. **Validation scoring** - Show pass/fail or full score breakdown?
+28. ~~**Optimization methods** - All 3 (grid, random, genetic) in MVP, or just grid?~~ ✅ **RESOLVED** → All three methods (C): Grid Search (exhaustive), Random Search (sampling), Genetic Algorithm (evolutionary). User selects method. All have different strengths.
+29. ~~**Optimization objective** - User-selectable (Sharpe, Sortino, Return)?~~ ✅ **RESOLVED** → Three common objectives (B): Sharpe Ratio (default), Sortino Ratio, Total Return. Dropdown selector. Covers 95% of use cases.
+30. ~~**Walk-forward in scope?** - It's powerful but complex to visualize~~ ✅ **RESOLVED** → Yes, in MVP (B): Third mode (backtest, optimize, walk-forward). 60% in-sample, 40% out-of-sample. Rolling windows. Timeline visualization. **NOTE:** Ambitious scope addition - consider high priority after basic backtest+optimize.
+31. ~~**Monte Carlo simulations** - Default count (1000)? Configurable?~~ ✅ **RESOLVED** → Not in MVP (A): Phase 4 feature. Focus MVP on backtest, optimize, and walk-forward. Monte Carlo is advanced probabilistic analysis.
+32. ~~**Validation scoring** - Show pass/fail or full score breakdown?~~ ✅ **RESOLVED** → Not in MVP (A): Phase 4 with Monte Carlo. Walk-forward (Q30) provides validation. Full validation system is Phase 4.
 
 ### Integration
-33. **API proxy setup** - Copy from macro-view verbatim?
-34. **Error handling** - Toast for all errors, or modal for critical ones?
-35. **Loading states** - Per-operation or global?
-36. **Web worker communication** - Progress updates during optimization?
+33. ~~**API proxy setup** - Copy from macro-view verbatim?~~ ✅ **RESOLVED** → Copy macro-view pattern (A): Single file at `src/routes/api/proxy/[...provider]/+server.ts`. Provider whitelist (yahoo, coingecko, fred). Proven, simple, secure. See `DECISIONS.md` Q33.
+34. ~~**Error handling** - Toast for all errors, or modal for critical ones?~~ ✅ **RESOLVED** → Context-appropriate (C): Toast for minor errors, modal for critical errors, inline for validation. Use shared-ui components.
+35. ~~**Loading states** - Per-operation or global?~~ ✅ **RESOLVED** → Both global + per-operation (C): Global indicator in header (something happening), per-operation loader in panels (what is happening). Stores have per-operation state.
+36. ~~**Web worker communication** - Progress updates during optimization?~~ ✅ **RESOLVED** → Progress bar + iteration count (C): Show percentage, current/total iterations, message. Optimization takes 30+ seconds, needs feedback.
 
 ### Testing & Quality
 37. **Test coverage** - Unit tests for services? E2E for critical flows?
