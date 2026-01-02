@@ -1,4 +1,6 @@
 <script lang="ts">
+	import DesignHeader from '$lib/components/layout/DesignHeader.svelte';
+
 	// Resizable panel state
 	let leftWidth = $state(250);
 	let rightWidth = $state(350);
@@ -34,11 +36,27 @@
 		isDraggingLeft = false;
 		isDraggingRight = false;
 	}
+
+	// Settings modal state
+	let showSettings = $state(false);
+
+	function handleSettingsClick() {
+		showSettings = !showSettings;
+	}
 </script>
 
 <svelte:window onmousemove={handleMouseMove} onmouseup={handleMouseUp} />
 
-<div class="h-screen flex bg-gray-900 text-gray-100 overflow-hidden">
+<div class="h-screen flex flex-col bg-gray-900 text-gray-100 overflow-hidden">
+	<!-- Header -->
+	<DesignHeader 
+		activeTab="backtest" 
+		navigationDisabled={true} 
+		onSettingsClick={handleSettingsClick} 
+	/>
+
+	<!-- Main Content -->
+	<div class="flex-1 flex overflow-hidden">
 	<!-- Left Column -->
 	<div 
 		class="flex-shrink-0 bg-gray-800 border-r border-gray-700 overflow-y-auto"
@@ -118,5 +136,6 @@
 				<div class="h-12 bg-gray-700 rounded animate-pulse"></div>
 			</div>
 		</div>
+	</div>
 	</div>
 </div>
