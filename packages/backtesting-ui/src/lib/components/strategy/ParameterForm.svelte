@@ -3,6 +3,7 @@
 	import { strategy } from '$lib/stores/strategy.svelte';
 	import FieldRenderer from './FieldRenderer.svelte';
 	import BacktestConfig from '$lib/components/config/BacktestConfig.svelte';
+	import RunBacktestButton from '$lib/components/backtest/RunBacktestButton.svelte';
 	import type { StrategyField } from '$lib/strategies/types';
 
 	// Show/hide advanced parameters
@@ -160,6 +161,11 @@
 					</div>
 				{/if}
 			</div>
+		</div>
+
+		<!-- Footer: Run Backtest Button -->
+		<div class="border-t border-border p-4 bg-surface/50">
+			<RunBacktestButton />
 		</div>
 	</div>
 {:else}
