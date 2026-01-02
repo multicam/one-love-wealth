@@ -6,6 +6,7 @@
 	import TradeLog from './TradeLog.svelte';
 	import EquityCurve from './EquityCurve.svelte';
 	import PriceChart from './PriceChart.svelte';
+	import DrawdownChart from './DrawdownChart.svelte';
 
 	// Tab state
 	let activeTab = $state<'overview' | 'charts' | 'trades' | 'drawdowns'>('overview');
@@ -142,24 +143,13 @@
 					<TradeLog trades={backtest.result.trades} />
 				{/if}
 			</div>
-			{:else if activeTab === 'drawdowns'}
-				<!-- Drawdowns Tab -->
-				<div class="p-6">
-					<div class="space-y-6">
-						<!-- Placeholder: DrawdownChart will go here -->
-						<div class="bg-surface/50 rounded-lg p-8 border border-border">
-							<div class="text-center">
-								<TrendingDown size={48} class="mx-auto text-text-secondary mb-4" />
-								<h3 class="text-lg font-semibold text-text-primary mb-2">
-									Drawdown Analysis
-								</h3>
-								<p class="text-sm text-text-secondary">
-									DrawdownChart component will be implemented here
-								</p>
-							</div>
-						</div>
-					</div>
-				</div>
+		{:else if activeTab === 'drawdowns'}
+			<!-- Drawdowns Tab -->
+			<div class="p-6">
+				{#if backtest.result}
+					<DrawdownChart equityCurve={backtest.result.equityCurve} />
+				{/if}
+			</div>
 			{/if}
 		</div>
 	</div>

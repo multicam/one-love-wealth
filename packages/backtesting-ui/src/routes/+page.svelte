@@ -8,10 +8,15 @@
     import ResultsView from '$lib/components/results/ResultsView.svelte';
     import { strategy } from '$lib/stores/strategy.svelte';
     import { backtest } from '$lib/stores/backtest.svelte';
+    import { config } from '$lib/stores/config.svelte';
 
     // Svelte 5: use $effect for side effects
     $effect(() => {
         if (browser) {
+            // Load persisted config and strategy
+            config.load();
+            strategy.load();
+
             // Show welcome toast on app load
             toastStore.info('Backtesting UI loaded successfully!');
         }
