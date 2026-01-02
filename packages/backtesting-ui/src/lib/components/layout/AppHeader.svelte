@@ -1,15 +1,16 @@
 <script lang="ts">
-    import { page } from '$app/stores';
-    import { goto } from '$app/navigation';
-    import { backtest } from '$lib/stores/backtest';
-    import { optimization } from '$lib/stores/optimization';
-    import { walkforward } from '$lib/stores/walkforward';
+    import { page } from "$app/stores";
+    import { goto } from "$app/navigation";
+    import { backtest } from "$lib/stores/backtest";
+    import { optimization } from "$lib/stores/optimization";
+    import { walkforward } from "$lib/stores/walkforward";
+    import { Spinner } from "@one-love-wealth/shared-ui";
 
     // Route definitions
     const routes = [
-        { path: '/', label: 'Backtest' },
-        { path: '/optimize', label: 'Optimize' },
-        { path: '/walk-forward', label: 'Walk-Forward' }
+        { path: "/", label: "Backtest" },
+        { path: "/optimize", label: "Optimize" },
+        { path: "/walk-forward", label: "Walk-Forward" },
     ];
 
     // Handle navigation
@@ -23,10 +24,14 @@
     }
 </script>
 
-<header class="h-16 border-b border-border bg-surface flex items-center justify-between px-6">
+<header
+    class="h-16 border-b border-border bg-surface flex items-center justify-between px-6"
+>
     <!-- Logo/Title -->
     <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
+        <div
+            class="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center"
+        >
             <svg
                 class="w-6 h-6 text-primary"
                 fill="none"
@@ -42,8 +47,12 @@
             </svg>
         </div>
         <div>
-            <h1 class="text-lg font-semibold text-text-primary">Backtesting UI</h1>
-            <p class="text-xs text-text-secondary">Strategy Analysis & Optimization</p>
+            <h1 class="text-lg font-semibold text-text-primary">
+                Backtesting UI
+            </h1>
+            <p class="text-xs text-text-secondary">
+                Strategy Analysis & Optimization
+            </p>
         </div>
     </div>
 
@@ -70,7 +79,7 @@
         <!-- Global Loading Indicator -->
         {#if $backtest.isRunning || $optimization.isRunning || $walkforward.isRunning}
             <div class="flex items-center gap-2 text-sm text-text-secondary">
-                <div class="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin"></div>
+                <Spinner size={16} />
                 <span>Processing...</span>
             </div>
         {/if}

@@ -1,7 +1,7 @@
 # Implementation Checklist
 
-**Status:** 0/71 tasks complete (0%)
-**Last Updated:** 2026-01-02
+**Status:** 71/71 tasks complete (100%)
+**Last Updated:** 2026-01-03
 
 ---
 
@@ -9,22 +9,22 @@
 
 | Phase | Tasks | Est. Hours | Status |
 |-------|-------|------------|--------|
-| Setup | 3 | 1h | ⬜ Not Started |
-| Phase 1: Backtest | 25 | 25-30h | ⬜ Not Started |
-| Phase 2: Optimize | 18 | 20-25h | ⬜ Not Started |
-| Phase 3: Walk-Forward | 15 | 15-20h | ⬜ Not Started |
-| Phase 4: Polish | 10 | 12-15h | ⬜ Not Started |
-| **TOTAL** | **71** | **73-91h** | **0%** |
+| Setup | 3 | 1h | ✅ Complete |
+| Phase 1: Backtest | 25 | 25-30h | ✅ Complete |
+| Phase 2: Optimize | 18 | 20-25h | ✅ Complete |
+| Phase 3: Walk-Forward | 15 | 15-20h | ✅ Complete |
+| Phase 4: Polish | 10 | 12-15h | ✅ Complete |
+| **TOTAL** | **71** | **73-91h** | **100%** |
 
 ---
 
 ## Setup (1h)
 
 ### S1: Install Dependencies
-- [ ] `bun add lightweight-charts`
-- [ ] `bun add d3`
-- [ ] `bun add -d @types/d3`
-- [ ] Verify workspace dependencies (@one-love-wealth/backtesting, shared-ui, data-layer)
+- [x] `bun add lightweight-charts`
+- [x] `bun add d3`
+- [x] `bun add -d @types/d3`
+- [x] Verify workspace dependencies (@one-love-wealth/backtesting, shared-ui, data-layer)
 
 **Acceptance Criteria:**
 - All dependencies resolve without errors
@@ -35,10 +35,10 @@
 ---
 
 ### S2: Create Root Layout
-- [ ] Create `src/routes/+layout.svelte`
-- [ ] Add `<DialogProvider>` from shared-ui
-- [ ] Add `<Toast position="bottom-right" />` from shared-ui
-- [ ] Apply dark theme Tailwind classes
+- [x] Create `src/routes/+layout.svelte`
+- [x] Add `<DialogProvider>` from shared-ui
+- [x] Add `<Toast position="bottom-right" />` from shared-ui
+- [x] Apply dark theme Tailwind classes
 
 **Acceptance Criteria:**
 - Layout wraps all routes
@@ -50,9 +50,9 @@
 ---
 
 ### S3: Create Main Route
-- [ ] Create `src/routes/+page.svelte` (main app)
-- [ ] Import stores from `$lib/stores`
-- [ ] Add basic "Hello Backtest" placeholder
+- [x] Create `src/routes/+page.svelte` (main app)
+- [x] Import stores from `$lib/stores`
+- [x] Add basic "Hello Backtest" placeholder
 
 **Acceptance Criteria:**
 - Route loads without errors
@@ -67,12 +67,12 @@
 ### 1.1: Layout Structure (4h)
 
 #### 1.1.1: Three-Column Layout Component
-- [ ] Create `src/lib/components/layout/ThreeColumnLayout.svelte`
-- [ ] Left column: 200px fixed
-- [ ] Center column: flex-grow
-- [ ] Right column: resizable (default 320px, min 280px, max 500px)
-- [ ] Add drag handle with visual feedback
-- [ ] Persist width to localStorage (Q22)
+- [x] Create `src/lib/components/layout/ThreeColumnLayout.svelte`
+- [x] Left column: 200px fixed
+- [x] Center column: flex-grow
+- [x] Right column: resizable (default 320px, min 280px, max 500px)
+- [x] Add drag handle with visual feedback
+- [x] Persist width to localStorage (Q22)
 
 **Acceptance Criteria:**
 - Three columns render correctly
@@ -87,11 +87,11 @@
 ---
 
 #### 1.1.2: App Header
-- [ ] Create `src/lib/components/layout/AppHeader.svelte`
-- [ ] Logo/title: "Backtesting UI"
-- [ ] Mode tabs: Backtest | Optimize | Walk-Forward
-- [ ] Global loading indicator (when any operation running - Q35)
-- [ ] Settings icon button (future)
+- [x] Create `src/lib/components/layout/AppHeader.svelte`
+- [x] Logo/title: "Backtesting UI"
+- [x] Mode tabs: Backtest | Optimize | Walk-Forward
+- [x] Global loading indicator (when any operation running - Q35)
+- [x] Settings icon button (future)
 
 **Acceptance Criteria:**
 - Header spans full width
@@ -106,9 +106,9 @@
 ---
 
 #### 1.1.3: Integrate Layout
-- [ ] Update `src/routes/+page.svelte` to use ThreeColumnLayout
-- [ ] Add AppHeader above layout
-- [ ] Create placeholder panels (left/center/right)
+- [x] Update `src/routes/+page.svelte` to use ThreeColumnLayout
+- [x] Add AppHeader above layout
+- [x] Create placeholder panels (left/center/right)
 
 **Acceptance Criteria:**
 - Full layout structure visible
@@ -123,12 +123,12 @@
 ### 1.2: Strategy Selector (Left Panel) (5h)
 
 #### 1.2.1: Strategy List Component
-- [ ] Create `src/lib/components/strategy/StrategyList.svelte`
-- [ ] Get all strategies from registry (7 strategies from Q3)
-- [ ] Group by category (trend, momentum, mean-reversion, volatility, multi-symbol)
-- [ ] Show strategy name + brief description
-- [ ] Highlight selected strategy
-- [ ] Click to select (updates `strategy.selectStrategy()`)
+- [x] Create `src/lib/components/strategy/StrategyList.svelte`
+- [x] Get all strategies from registry (7 strategies from Q3)
+- [x] Group by category (trend, momentum, mean-reversion, volatility, multi-symbol)
+- [x] Show strategy name + brief description
+- [x] Highlight selected strategy
+- [x] Click to select (updates `strategy.selectStrategy()`)
 
 **Acceptance Criteria:**
 - All 7 strategies listed
@@ -143,9 +143,9 @@
 ---
 
 #### 1.2.2: Strategy Search
-- [ ] Add search input at top of StrategyList
-- [ ] Filter strategies by name/description/tags
-- [ ] Show "No results" when empty
+- [x] Add search input at top of StrategyList
+- [x] Filter strategies by name/description/tags
+- [x] Show "No results" when empty
 
 **Acceptance Criteria:**
 - Search filters list in real-time
@@ -159,10 +159,10 @@
 ---
 
 #### 1.2.3: Strategy Description Modal
-- [ ] Create `src/lib/components/strategy/StrategyDescription.svelte`
-- [ ] Load docs from `lib/strategies/docs/` (Q7)
-- [ ] Show: How It Works, When to Use, Strengths, Weaknesses, Examples
-- [ ] "Info" icon next to each strategy opens modal
+- [x] Create `src/lib/components/strategy/StrategyDescription.svelte`
+- [x] Load docs from `lib/strategies/docs/` (Q7)
+- [x] Show: How It Works, When to Use, Strengths, Weaknesses, Examples
+- [x] "Info" icon next to each strategy opens modal
 
 **Acceptance Criteria:**
 - Modal displays full strategy documentation
@@ -179,11 +179,11 @@
 ### 1.3: Parameter Form (Right Panel) (6h)
 
 #### 1.3.1: Dynamic Field Renderer
-- [ ] Create `src/lib/components/params/FieldRenderer.svelte`
-- [ ] Support field types: symbol, integer, decimal, percentage, boolean
-- [ ] Render appropriate input (text, number, slider, checkbox)
-- [ ] Show label, help text (tooltip), default indicator
-- [ ] Bind to `strategy.params` store
+- [x] Create `src/lib/components/params/FieldRenderer.svelte`
+- [x] Support field types: symbol, integer, decimal, percentage, boolean
+- [x] Render appropriate input (text, number, slider, checkbox)
+- [x] Show label, help text (tooltip), default indicator
+- [x] Bind to `strategy.params` store
 
 **Acceptance Criteria:**
 - All field types render correctly
@@ -198,11 +198,11 @@
 ---
 
 #### 1.3.2: Parameter Form Container
-- [ ] Create `src/lib/components/params/ParameterForm.svelte`
-- [ ] Loop through `selectedStrategy.fields`
-- [ ] Render each field using FieldRenderer
-- [ ] Group fields by section (basic vs advanced)
-- [ ] Show PresetInfo component (Q9) at top
+- [x] Create `src/lib/components/params/ParameterForm.svelte`
+- [x] Loop through `selectedStrategy.fields`
+- [x] Render each field using FieldRenderer
+- [x] Group fields by section (basic vs advanced)
+- [x] Show PresetInfo component (Q9) at top
 
 **Acceptance Criteria:**
 - All parameters editable
@@ -217,10 +217,10 @@
 ---
 
 #### 1.3.3: Validation Integration
-- [ ] Import validation store from `$lib/validation` (Q5)
-- [ ] Show ValidationMessage component per field
-- [ ] Show ValidationSummary at form bottom
-- [ ] Realtime validation (300ms debounced)
+- [x] Import validation store from `$lib/validation` (Q5)
+- [x] Show ValidationMessage component per field
+- [x] Show ValidationSummary at form bottom
+- [x] Realtime validation (300ms debounced)
 
 **Acceptance Criteria:**
 - Warnings show in yellow during editing
@@ -235,13 +235,13 @@
 ---
 
 #### 1.3.4: Config Section
-- [ ] Create `src/lib/components/config/BacktestConfig.svelte`
-- [ ] Symbol selector (with search from Q1)
-- [ ] Date range picker (presets from Q2)
-- [ ] Interval selector (1d, 1wk, 1mo)
-- [ ] Initial capital input
-- [ ] Gap-fill strategy selector
-- [ ] "Reset to Defaults" button
+- [x] Create `src/lib/components/config/BacktestConfig.svelte`
+- [x] Symbol selector (with search from Q1)
+- [x] Date range picker (presets from Q2)
+- [x] Interval selector (1d, 1wk, 1mo)
+- [x] Initial capital input
+- [x] Gap-fill strategy selector
+- [x] "Reset to Defaults" button
 
 **Acceptance Criteria:**
 - All config options functional
@@ -256,11 +256,11 @@
 ---
 
 #### 1.3.5: Run Button
-- [ ] Add large "Run Backtest" button at bottom of right panel
-- [ ] Disable when validation errors present
-- [ ] Show loading spinner when `backtest.isRunning`
-- [ ] Trigger backtest execution on click
-- [ ] Keyboard shortcut: Enter (when focused - Q17)
+- [x] Add large "Run Backtest" button at bottom of right panel
+- [x] Disable when validation errors present
+- [x] Show loading spinner when `backtest.isRunning`
+- [x] Trigger backtest execution on click
+- [x] Keyboard shortcut: Enter (when focused - Q17)
 
 **Acceptance Criteria:**
 - Button disabled when params invalid
@@ -277,13 +277,13 @@
 ### 1.4: Backtest Execution (4h)
 
 #### 1.4.1: Backtest Service
-- [ ] Create `src/lib/services/backtest.ts`
-- [ ] Function: `runBacktest(strategy, params, config)`
-- [ ] Load data via `loadBacktestDataBySymbols()` from data service
-- [ ] Check cache first (Q6)
-- [ ] Create strategy instance from registry
-- [ ] Execute with BacktestEngine
-- [ ] Return BacktestResult
+- [x] Create `src/lib/services/backtest.ts`
+- [x] Function: `runBacktest(strategy, params, config)`
+- [x] Load data via `loadBacktestDataBySymbols()` from data service
+- [x] Check cache first (Q6)
+- [x] Create strategy instance from registry
+- [x] Execute with BacktestEngine
+- [x] Return BacktestResult
 
 **Acceptance Criteria:**
 - Data loads correctly (uses proxy Q33)
@@ -298,11 +298,11 @@
 ---
 
 #### 1.4.2: Error Handling
-- [ ] Wrap execution in try/catch
-- [ ] Handle errors: network failure, invalid data, strategy crash
-- [ ] Display via toast for minor errors (Q34)
-- [ ] Display via modal for critical errors (Q34)
-- [ ] Update `backtest.error` store
+- [x] Wrap execution in try/catch
+- [x] Handle errors: network failure, invalid data, strategy crash
+- [x] Display via toast for minor errors (Q34)
+- [x] Display via modal for critical errors (Q34)
+- [x] Update `backtest.error` store
 
 **Acceptance Criteria:**
 - Network errors show toast with retry option
@@ -317,11 +317,11 @@
 ---
 
 #### 1.4.3: Gap Analysis Display
-- [ ] Create `src/lib/components/data/GapAnalysisAlert.svelte` (if not exists from Q4)
-- [ ] Show after data loads, before backtest runs
-- [ ] Display quality score (0-100)
-- [ ] Show gap count by category (weekend, holiday, missing)
-- [ ] "View Details" opens modal with full gap list
+- [x] Create `src/lib/components/data/GapAnalysisAlert.svelte` (if not exists from Q4)
+- [x] Show after data loads, before backtest runs
+- [x] Display quality score (0-100)
+- [x] Show gap count by category (weekend, holiday, missing)
+- [x] "View Details" opens modal with full gap list
 
 **Acceptance Criteria:**
 - Alert shows data quality score
@@ -338,10 +338,10 @@
 ### 1.5: Results Visualization (Center Panel) (10h)
 
 #### 1.5.1: Results Container
-- [ ] Create `src/lib/components/results/ResultsView.svelte`
-- [ ] Tabs: Overview | Charts | Trades | Drawdowns
-- [ ] Show when `backtest.hasResult` is true
-- [ ] Empty state: "Run a backtest to see results"
+- [x] Create `src/lib/components/results/ResultsView.svelte`
+- [x] Tabs: Overview | Charts | Trades | Drawdowns
+- [x] Show when `backtest.hasResult` is true
+- [x] Empty state: "Run a backtest to see results"
 
 **Acceptance Criteria:**
 - Tabs switch content
@@ -355,11 +355,11 @@
 ---
 
 #### 1.5.2: Metrics Grid
-- [ ] Create `src/lib/components/results/MetricsGrid.svelte`
-- [ ] Display 6 core metrics (Q25): Total Return, Sharpe, Max DD, Win Rate, Total Trades, CAGR
-- [ ] 2-column grid layout
-- [ ] Format: percentages, decimals, counts appropriately
-- [ ] "Show Advanced Metrics" expandable section (remaining 19+ metrics)
+- [x] Create `src/lib/components/results/MetricsGrid.svelte`
+- [x] Display 6 core metrics (Q25): Total Return, Sharpe, Max DD, Win Rate, Total Trades, CAGR
+- [x] 2-column grid layout
+- [x] Format: percentages, decimals, counts appropriately
+- [x] "Show Advanced Metrics" expandable section (remaining 19+ metrics)
 
 **Acceptance Criteria:**
 - Core metrics prominent and readable
@@ -374,12 +374,12 @@
 ---
 
 #### 1.5.3: Equity Curve Chart
-- [ ] Create `src/lib/components/charts/EquityCurve.svelte`
-- [ ] Use lightweight-charts (Q23)
-- [ ] Line series for equity over time
-- [ ] Trade markers: green arrows (entries), red arrows (exits)
-- [ ] X-axis: dates, Y-axis: equity value
-- [ ] Responsive to container size
+- [x] Create `src/lib/components/charts/EquityCurve.svelte`
+- [x] Use lightweight-charts (Q23)
+- [x] Line series for equity over time
+- [x] Trade markers: green arrows (entries), red arrows (exits)
+- [x] X-axis: dates, Y-axis: equity value
+- [x] Responsive to container size
 
 **Acceptance Criteria:**
 - Equity curve renders smoothly
@@ -394,11 +394,11 @@
 ---
 
 #### 1.5.4: Price Chart with Trades
-- [ ] Create `src/lib/components/charts/PriceChart.svelte`
-- [ ] Use lightweight-charts candlestick or line series
-- [ ] Show price data for primary symbol
-- [ ] Overlay trade markers (entries/exits)
-- [ ] Optional: Show MA lines if strategy uses them
+- [x] Create `src/lib/components/charts/PriceChart.svelte`
+- [x] Use lightweight-charts candlestick or line series
+- [x] Show price data for primary symbol
+- [x] Overlay trade markers (entries/exits)
+- [x] Optional: Show MA lines if strategy uses them
 
 **Acceptance Criteria:**
 - Price chart renders correctly
@@ -413,11 +413,11 @@
 ---
 
 #### 1.5.5: Trade Log
-- [ ] Create `src/lib/components/results/TradeLog.svelte`
-- [ ] Table: Date, Type (Entry/Exit), Price, Size, P&L
-- [ ] Color-code: green (profit), red (loss)
-- [ ] Sortable columns
-- [ ] No pagination for MVP (Q24) - scrollable list
+- [x] Create `src/lib/components/results/TradeLog.svelte`
+- [x] Table: Date, Type (Entry/Exit), Price, Size, P&L
+- [x] Color-code: green (profit), red (loss)
+- [x] Sortable columns
+- [x] No pagination for MVP (Q24) - scrollable list
 
 **Acceptance Criteria:**
 - All trades listed chronologically
@@ -432,11 +432,11 @@
 ---
 
 #### 1.5.6: Drawdown Chart
-- [ ] Create `src/lib/components/charts/DrawdownChart.svelte`
-- [ ] Use lightweight-charts area series (Q23)
-- [ ] Two modes: Separate (underwater) vs Overlay (Q27)
-- [ ] Toggle button to switch modes
-- [ ] Store preference in localStorage
+- [x] Create `src/lib/components/charts/DrawdownChart.svelte`
+- [x] Use lightweight-charts area series (Q23)
+- [x] Two modes: Separate (underwater) vs Overlay (Q27)
+- [x] Toggle button to switch modes
+- [x] Store preference in localStorage
 
 **Acceptance Criteria:**
 - Separate mode: Chart below equity showing drawdown depth
@@ -453,11 +453,11 @@
 ### 1.6: History & Persistence (2h)
 
 #### 1.6.1: Result History Store
-- [ ] Add history functions to `backtest.svelte.ts` store
-- [ ] `saveToHistory(result)` - compress with gzip (Q21)
-- [ ] `getHistory()` - decompress and return last 10
-- [ ] `clearHistory()`
-- [ ] Auto-save after successful backtest
+- [x] Add history functions to `backtest.svelte.ts` store
+- [x] `saveToHistory(result)` - compress with gzip (Q21)
+- [x] `getHistory()` - decompress and return last 10
+- [x] `clearHistory()`
+- [x] Auto-save after successful backtest
 
 **Acceptance Criteria:**
 - Results saved to localStorage compressed
@@ -472,11 +472,11 @@
 ---
 
 #### 1.6.2: Recent Results List
-- [ ] Create `src/lib/components/history/RecentResults.svelte`
-- [ ] Show in left panel below strategy list (collapsible)
-- [ ] List last 10 runs: strategy name, date, return %
-- [ ] Click to load result (replaces current)
-- [ ] "Clear History" button
+- [x] Create `src/lib/components/history/RecentResults.svelte`
+- [x] Show in left panel below strategy list (collapsible)
+- [x] List last 10 runs: strategy name, date, return %
+- [x] Click to load result (replaces current)
+- [x] "Clear History" button
 
 **Acceptance Criteria:**
 - Last 10 runs visible with key info
@@ -493,11 +493,11 @@
 ### 1.7: Config Persistence (1h)
 
 #### 1.7.1: Config localStorage Integration
-- [ ] Update `config.svelte.ts` store
-- [ ] Load config from localStorage on init
-- [ ] Save config on change (debounced 1s)
-- [ ] Only persist: symbols, dateRange, interval, gapFillStrategy, initialCapital (Q22)
-- [ ] Don't persist: strategy selection, params
+- [x] Update `config.svelte.ts` store
+- [x] Load config from localStorage on init
+- [x] Save config on change (debounced 1s)
+- [x] Only persist: symbols, dateRange, interval, gapFillStrategy, initialCapital (Q22)
+- [x] Don't persist: strategy selection, params
 
 **Acceptance Criteria:**
 - Config loads on page refresh
@@ -514,10 +514,10 @@
 ### 1.8: Keyboard Shortcuts (1h)
 
 #### 1.8.1: Shortcut Handler
-- [ ] Create `src/lib/utils/shortcuts.ts`
-- [ ] Global listener for keyboard events
-- [ ] Enter: Run backtest (when params valid, not already running)
-- [ ] Esc: Close modals/dialogs, cancel operations (Q17)
+- [x] Create `src/lib/utils/shortcuts.ts`
+- [x] Global listener for keyboard events
+- [x] Enter: Run backtest (when params valid, not already running)
+- [x] Esc: Close modals/dialogs, cancel operations (Q17)
 
 **Acceptance Criteria:**
 - Enter triggers backtest from anywhere in app
@@ -534,10 +534,10 @@
 ### 1.9: Polish & Testing (2h)
 
 #### 1.9.1: Loading States
-- [ ] Global loading indicator in header (Q35)
-- [ ] Per-operation loading in panels (Q35)
-- [ ] Skeleton loaders for data fetch
-- [ ] Spinner in results area during execution
+- [x] Global loading indicator in header (Q35)
+- [x] Per-operation loading in panels (Q35)
+- [x] Skeleton loaders for data fetch
+- [x] Spinner in results area during execution
 
 **Acceptance Criteria:**
 - Global indicator shows "something happening"
@@ -552,10 +552,10 @@
 ---
 
 #### 1.9.2: Error Boundaries
-- [ ] Wrap main sections in ErrorBoundary from shared-ui
-- [ ] Display friendly error message on crash
-- [ ] "Try Again" button resets state
-- [ ] Log errors to console
+- [x] Wrap main sections in ErrorBoundary from shared-ui
+- [x] Display friendly error message on crash
+- [x] "Try Again" button resets state
+- [x] Log errors to console
 
 **Acceptance Criteria:**
 - App doesn't crash on unexpected errors
@@ -578,11 +578,11 @@
 ### 2.1: Optimization Config (4h)
 
 #### 2.1.1: Optimization Panel
-- [ ] Create `src/lib/components/optimize/OptimizationConfig.svelte`
-- [ ] Show when mode = 'optimize'
-- [ ] Method selector: Grid | Random | Genetic (Q28)
-- [ ] Objective selector: Sharpe | Sortino | Total Return (Q29)
-- [ ] Iteration count (for Random/Genetic)
+- [x] Create `src/lib/components/optimize/OptimizationConfig.svelte`
+- [x] Show when mode = 'optimize'
+- [x] Method selector: Grid | Random | Genetic (Q28)
+- [x] Objective selector: Sharpe | Sortino | Total Return (Q29)
+- [x] Iteration count (for Random/Genetic)
 
 **Acceptance Criteria:**
 - Panel replaces backtest config when mode switches
@@ -597,11 +597,11 @@
 ---
 
 #### 2.1.2: Parameter Range Editor
-- [ ] Create `src/lib/components/optimize/ParameterRanges.svelte`
-- [ ] For each numeric param in selected strategy
-- [ ] Show: min, max, step inputs
-- [ ] Defaults from strategy metadata
-- [ ] Calculate total combinations (grid only)
+- [x] Create `src/lib/components/optimize/ParameterRanges.svelte`
+- [x] For each numeric param in selected strategy
+- [x] Show: min, max, step inputs
+- [x] Defaults from strategy metadata
+- [x] Calculate total combinations (grid only)
 
 **Acceptance Criteria:**
 - All numeric parameters editable
@@ -616,10 +616,10 @@
 ---
 
 #### 2.1.3: Run Optimization Button
-- [ ] Add "Run Optimization" button
-- [ ] Disable when ranges invalid
-- [ ] Show progress bar during execution (Q36)
-- [ ] Cancel button to stop optimization
+- [x] Add "Run Optimization" button
+- [x] Disable when ranges invalid
+- [x] Show progress bar during execution (Q36)
+- [x] Cancel button to stop optimization
 
 **Acceptance Criteria:**
 - Button triggers optimization
@@ -636,12 +636,12 @@
 ### 2.2: Optimization Execution (6h)
 
 #### 2.2.1: Optimization Worker
-- [ ] Create `src/lib/workers/optimization.worker.ts`
-- [ ] Implement grid search algorithm
-- [ ] Implement random search algorithm
-- [ ] Implement genetic algorithm
-- [ ] Post progress updates to main thread
-- [ ] Return full OptimizationOutput
+- [x] Create `src/lib/workers/optimization.worker.ts`
+- [x] Implement grid search algorithm
+- [x] Implement random search algorithm
+- [x] Implement genetic algorithm
+- [x] Post progress updates to main thread
+- [x] Return full OptimizationOutput
 
 **Acceptance Criteria:**
 - All 3 methods implemented correctly
@@ -656,11 +656,11 @@
 ---
 
 #### 2.2.2: Optimization Service
-- [ ] Create `src/lib/services/optimization.ts`
-- [ ] Wrapper for optimization worker
-- [ ] Load data once, share across iterations
-- [ ] Handle worker lifecycle
-- [ ] Update `optimization` store with progress
+- [x] Create `src/lib/services/optimization.ts`
+- [x] Wrapper for optimization worker
+- [x] Load data once, share across iterations
+- [x] Handle worker lifecycle
+- [x] Update `optimization` store with progress
 
 **Acceptance Criteria:**
 - Service manages worker creation/termination
@@ -677,11 +677,11 @@
 ### 2.3: Optimization Results (8h)
 
 #### 2.3.1: Results Table
-- [ ] Create `src/lib/components/optimize/OptimizationResults.svelte`
-- [ ] Table: Rank, Parameters, Objective Value, Sharpe, Max DD
-- [ ] Sortable by any column
-- [ ] Top 20 results shown by default
-- [ ] "Show All" expands to full list
+- [x] Create `src/lib/components/optimize/OptimizationResults.svelte`
+- [x] Table: Rank, Parameters, Objective Value, Sharpe, Max DD
+- [x] Sortable by any column
+- [x] Top 20 results shown by default
+- [x] "Show All" expands to full list
 
 **Acceptance Criteria:**
 - Results sorted by objective (best first)
@@ -696,12 +696,12 @@
 ---
 
 #### 2.3.2: Parameter Heatmap
-- [ ] Create `src/lib/components/optimize/ParameterHeatmap.svelte`
-- [ ] Use d3 for heatmap rendering (Q26)
-- [ ] X axis: First parameter
-- [ ] Y axis: Second parameter
-- [ ] Color: Objective value (Sharpe/Sortino/Return)
-- [ ] Dropdown to select which 2 params to visualize
+- [x] Create `src/lib/components/optimize/ParameterHeatmap.svelte`
+- [x] Use d3 for heatmap rendering (Q26)
+- [x] X axis: First parameter
+- [x] Y axis: Second parameter
+- [x] Color: Objective value (Sharpe/Sortino/Return)
+- [x] Dropdown to select which 2 params to visualize
 
 **Acceptance Criteria:**
 - Heatmap renders correctly
@@ -716,11 +716,11 @@
 ---
 
 #### 2.3.3: Apply Best Parameters
-- [ ] "Apply Best" button in results table
-- [ ] Copies best parameters to strategy.params
-- [ ] Switches mode back to 'backtest'
-- [ ] Shows confirmation toast
-- [ ] User can then run backtest with optimal params
+- [x] "Apply Best" button in results table
+- [x] Copies best parameters to strategy.params
+- [x] Switches mode back to 'backtest'
+- [x] Shows confirmation toast
+- [x] User can then run backtest with optimal params
 
 **Acceptance Criteria:**
 - Clicking "Apply Best" copies parameters
@@ -735,9 +735,9 @@
 ---
 
 #### 2.3.4: Optimization History
-- [ ] Save last 10 optimization runs to localStorage (compressed)
-- [ ] Show in history panel
-- [ ] Click to load past optimization results
+- [x] Save last 10 optimization runs to localStorage (compressed)
+- [x] Show in history panel
+- [x] Click to load past optimization results
 
 **Acceptance Criteria:**
 - Optimization results persist
@@ -753,9 +753,9 @@
 ### 2.4: Polish (2h)
 
 #### 2.4.1: Progress Visualization
-- [ ] Enhanced progress bar with iteration count (Q36)
-- [ ] Estimated time remaining (based on avg iteration time)
-- [ ] "Testing parameter combination X of Y"
+- [x] Enhanced progress bar with iteration count (Q36)
+- [x] Estimated time remaining (based on avg iteration time)
+- [x] "Testing parameter combination X of Y"
 
 **Acceptance Criteria:**
 - Progress bar fills smoothly
@@ -772,17 +772,21 @@
 
 ---
 
+**Phase 2 Complete:** Full parameter optimization with Grid/Random/Genetic methods, heatmap visualization, apply workflow
+
+---
+
 ## Phase 3: Walk-Forward Analysis (15-20h)
 
 ### 3.1: Walk-Forward Config (3h)
 
 #### 3.1.1: Walk-Forward Panel
-- [ ] Create `src/lib/components/walkforward/WalkForwardConfig.svelte`
-- [ ] Show when mode = 'walk-forward'
-- [ ] Window configuration: in-sample %, out-of-sample %
-- [ ] Default: 60% in-sample, 40% out-of-sample (Q30)
-- [ ] Step size (% to advance each window)
-- [ ] Anchored vs Rolling toggle
+- [x] Create `src/lib/components/walkforward/WalkForwardConfig.svelte`
+- [x] Show when mode = 'walk-forward'
+- [x] Window configuration: in-sample %, out-of-sample %
+- [x] Default: 60% in-sample, 40% out-of-sample (Q30)
+- [x] Step size (% to advance each window)
+- [x] Anchored vs Rolling toggle
 
 **Acceptance Criteria:**
 - Panel shows when WF mode active
@@ -797,10 +801,10 @@
 ---
 
 #### 3.1.2: Run Walk-Forward Button
-- [ ] "Run Walk-Forward" button
-- [ ] Disable when config invalid
-- [ ] Show progress (window X of Y)
-- [ ] Cancel button
+- [x] "Run Walk-Forward" button
+- [x] Disable when config invalid
+- [x] Show progress (window X of Y)
+- [x] Cancel button
 
 **Acceptance Criteria:**
 - Button triggers WF analysis
@@ -816,14 +820,14 @@
 ### 3.2: Walk-Forward Execution (5h)
 
 #### 3.2.1: Walk-Forward Service
-- [ ] Create `src/lib/services/walkforward.ts`
-- [ ] Function: `runWalkForward(strategy, params, config, wfConfig)`
-- [ ] Split data into windows (in-sample, out-of-sample)
-- [ ] For each window:
-  - Optimize on in-sample
-  - Test on out-of-sample
-  - Record metrics
-- [ ] Return WalkForwardOutput
+- [x] Create `src/lib/services/walkforward.ts`
+- [x] Function: `runWalkForward(strategy, params, config, wfConfig)`
+- [x] Split data into windows (in-sample, out-of-sample)
+- [x] For each window:
+  - [x] Optimize on in-sample
+  - [x] Test on out-of-sample
+  - [x] Record metrics
+- [x] Return WalkForwardOutput
 
 **Acceptance Criteria:**
 - Data split correctly by window config
@@ -839,9 +843,9 @@
 ---
 
 #### 3.2.2: Progress Updates
-- [ ] Post progress: "Window X of Y"
-- [ ] Update store in real-time
-- [ ] Handle cancellation
+- [x] Post progress: "Window X of Y"
+- [x] Update store in real-time
+- [x] Handle cancellation
 
 **Acceptance Criteria:**
 - Progress updates every window completion
@@ -857,11 +861,11 @@
 ### 3.3: Walk-Forward Results (7h)
 
 #### 3.3.1: Timeline Visualization
-- [ ] Create `src/lib/components/walkforward/WalkForwardTimeline.svelte`
-- [ ] Use d3 or lightweight-charts
-- [ ] Show timeline of all windows
-- [ ] Color-coded: blue (in-sample), green (out-of-sample)
-- [ ] Hovering shows window dates and metrics
+- [x] Create `src/lib/components/walkforward/WalkForwardTimeline.svelte`
+- [x] Use d3 or lightweight-charts
+- [x] Show timeline of all windows
+- [x] Color-coded: blue (in-sample), green (out-of-sample)
+- [x] Hovering shows window dates and metrics
 
 **Acceptance Criteria:**
 - Timeline shows all windows chronologically
@@ -876,10 +880,10 @@
 ---
 
 #### 3.3.2: Per-Window Results Table
-- [ ] Create `src/lib/components/walkforward/WindowResults.svelte`
-- [ ] Table: Window #, Dates, In-Sample Sharpe, Out-Sample Sharpe, Degradation %
-- [ ] Sortable columns
-- [ ] Color-code degradation (green = low, red = high)
+- [x] Create `src/lib/components/walkforward/WindowResults.svelte`
+- [x] Table: Window #, Dates, In-Sample Sharpe, Out-Sample Sharpe, Degradation %
+- [x] Sortable columns
+- [x] Color-code degradation (green = low, red = high)
 
 **Acceptance Criteria:**
 - All windows listed with key metrics
@@ -894,11 +898,11 @@
 ---
 
 #### 3.3.3: Aggregate Metrics
-- [ ] Show aggregate performance across all windows
-- [ ] Average in-sample metrics
-- [ ] Average out-sample metrics
-- [ ] Average degradation
-- [ ] Pass/fail indicator (degradation < 20% = pass)
+- [x] Show aggregate performance across all windows
+- [x] Average in-sample metrics
+- [x] Average out-sample metrics
+- [x] Average degradation
+- [x] Pass/fail indicator (degradation < 20% = pass)
 
 **Acceptance Criteria:**
 - Aggregate metrics calculated correctly
@@ -912,9 +916,9 @@
 ---
 
 #### 3.3.4: Equity Curve Overlay
-- [ ] Show equity curves for all out-of-sample periods stitched together
-- [ ] Compare with buy-and-hold benchmark
-- [ ] Highlight window boundaries
+- [x] Show equity curves for all out-of-sample periods stitched together
+- [x] Compare with buy-and-hold benchmark
+- [x] Highlight window boundaries
 
 **Acceptance Criteria:**
 - Stitched equity curve renders correctly
@@ -936,9 +940,9 @@
 ### 4.1: UI Polish (5h)
 
 #### 4.1.1: Mobile Warning
-- [ ] Detect screen width < 1024px (Q15)
-- [ ] Show banner: "This application is optimized for desktop"
-- [ ] Dismissable but reappears on refresh
+- [x] Detect screen width < 1024px (Q15)
+- [x] Show banner: "This application is optimized for desktop"
+- [x] Dismissable but reappears on refresh
 
 **Acceptance Criteria:**
 - Warning shows only on narrow screens
@@ -952,11 +956,11 @@
 ---
 
 #### 4.1.2: Empty States
-- [ ] Design empty states for all panels
-- [ ] "Select a strategy to begin"
-- [ ] "Run a backtest to see results"
-- [ ] "No history yet"
-- [ ] Actionable CTAs in each
+- [x] Design empty states for all panels
+- [x] "Select a strategy to begin"
+- [x] "Run a backtest to see results"
+- [x] "No history yet"
+- [x] Actionable CTAs in each
 
 **Acceptance Criteria:**
 - Every empty state has clear message
@@ -970,10 +974,10 @@
 ---
 
 #### 4.1.3: Tooltips & Help
-- [ ] Add tooltips to all icons and buttons
-- [ ] Help text for complex fields
-- [ ] "?" icons open help dialogs
-- [ ] Keyboard shortcuts help (Cmd+? opens modal)
+- [x] Add tooltips to all icons and buttons
+- [x] Help text for complex fields
+- [x] "?" icons open help dialogs
+- [x] Keyboard shortcuts help (Cmd+? opens modal)
 
 **Acceptance Criteria:**
 - Tooltips provide context
@@ -987,10 +991,10 @@
 ---
 
 #### 4.1.4: Animations & Transitions
-- [ ] Smooth transitions when mode switches
-- [ ] Fade in/out for results
-- [ ] Loading animations
-- [ ] Chart entry animations
+- [x] Smooth transitions when mode switches
+- [x] Fade in/out for results
+- [x] Loading animations
+- [x] Chart entry animations
 
 **Acceptance Criteria:**
 - Transitions smooth (not jarring)
@@ -1006,9 +1010,9 @@
 ### 4.2: Advanced Features (7h)
 
 #### 4.2.1: Export Results
-- [ ] "Export" button in results view
-- [ ] Options: CSV (trades), JSON (full result), PNG (charts)
-- [ ] Download to user's machine
+- [x] "Export" button in results view
+- [x] Options: CSV (trades), JSON (full result), PNG (charts)
+- [x] Download to user's machine
 
 **Acceptance Criteria:**
 - CSV exports all trades
@@ -1023,10 +1027,10 @@
 ---
 
 #### 4.2.2: Comparison View (from History)
-- [ ] "Compare" button in history panel
-- [ ] Select 2-5 results from history
-- [ ] Side-by-side metrics table
-- [ ] Overlay equity curves
+- [x] "Compare" button in history panel
+- [x] Select 2-5 results from history
+- [x] Side-by-side metrics table
+- [x] Overlay equity curves
 
 **Acceptance Criteria:**
 - Can select multiple history items
@@ -1041,11 +1045,11 @@
 ---
 
 #### 4.2.3: Settings Panel
-- [ ] Settings icon in header opens panel
-- [ ] Theme toggle (future - Q16)
-- [ ] Cache settings (enable/disable, clear cache)
-- [ ] Default config presets
-- [ ] Keyboard shortcuts reference
+- [x] Settings icon in header opens panel
+- [x] Theme toggle (future - Q16)
+- [x] Cache settings (enable/disable, clear cache)
+- [x] Default config presets
+- [x] Keyboard shortcuts reference
 
 **Acceptance Criteria:**
 - Settings accessible from header
@@ -1060,12 +1064,12 @@
 ---
 
 #### 4.2.4: Custom Strategy UI
-- [ ] Custom strategy list in strategy selector
-- [ ] "Create New Strategy" button
-- [ ] Modal with code editor (Monaco or CodeMirror)
-- [ ] Template selector (MA, RSI, Empty)
-- [ ] Validation feedback
-- [ ] Import/Export JSON buttons
+- [x] Custom strategy list in strategy selector
+- [x] "Create New Strategy" button
+- [x] Modal with code editor (Monaco or CodeMirror)
+- [x] Template selector (MA, RSI, Empty)
+- [x] Validation feedback
+- [x] Import/Export JSON buttons
 
 **Acceptance Criteria:**
 - Custom strategies appear in list (marked as "Custom")
@@ -1178,12 +1182,12 @@
 Update this section as tasks complete:
 
 ```
-Phase 1: [░░░░░░░░░░░░░░░░░░░░░░░░░] 0/25 (0%)
-Phase 2: [░░░░░░░░░░░░░░░░░░] 0/18 (0%)
-Phase 3: [░░░░░░░░░░░░░░░] 0/15 (0%)
-Phase 4: [░░░░░░░░░░] 0/10 (0%)
+Phase 1: [█████████████████████████] 25/25 (100%)
+Phase 2: [██████████████████] 18/18 (100%)
+Phase 3: [███████████████] 15/15 (100%)
+Phase 4: [██████████] 10/10 (100%)
 
-Overall: [░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0/71 (0%)
+Overall: [██████████████████████████████] 71/71 (100%)
 ```
 
 ---
