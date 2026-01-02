@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { Play, AlertCircle } from 'lucide-svelte';
+	import { toastStore } from '@one-love-wealth/shared-ui';
 	import { strategy } from '$lib/stores/strategy.svelte';
 	import { config } from '$lib/stores/config.svelte';
 	import { backtest } from '$lib/stores/backtest.svelte';
 	import { validateStrategyParams } from '$lib/strategies/types';
+	import { executeBacktest } from '$lib/services/backtest.service';
 
 	// Listen for keyboard shortcut event
 	onMount(() => {
@@ -65,15 +67,39 @@
 	async function handleRunBacktest() {
 		if (!isValid || !strategy.selectedStrategy) return;
 
-		// TODO: Implement backtest service call
-		// For now, just show loading state
-		backtest.startBacktest();
+		try {
+			// Start backtest with loading state
+			backtest.startBacktest();
 
-		// Simulate backtest execution
-		setTimeout(() => {
-			// This will be replaced with actual backtest service
-			backtest.setError('Backtest service not yet implemented');
-		}, 1000);
+			// Execute backtest with progress tracking
+			const result = await executeBacktest(
+				{
+					strategy: strategy.selectedStrategy,
+					strategyParams: strategy.params,
+					dateRange: config.dateRange,
+					interval: config.interval,
+					initialCapital: config.initialCapital,
+					gapFillStrategy: config.gapFillStrategy,
+				},
+				(progress, message) => {
+					backtest.setProgress(progress);
+					// Could show message in UI if desired
+				}
+			);
+
+			// Set result in store
+			backtest.setResult(result);
+
+			// Show success toast
+			toastStore.success('Backtest completed successfully!');
+		} catch (error) {
+			// Handle error
+			const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+			backtest.setError(errorMessage);
+
+			// Show error toast
+			toastStore.error(`Backtest failed: ${errorMessage}`);
+		}
 	}
 </script>
 
