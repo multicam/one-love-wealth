@@ -4,6 +4,7 @@
     import AppHeader from '$lib/components/layout/AppHeader.svelte';
     import ThreeColumnLayout from '$lib/components/layout/ThreeColumnLayout.svelte';
     import StrategyList from '$lib/components/strategy/StrategyList.svelte';
+    import ParameterForm from '$lib/components/strategy/ParameterForm.svelte';
     import { strategy } from '$lib/stores/strategy.svelte';
 
     // Svelte 5: use $effect for side effects
@@ -54,20 +55,7 @@
 
         {#snippet right()}
             <!-- Right Panel: Parameters & Config -->
-            <div class="p-4">
-                {#if strategy.selectedStrategyId}
-                    <h2 class="text-lg font-semibold mb-4">Configuration</h2>
-                    <p class="text-sm text-text-secondary">
-                        Parameter form will go here
-                    </p>
-                {:else}
-                    <div class="flex items-center justify-center h-full">
-                        <p class="text-sm text-text-secondary text-center">
-                            Select a strategy to configure parameters
-                        </p>
-                    </div>
-                {/if}
-            </div>
+            <ParameterForm />
         {/snippet}
     </ThreeColumnLayout>
 </div>
