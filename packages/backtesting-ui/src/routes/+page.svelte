@@ -8,11 +8,14 @@
     import ResultsView from '$lib/components/results/ResultsView.svelte';
     import OptimizationConfig from '$lib/components/optimize/OptimizationConfig.svelte';
     import OptimizationResults from '$lib/components/optimize/OptimizationResults.svelte';
+    import WalkForwardConfig from '$lib/components/walkforward/WalkForwardConfig.svelte';
+    import WalkForwardResults from '$lib/components/walkforward/WalkForwardResults.svelte';
     import ErrorBoundary from '$lib/components/common/ErrorBoundary.svelte';
     import { ui } from '$lib/stores/ui.svelte';
     import { strategy } from '$lib/stores/strategy.svelte';
     import { backtest } from '$lib/stores/backtest.svelte';
     import { optimization } from '$lib/stores/optimization.svelte';
+    import { walkforward } from '$lib/stores/walkforward.svelte';
     import { config } from '$lib/stores/config.svelte';
 
     // Svelte 5: use $effect for side effects
@@ -23,6 +26,7 @@
             strategy.load();
             backtest.loadHistory();
             optimization.loadHistory();
+            walkforward.loadHistory();
 
             // Show welcome toast on app load
             toastStore.info('Backtesting UI loaded successfully!');
@@ -73,10 +77,10 @@
                     <OptimizationResults />
                 </ErrorBoundary>
             {:else}
-                <!-- Walk-forward mode (Phase 3) -->
-                <div class="h-full flex items-center justify-center p-6">
-                    <p class="text-text-secondary">Walk-forward analysis coming in Phase 3</p>
-                </div>
+                <!-- Walk-forward mode -->
+                <ErrorBoundary name="Walk-Forward Results">
+                    <WalkForwardResults />
+                </ErrorBoundary>
             {/if}
         {/snippet}
 
@@ -91,10 +95,10 @@
                     <OptimizationConfig />
                 </ErrorBoundary>
             {:else}
-                <!-- Walk-forward mode (Phase 3) -->
-                <div class="h-full flex items-center justify-center p-6">
-                    <p class="text-text-secondary">Walk-forward config coming in Phase 3</p>
-                </div>
+                <!-- Walk-forward mode -->
+                <ErrorBoundary name="Walk-Forward Config">
+                    <WalkForwardConfig />
+                </ErrorBoundary>
             {/if}
         {/snippet}
     </ThreeColumnLayout>

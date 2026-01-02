@@ -10,7 +10,7 @@ import type {
 	OptimizationObjective,
 	OptimizationOutput
 } from '@one-love-wealth/backtesting';
-import { loadBacktestDataBySymbols } from '@one-love-wealth/data-layer';
+// import { loadBacktestDataBySymbols } from '@one-love-wealth/data-layer'; // TODO: uncomment when data-layer exports this
 import type { DateRange } from '$lib/types';
 
 // Import worker (Vite handles this specially)
