@@ -137,7 +137,7 @@
 	});
 
 	// Calculate max drawdown info
-	const maxDrawdown = $derived(() => {
+	const maxDrawdown = $derived.by(() => {
 		if (equityCurve.length === 0) return { percent: 0, date: '' };
 
 		let maxDD = 0;
@@ -166,9 +166,9 @@
 			{#if equityCurve.length > 0}
 				<div class="text-xs text-text-secondary">
 					<span class="font-medium text-red-500">
-						Max DD: {(maxDrawdown().percent * 100).toFixed(2)}%
+						Max DD: {(maxDrawdown.percent * 100).toFixed(2)}%
 					</span>
-					<span class="ml-2">on {maxDrawdown().date}</span>
+					<span class="ml-2">on {maxDrawdown.date}</span>
 				</div>
 			{/if}
 

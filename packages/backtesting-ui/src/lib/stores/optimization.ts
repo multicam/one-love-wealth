@@ -109,7 +109,7 @@ function createOptimizationStore() {
 				// Add to history if strategy info provided
 				if (strategyId && strategyName) {
 					const compressed: CompressedOptimization = {
-						id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+						id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
 						timestamp: Date.now(),
 						strategyId,
 						strategyName,
@@ -161,6 +161,13 @@ function createOptimizationStore() {
 				...state,
 				isRunning: false,
 				progress: 0,
+			}));
+		},
+
+		updateParamRanges: (ranges: Record<string, { min: number; max: number; step: number }>) => {
+			update((state) => ({
+				...state,
+				paramRanges: ranges,
 			}));
 		},
 

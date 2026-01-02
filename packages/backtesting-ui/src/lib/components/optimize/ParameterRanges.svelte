@@ -1,13 +1,25 @@
 <script lang="ts">
-	import { strategy, selectedStrategy } from '$lib/stores/strategy.svelte';
-	import { optimization } from '$lib/stores/optimization.svelte';
-	import type { StrategyField } from '$lib/strategies/types';
+	import { strategy, selectedStrategy } from '$lib/stores/strategy';
+	import { optimization } from '$lib/stores/optimization';
+	import type { StrategyField, StrategyDefinition } from '$lib/strategies/types';
+
+	// Local state synced from stores
+	let currentStrategy = $state<StrategyDefinition | null>(null);
+	let strategyParams = $state<Record<string, any>>({});
+	let optimizationState = $state<{ paramRanges: Record<string, { min: number; max: number; step: number }> }>({ paramRanges: {} });
+
+	$effect(() => {
+		const unsub1 = selectedStrategy.subscribe(value => { currentStrategy = value; });
+		const unsub2 = strategy.subscribe(value => { strategyParams = value.params; });
+		const unsub3 = optimization.subscribe(value => { optimizationState = value; });
+		return () => { unsub1(); unsub2(); unsub3(); };
+	});
 
 	// Get numeric parameters from selected strategy
-	const numericFields = $derived(() => {
-		if (!$selectedStrategy) return [];
-		return $selectedStrategy.fields.filter(
-			(f) =>
+	const numericFields = $derived.by(() => {
+		if (!currentStrategy) return [];
+		return currentStrategy.fields.filter(
+			(f: StrategyField) =>
 				f.type === 'number' ||
 				f.type === 'slider' ||
 				f.type === 'percent' ||
@@ -17,19 +29,19 @@
 
 	// Initialize ranges with defaults
 	$effect(() => {
-		const fields = numericFields();
+		const fields = numericFields;
 		if (fields.length === 0) return;
 
 		const ranges: Record<string, { min: number; max: number; step: number }> = {};
 
 		for (const field of fields) {
 			// Use existing range if available, otherwise create default
-			const existing = $optimization.paramRanges[field.key];
+			const existing = optimizationState.paramRanges[field.key];
 			if (existing) {
 				ranges[field.key] = existing;
 			} else {
 				// Create sensible defaults based on field type
-				const currentValue = $strategy.params[field.key] ?? field.default ?? 0;
+				const currentValue = strategyParams[field.key] ?? field.default ?? 0;
 				let min: number, max: number, step: number;
 
 				if (field.type === 'percent') {
@@ -52,21 +64,21 @@
 		}
 
 		// Update store
-		optimization.paramRanges = ranges;
+		optimization.updateParamRanges(ranges);
 	});
 
 	// Handle range updates
 	function updateRange(key: string, prop: 'min' | 'max' | 'step', value: number) {
-		const current = $optimization.paramRanges[key];
+		const current = optimizationState.paramRanges[key];
 		if (!current) return;
 
-		optimization.paramRanges = {
-			...$optimization.paramRanges,
+		optimization.updateParamRanges({
+			...optimizationState.paramRanges,
 			[key]: {
 				...current,
 				[prop]: value
 			}
-		};
+		});
 	}
 
 	// Validation
@@ -75,17 +87,17 @@
 	}
 </script>
 
-{#if numericFields().length > 0}
+{#if numericFields.length > 0}
 	<div class="space-y-4">
 		<div class="flex items-center justify-between">
 			<label class="text-sm font-medium text-text-primary">Parameter Ranges</label>
 			<span class="text-xs text-text-secondary">
-				{numericFields().length} parameter{numericFields().length !== 1 ? 's' : ''}
+				{numericFields.length} parameter{numericFields.length !== 1 ? 's' : ''}
 			</span>
 		</div>
 
 		<div class="space-y-4">
-			{#each numericFields() as field}
+			{#each numericFields as field}
 				{@const range = $optimization.paramRanges[field.key]}
 				{@const valid = range ? isRangeValid(range) : false}
 

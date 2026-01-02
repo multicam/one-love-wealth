@@ -1,19 +1,34 @@
 <script lang="ts">
-  import { walkforward } from '$lib/stores/walkforward.svelte';
-  import { strategy, selectedStrategy } from '$lib/stores/strategy.svelte';
-  import { config } from '$lib/stores/config.svelte';
+  import { walkforward } from '$lib/stores/walkforward';
+  import { strategy, selectedStrategy } from '$lib/stores/strategy';
+  import { config } from '$lib/stores/config';
   import { toastStore } from '@one-love-wealth/shared-ui';
   import { executeWalkForward } from '$lib/services/walkforward.service';
+  import type { StrategyDefinition } from '$lib/strategies/types';
 
   let startTime = $state<number>(0);
 
+  // Local state synced from stores
+  let currentStrategy = $state<StrategyDefinition | null>(null);
+  let strategyState = $state<{ selectedStrategyId: string | null; params: Record<string, any> }>({ selectedStrategyId: null, params: {} });
+  let configState = $state<any>(null);
+  let walkforwardState = $state<any>(null);
+
+  $effect(() => {
+    const unsub1 = selectedStrategy.subscribe(value => { currentStrategy = value; });
+    const unsub2 = strategy.subscribe(value => { strategyState = value; });
+    const unsub3 = config.subscribe(value => { configState = value; });
+    const unsub4 = walkforward.subscribe(value => { walkforwardState = value; });
+    return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
+  });
+
   // Computed - estimated time remaining
-  const estimatedTimeRemaining = $derived(() => {
-    if (!$walkforward.isRunning || $walkforward.currentWindow === 0) return null;
+  const estimatedTimeRemaining = $derived.by(() => {
+    if (!walkforwardState?.isRunning || walkforwardState?.currentWindow === 0) return null;
 
     const elapsed = Date.now() - startTime;
-    const avgTimePerWindow = elapsed / $walkforward.currentWindow;
-    const remaining = $walkforward.totalWindows - $walkforward.currentWindow;
+    const avgTimePerWindow = elapsed / walkforwardState.currentWindow;
+    const remaining = walkforwardState.totalWindows - walkforwardState.currentWindow;
     const eta = avgTimePerWindow * remaining;
 
     return eta;
@@ -27,8 +42,8 @@
   }
 
   // Calculate total windows based on config
-  const totalWindowsEstimate = $derived(() => {
-    const { stepSizePercent } = $walkforward.config;
+  const totalWindowsEstimate = $derived.by(() => {
+    const stepSizePercent = walkforwardState?.config?.stepSizePercent ?? 0;
     if (stepSizePercent <= 0) return 0;
 
     // Simplified calculation - actual will depend on data length
@@ -38,44 +53,53 @@
 
   // Handle run walk-forward
   async function handleRunWalkForward() {
-    if (!$selectedStrategy || !$strategy.selectedStrategyId) {
+    console.log('[WalkForwardConfig] handleRunWalkForward called');
+
+    if (!currentStrategy || !strategyState.selectedStrategyId) {
+      console.error('[WalkForwardConfig] No strategy selected');
       toastStore.error('Please select a strategy first');
       return;
     }
 
-    if ($walkforward.config.inSamplePercent + $walkforward.config.outSamplePercent !== 100) {
+    if (walkforwardState.config.inSamplePercent + walkforwardState.config.outSamplePercent !== 100) {
+      console.error('[WalkForwardConfig] Invalid percentages');
       toastStore.error('In-sample and out-sample percentages must sum to 100%');
       return;
     }
 
-    if ($walkforward.config.stepSizePercent <= 0 || $walkforward.config.stepSizePercent > 100) {
+    if (walkforwardState.config.stepSizePercent <= 0 || walkforwardState.config.stepSizePercent > 100) {
+      console.error('[WalkForwardConfig] Invalid step size');
       toastStore.error('Step size must be between 1% and 100%');
       return;
     }
 
+    console.log('[WalkForwardConfig] Starting walk-forward analysis');
     startTime = Date.now();
 
     try {
       const result = await executeWalkForward(
         {
-          strategy: $selectedStrategy as any, // StrategyDefinition -> Strategy cast
-          strategyParams: $strategy.params,
-          wfConfig: $walkforward.config,
-          dateRange: $config.dateRange,
-          interval: $config.interval,
-          initialCapital: $config.initialCapital,
-          gapFillStrategy: $config.gapFillStrategy as any,
-          symbols: $config.symbols,
+          strategy: currentStrategy as any, // StrategyDefinition -> Strategy cast
+          strategyParams: strategyState.params,
+          wfConfig: walkforwardState.config,
+          dateRange: configState?.dateRange,
+          interval: configState?.interval,
+          initialCapital: configState?.initialCapital,
+          gapFillStrategy: configState?.gapFillStrategy as any,
+          symbols: configState?.symbols,
         },
         (windowNumber, total) => {
           walkforward.updateProgress(windowNumber);
         }
       );
 
-      walkforward.setResult(result, $strategy.selectedStrategyId, $selectedStrategy.name);
+      console.log('[WalkForwardConfig] Analysis complete, setting result');
+      walkforward.setResult(result, strategyState.selectedStrategyId, currentStrategy!.name);
+      console.log('[WalkForwardConfig] Result set in store');
       toastStore.success(`Walk-forward analysis complete! ${result.windows.length} windows analyzed.`);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
+      console.error('[WalkForwardConfig] Analysis failed:', error);
       walkforward.setError(message);
       toastStore.error(`Walk-forward failed: ${message}`);
     }
@@ -97,9 +121,9 @@
 <div class="h-full flex flex-col p-6 bg-surface-secondary overflow-y-auto">
   <h2 class="text-2xl font-bold mb-6 text-text-primary">Walk-Forward Analysis</h2>
 
-  {#if $walkforward.error}
+  {#if walkforwardState?.error}
     <div class="mb-4 p-4 bg-error/10 border border-error rounded-lg text-error text-sm">
-      <strong>Error:</strong> {$walkforward.error}
+      <strong>Error:</strong> {walkforwardState.error}
     </div>
   {/if}
 
@@ -112,19 +136,19 @@
       <div>
         <label class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-text-primary">In-Sample Period</span>
-          <span class="text-sm text-text-secondary">{$walkforward.config.inSamplePercent}%</span>
+          <span class="text-sm text-text-secondary">{walkforwardState?.config?.inSamplePercent ?? 60}%</span>
         </label>
         <input
           type="range"
           min="20"
           max="80"
           step="5"
-          bind:value={$walkforward.config.inSamplePercent}
-          onchange={() => {
-            // Auto-adjust out-sample to maintain 100% total
-            $walkforward.config.outSamplePercent = 100 - $walkforward.config.inSamplePercent;
+          value={walkforwardState?.config?.inSamplePercent ?? 60}
+          oninput={(e) => {
+            const val = parseInt(e.currentTarget.value);
+            walkforward.updateConfig({ inSamplePercent: val, outSamplePercent: 100 - val });
           }}
-          disabled={$walkforward.isRunning}
+          disabled={walkforwardState?.isRunning}
           class="w-full"
         />
         <p class="text-xs text-text-tertiary mt-1">
@@ -136,19 +160,19 @@
       <div>
         <label class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-text-primary">Out-of-Sample Period</span>
-          <span class="text-sm text-text-secondary">{$walkforward.config.outSamplePercent}%</span>
+          <span class="text-sm text-text-secondary">{walkforwardState?.config?.outSamplePercent ?? 40}%</span>
         </label>
         <input
           type="range"
           min="20"
           max="80"
           step="5"
-          bind:value={$walkforward.config.outSamplePercent}
-          onchange={() => {
-            // Auto-adjust in-sample to maintain 100% total
-            $walkforward.config.inSamplePercent = 100 - $walkforward.config.outSamplePercent;
+          value={walkforwardState?.config?.outSamplePercent ?? 40}
+          oninput={(e) => {
+            const val = parseInt(e.currentTarget.value);
+            walkforward.updateConfig({ outSamplePercent: val, inSamplePercent: 100 - val });
           }}
-          disabled={$walkforward.isRunning}
+          disabled={walkforwardState?.isRunning}
           class="w-full"
         />
         <p class="text-xs text-text-tertiary mt-1">
@@ -160,15 +184,16 @@
       <div>
         <label class="flex items-center justify-between mb-2">
           <span class="text-sm font-medium text-text-primary">Step Size</span>
-          <span class="text-sm text-text-secondary">{$walkforward.config.stepSizePercent}%</span>
+          <span class="text-sm text-text-secondary">{walkforwardState?.config?.stepSizePercent ?? 20}%</span>
         </label>
         <input
           type="range"
           min="5"
           max="50"
           step="5"
-          bind:value={$walkforward.config.stepSizePercent}
-          disabled={$walkforward.isRunning}
+          value={walkforwardState?.config?.stepSizePercent ?? 20}
+          oninput={(e) => walkforward.updateConfig({ stepSizePercent: parseInt(e.currentTarget.value) })}
+          disabled={walkforwardState?.isRunning}
           class="w-full"
         />
         <p class="text-xs text-text-tertiary mt-1">
@@ -181,14 +206,15 @@
         <label class="flex items-center gap-3">
           <input
             type="checkbox"
-            bind:checked={$walkforward.config.anchored}
-            disabled={$walkforward.isRunning}
+            checked={walkforwardState?.config?.anchored ?? false}
+            onchange={(e) => walkforward.updateConfig({ anchored: e.currentTarget.checked })}
+            disabled={walkforwardState?.isRunning}
             class="w-4 h-4"
           />
           <span class="text-sm font-medium text-text-primary">Anchored Windows</span>
         </label>
         <p class="text-xs text-text-tertiary mt-1 ml-7">
-          {#if $walkforward.config.anchored}
+          {#if walkforwardState?.config?.anchored}
             Start of in-sample period remains fixed at the beginning
           {:else}
             Windows roll forward, maintaining fixed window size
@@ -201,7 +227,7 @@
         <div class="flex items-center justify-between">
           <span class="text-sm text-text-secondary">Estimated Windows:</span>
           <span class="text-sm font-semibold text-text-primary">
-            ~{totalWindowsEstimate()}
+            ~{totalWindowsEstimate}
           </span>
         </div>
       </div>
@@ -209,25 +235,25 @@
   </div>
 
   <!-- Progress -->
-  {#if $walkforward.isRunning}
+  {#if walkforwardState?.isRunning}
     <div class="mb-6">
       <div class="flex items-center justify-between mb-2">
         <span class="text-sm font-medium text-text-primary">
-          Window {$walkforward.currentWindow} of {$walkforward.totalWindows}
+          Window {walkforwardState.currentWindow} of {walkforwardState.totalWindows}
         </span>
         <span class="text-sm text-text-secondary">
-          {Math.round($walkforward.progress())}%
+          {Math.round((walkforwardState.currentWindow / walkforwardState.totalWindows) * 100)}%
         </span>
       </div>
       <div class="w-full bg-surface-tertiary rounded-full h-2 overflow-hidden">
         <div
           class="bg-primary h-full transition-all duration-300"
-          style="width: {$walkforward.progress()}%"
+          style="width: {walkforwardState.totalWindows > 0 ? (walkforwardState.currentWindow / walkforwardState.totalWindows) * 100 : 0}%"
         ></div>
       </div>
-      {#if estimatedTimeRemaining()}
+      {#if estimatedTimeRemaining}
         <p class="text-xs text-text-tertiary mt-1 text-center">
-          Estimated time remaining: {formatETA(estimatedTimeRemaining()!)}
+          Estimated time remaining: {formatETA(estimatedTimeRemaining!)}
         </p>
       {/if}
     </div>
@@ -235,10 +261,10 @@
 
   <!-- Actions -->
   <div class="mt-auto space-y-3">
-    {#if !$walkforward.isRunning}
+    {#if !walkforwardState?.isRunning}
       <button
         onclick={handleRunWalkForward}
-        disabled={!$selectedStrategy}
+        disabled={!currentStrategy}
         class="w-full px-6 py-3 bg-primary text-white font-semibold rounded-lg
                hover:bg-primary-hover transition-colors disabled:opacity-50
                disabled:cursor-not-allowed"
@@ -264,7 +290,7 @@
     {/if}
   </div>
 
-  {#if !$selectedStrategy}
+  {#if !currentStrategy}
     <p class="text-xs text-text-tertiary mt-4 text-center">
       Select a strategy from the left panel to begin
     </p>

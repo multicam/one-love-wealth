@@ -14,8 +14,8 @@ export interface PackageConfig {
 export const packages = {
 	'backtesting-ui': {
 		name: 'backtesting-ui',
-		devPort: 6007,
-		previewPort: 6107,
+		devPort: 6036,
+		previewPort: 6136,
 		testDir: 'e2e'
 	},
 	'crypto-viz': {
@@ -27,7 +27,7 @@ export const packages = {
 	'macro-view': {
 		name: 'macro-view',
 		devPort: 6003,
-		previewPort: 4173,
+		previewPort: 6103,
 		testDir: 'e2e'
 	},
 	'trading-dashboards': {

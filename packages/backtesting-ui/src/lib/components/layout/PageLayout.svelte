@@ -1,4 +1,5 @@
 <script lang="ts">
+    import { onMount } from 'svelte';
     import { browser } from '$app/environment';
     import AppHeader from './AppHeader.svelte';
     import StrategyList from '$lib/components/strategy/StrategyList.svelte';
@@ -14,7 +15,7 @@
     let isDragging = $state(false);
 
     // Load persisted width on mount
-    $effect(() => {
+    onMount(() => {
         if (browser) {
             const stored = localStorage.getItem(STORAGE_KEY);
             if (stored) {

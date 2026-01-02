@@ -10,8 +10,8 @@ import type {
 	OptimizationObjective,
 	OptimizationOutput
 } from '@one-love-wealth/backtesting';
-// import { loadBacktestDataBySymbols } from '@one-love-wealth/data-layer'; // TODO: uncomment when data-layer exports this
-import type { DateRange } from '$lib/types';
+import type { DateRange } from '$lib/utils/date-range';
+import { loadBacktestDataBySymbols } from './data';
 
 // Import worker (Vite handles this specially)
 import OptimizationWorker from '$lib/workers/optimization.worker?worker';
@@ -39,11 +39,13 @@ export async function executeOptimization(
 	onProgress?: ProgressCallback
 ): Promise<OptimizationOutput> {
 	// Load historical data once
-	const historicalData = await fetchHistoricalData(
-		params.symbols,
-		params.dateRange,
-		params.interval
-	);
+	const dataResult = await loadBacktestDataBySymbols({
+		symbols: params.symbols,
+		dateRange: params.dateRange,
+		interval: params.interval,
+		gapFillStrategy: params.gapFillStrategy,
+	});
+	const historicalData = dataResult.data;
 
 	// Create backtest config
 	const backtestConfig: BacktestConfig = {
@@ -111,23 +113,3 @@ export function cancelOptimization(): void {
 	}
 }
 
-// Placeholder for data fetching (TODO: implement actual data-layer integration)
-async function fetchHistoricalData(
-	symbols: string[],
-	dateRange: DateRange,
-	interval: string
-): Promise<any> {
-	// TODO: Replace with actual data-layer API call
-	// For now, throw descriptive error
-	throw new Error(
-		`Data fetching not yet implemented. Need to fetch ${symbols.join(', ')} from ${dateRange.start} to ${dateRange.end} at ${interval} interval for optimization.`
-	);
-
-	// Expected implementation:
-	// return await loadBacktestDataBySymbols({
-	//   symbols,
-	//   startDate: new Date(dateRange.start),
-	//   endDate: new Date(dateRange.end),
-	//   interval,
-	// });
-}

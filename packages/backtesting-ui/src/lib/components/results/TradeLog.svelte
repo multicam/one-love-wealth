@@ -18,7 +18,7 @@
 	let filterSymbol = $state('');
 
 	// Sorted and filtered trades
-	const processedTrades = $derived(() => {
+	const processedTrades = $derived.by(() => {
 		let result = [...trades];
 
 		// Filter by side
@@ -124,7 +124,7 @@
 	<div class="flex items-center gap-4 p-4 bg-surface/50 rounded-lg border border-border">
 		<!-- Trade Count -->
 		<div class="text-sm font-medium text-text-primary">
-			{processedTrades().length} {processedTrades().length === 1 ? 'trade' : 'trades'}
+			{processedTrades.length} {processedTrades.length === 1 ? 'trade' : 'trades'}
 		</div>
 
 		<!-- Side Filter -->
@@ -169,7 +169,7 @@
 	</div>
 
 	<!-- Trade Table -->
-	{#if processedTrades().length > 0}
+	{#if processedTrades.length > 0}
 		<div class="bg-surface rounded-lg border border-border overflow-hidden">
 			<div class="overflow-x-auto">
 				<table class="w-full text-sm">
@@ -256,7 +256,7 @@
 						</tr>
 					</thead>
 					<tbody>
-						{#each processedTrades() as trade, index (trade.timestamp + trade.symbol + index)}
+						{#each processedTrades as trade, index (trade.timestamp + trade.symbol + index)}
 							<tr class="border-b border-border last:border-0 hover:bg-surface/30 transition-colors">
 								<!-- Date & Time -->
 								<td class="px-4 py-3">

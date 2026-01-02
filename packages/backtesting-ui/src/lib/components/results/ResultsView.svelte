@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { BarChart3, TrendingUp, List, TrendingDown } from 'lucide-svelte';
-	import { backtest } from '$lib/stores/backtest.svelte';
-	import { strategy } from '$lib/stores/strategy.svelte';
-	import { selectedStrategy } from '$lib/stores/strategy.svelte';
+	import { backtest, hasResult, metrics } from '$lib/stores/backtest';
+	import { strategy } from '$lib/stores/strategy';
+	import { selectedStrategy } from '$lib/stores/strategy';
 	import MetricsGrid from './MetricsGrid.svelte';
 	import TradeLog from './TradeLog.svelte';
 	import EquityCurve from './EquityCurve.svelte';
@@ -39,7 +39,7 @@
 	}
 </script>
 
-{#if $backtest.hasResult && $backtest.result}
+{#if $hasResult && $backtest.result}
 	<div class="h-full flex flex-col">
 		<!-- Header with Strategy Info -->
 		<div class="border-b border-border bg-surface/50 px-6 py-4">
@@ -53,26 +53,26 @@
 							{$backtest.result.symbols.join(', ')} •
 						{/if}
 						{$backtest.result.trades.length} trades
-						{#if $backtest.metrics}
-							• {formatPercent($backtest.metrics.totalReturn)} return
-							• Sharpe {formatNumber($backtest.metrics.sharpeRatio)}
+						{#if $metrics}
+							• {formatPercent($metrics.totalReturn)} return
+							• Sharpe {formatNumber($metrics.sharpeRatio)}
 						{/if}
 					</p>
 				</div>
 
 				<!-- Quick Stats -->
-				{#if $backtest.metrics}
+				{#if $metrics}
 					<div class="flex gap-6">
 						<div class="text-right">
 							<div class="text-xs text-text-secondary">Final Value</div>
-							<div class="text-lg font-semibold {$backtest.metrics.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}">
-								{formatCurrency($backtest.metrics.finalValue)}
+							<div class="text-lg font-semibold {$metrics.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}">
+								{formatCurrency($metrics.finalValue)}
 							</div>
 						</div>
 						<div class="text-right">
 							<div class="text-xs text-text-secondary">Total Return</div>
-							<div class="text-lg font-semibold {$backtest.metrics.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}">
-								{formatPercent($backtest.metrics.totalReturn)}
+							<div class="text-lg font-semibold {$metrics.totalReturn >= 0 ? 'text-green-500' : 'text-red-500'}">
+								{formatPercent($metrics.totalReturn)}
 							</div>
 						</div>
 					</div>
@@ -111,8 +111,8 @@
 			{#if activeTab === 'overview'}
 				<!-- Overview Tab -->
 				<div class="p-6">
-					{#if $backtest.metrics}
-						<MetricsGrid metrics={$backtest.metrics} showAdvanced={true} />
+					{#if $metrics}
+						<MetricsGrid metrics={$metrics} showAdvanced={true} />
 					{:else}
 						<div class="bg-surface/50 rounded-lg p-8 border border-border">
 							<div class="text-center">

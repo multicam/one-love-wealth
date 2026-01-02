@@ -1,13 +1,14 @@
 <script lang="ts">
 	import { Settings, Play, X } from 'lucide-svelte';
 	import { toastStore } from '@one-love-wealth/shared-ui';
-	import { strategy } from '$lib/stores/strategy.svelte';
-	import { selectedStrategy } from '$lib/stores/strategy.svelte';
-	import { config } from '$lib/stores/config.svelte';
-	import { optimization } from '$lib/stores/optimization.svelte';
+	import { strategy } from '$lib/stores/strategy';
+	import { selectedStrategy } from '$lib/stores/strategy';
+	import { config } from '$lib/stores/config';
+	import { optimization } from '$lib/stores/optimization';
 	import ParameterRanges from './ParameterRanges.svelte';
 	import { executeOptimization, cancelOptimization } from '$lib/services/optimization.service';
 	import type { OptimizationMethod, OptimizationObjective } from '@one-love-wealth/backtesting';
+	import type { StrategyDefinition } from '$lib/strategies/types';
 
 	// Optimization configuration
 	let method = $state<OptimizationMethod>('grid');
@@ -16,12 +17,27 @@
 
 	// ETA calculation
 	let startTime = $state<number>(0);
-	const estimatedTimeRemaining = $derived(() => {
-		if (!$optimization.isRunning || $optimization.currentIteration === 0) return null;
+
+	// Local state synced from stores
+	let currentStrategy = $state<StrategyDefinition | null>(null);
+	let strategyState = $state<{ selectedStrategyId: string | null; params: Record<string, any> }>({ selectedStrategyId: null, params: {} });
+	let configState = $state<any>(null);
+	let optimizationState = $state<any>(null);
+
+	$effect(() => {
+		const unsub1 = selectedStrategy.subscribe(value => { currentStrategy = value; });
+		const unsub2 = strategy.subscribe(value => { strategyState = value; });
+		const unsub3 = config.subscribe(value => { configState = value; });
+		const unsub4 = optimization.subscribe(value => { optimizationState = value; });
+		return () => { unsub1(); unsub2(); unsub3(); unsub4(); };
+	});
+
+	const estimatedTimeRemaining = $derived.by(() => {
+		if (!optimizationState?.isRunning || optimizationState?.currentIteration === 0) return null;
 
 		const elapsed = Date.now() - startTime;
-		const avgTimePerIteration = elapsed / $optimization.currentIteration;
-		const remaining = $optimization.totalIterations - $optimization.currentIteration;
+		const avgTimePerIteration = elapsed / optimizationState.currentIteration;
+		const remaining = optimizationState.totalIterations - optimizationState.currentIteration;
 		const eta = avgTimePerIteration * remaining;
 
 		return eta;
@@ -64,11 +80,11 @@
 	];
 
 	// Calculate total combinations for grid search
-	const totalCombinations = $derived(() => {
+	const totalCombinations = $derived.by(() => {
 		if (method !== 'grid') return null;
 
 		let total = 1;
-		const ranges = $optimization.paramRanges;
+		const ranges = optimizationState?.paramRanges ?? {};
 		for (const key in ranges) {
 			const range = ranges[key];
 			if (range && range.min !== undefined && range.max !== undefined && range.step) {
@@ -80,8 +96,8 @@
 	});
 
 	// Validation
-	const isValid = $derived(() => {
-		if (!$selectedStrategy) return false;
+	const isValid = $derived.by(() => {
+		if (!currentStrategy) return false;
 		if (method === 'random' || method === 'genetic') {
 			if (iterations < 10 || iterations > 10000) return false;
 		}
@@ -90,35 +106,35 @@
 
 	// Handle run optimization
 	async function handleRunOptimization() {
-		if (!isValid() || !$selectedStrategy) return;
+		if (!isValid || !currentStrategy) return;
 
 		try {
 			// Calculate total iterations
 			let totalIterations: number;
 			if (method === 'grid') {
-				totalIterations = totalCombinations() ?? 0;
+				totalIterations = totalCombinations ?? 0;
 			} else {
 				totalIterations = iterations;
 			}
 
 			// Start optimization and track start time
 			startTime = Date.now();
-			optimization.startOptimization($optimization.paramRanges, totalIterations);
+			optimization.startOptimization(optimizationState?.paramRanges ?? {}, totalIterations);
 
 			// Execute optimization with progress callback
 			const result = await executeOptimization(
 				{
 					method,
 					objective,
-					paramRanges: $optimization.paramRanges,
+					paramRanges: optimizationState?.paramRanges ?? {},
 					iterations: method !== 'grid' ? iterations : undefined,
-					strategy: $selectedStrategy!,
-					strategyParams: $strategy.params,
-					dateRange: $config.dateRange,
-					interval: $config.interval,
-					initialCapital: $config.initialCapital,
-					gapFillStrategy: $config.gapFillStrategy,
-					symbols: $config.symbols
+					strategy: currentStrategy!,
+					strategyParams: strategyState.params,
+					dateRange: configState?.dateRange,
+					interval: configState?.interval,
+					initialCapital: configState?.initialCapital,
+					gapFillStrategy: configState?.gapFillStrategy,
+					symbols: configState?.symbols
 				},
 				(iteration, total) => {
 					optimization.updateProgress(iteration);
@@ -128,8 +144,8 @@
 			// Set result with strategy info for history
 			optimization.setResult(
 				result,
-				$strategy.selectedStrategyId!,
-				$selectedStrategy!.name
+				strategyState.selectedStrategyId!,
+				currentStrategy!.name
 			);
 
 			// Show success toast
@@ -162,7 +178,7 @@
 			<h2 class="text-lg font-semibold text-text-primary">Optimization</h2>
 		</div>
 		<p class="text-sm text-text-secondary">
-			Find optimal parameters for {$selectedStrategy?.name || 'selected strategy'}
+			Find optimal parameters for {currentStrategy?.name || 'selected strategy'}
 		</p>
 	</div>
 
@@ -231,10 +247,10 @@
 		{/if}
 
 		<!-- Total Combinations (Grid only) -->
-		{#if method === 'grid' && totalCombinations()}
+		{#if method === 'grid' && totalCombinations}
 			<div class="bg-primary/5 border border-primary/20 rounded-lg p-3">
 				<div class="text-sm font-medium text-primary mb-1">
-					Testing {totalCombinations()?.toLocaleString()} combinations
+					Testing {totalCombinations?.toLocaleString()} combinations
 				</div>
 				<div class="text-xs text-text-secondary">
 					This may take several minutes depending on date range and complexity
@@ -250,8 +266,8 @@
 			<button
 				type="button"
 				onclick={handleRunOptimization}
-				disabled={!isValid()}
-				class="w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 {isValid()
+				disabled={!isValid}
+				class="w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 {isValid
 					? 'bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20'
 					: 'bg-surface text-text-secondary cursor-not-allowed'}"
 			>
@@ -283,9 +299,9 @@
 						style="width: {$optimization.progress}%"
 					></div>
 				</div>
-				{#if estimatedTimeRemaining()}
+				{#if estimatedTimeRemaining}
 					<div class="text-xs text-text-secondary text-center">
-						Estimated time remaining: {formatETA(estimatedTimeRemaining())}
+						Estimated time remaining: {formatETA(estimatedTimeRemaining)}
 					</div>
 				{/if}
 			</div>

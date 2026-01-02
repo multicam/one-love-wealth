@@ -1,36 +1,51 @@
 <script lang="ts">
 	import { RotateCcw, ChevronDown, ChevronUp, Settings } from 'lucide-svelte';
-	import { strategy } from '$lib/stores/strategy.svelte';
-	import { selectedStrategy } from '$lib/stores/strategy.svelte';
+	import { strategy, selectedStrategy } from '$lib/stores/strategy';
 	import FieldRenderer from './FieldRenderer.svelte';
 	import BacktestConfig from '$lib/components/config/BacktestConfig.svelte';
 	import RunBacktestButton from '$lib/components/backtest/RunBacktestButton.svelte';
 	import RecentResults from '$lib/components/results/RecentResults.svelte';
-	import type { StrategyField } from '$lib/strategies/types';
+	import type { StrategyField, StrategyDefinition } from '$lib/strategies/types';
 
 	// Show/hide advanced parameters
 	let showAdvanced = $state(false);
 	// Show/hide backtest config
 	let showConfig = $state(false);
 
-	// Get visible fields (showByDefault !== false)
-	const visibleFields = $derived<StrategyField[]>(() => {
-		if (!$selectedStrategy) return [];
-		return $selectedStrategy.fields.filter((f) => f.showByDefault !== false);
+	// Local reactive state synced from stores
+	let currentStrategy = $state<StrategyDefinition | null>(null);
+	let params = $state<Record<string, any>>({});
+
+	// Sync store values to local state
+	$effect(() => {
+		const unsubStrategy = selectedStrategy.subscribe(value => {
+			currentStrategy = value;
+		});
+		const unsubParams = strategy.subscribe(value => {
+			params = value.params;
+		});
+		return () => {
+			unsubStrategy();
+			unsubParams();
+		};
 	});
+
+	// Get visible fields (showByDefault !== false)
+	const visibleFields = $derived(
+		currentStrategy?.fields.filter((f: StrategyField) => f.showByDefault !== false) ?? []
+	);
 
 	// Get advanced fields (showByDefault === false)
-	const advancedFields = $derived<StrategyField[]>(() => {
-		if (!$selectedStrategy) return [];
-		return $selectedStrategy.fields.filter((f) => f.showByDefault === false);
-	});
+	const advancedFields = $derived(
+		currentStrategy?.fields.filter((f: StrategyField) => f.showByDefault === false) ?? []
+	);
 
 	// Check if current params match recommended preset
-	const isUsingRecommended = $derived(() => {
-		if (!$selectedStrategy) return false;
-		const recommended = $selectedStrategy.defaults;
+	const isUsingRecommended = $derived.by(() => {
+		if (!currentStrategy) return false;
+		const recommended = currentStrategy.defaults;
 		for (const key in recommended) {
-			if ($strategy.params[key] !== recommended[key]) {
+			if (params[key] !== recommended[key]) {
 				return false;
 			}
 		}
@@ -39,8 +54,8 @@
 
 	// Reset to recommended preset
 	function resetToRecommended() {
-		if ($selectedStrategy) {
-			strategy.updateParams({ ...$selectedStrategy.defaults });
+		if (currentStrategy) {
+			strategy.updateParams({ ...currentStrategy.defaults });
 		}
 	}
 
@@ -50,7 +65,7 @@
 	}
 </script>
 
-{#if $selectedStrategy}
+{#if currentStrategy}
 	<div class="h-full flex flex-col">
 		<!-- Header -->
 		<div class="p-4 border-b border-border">
@@ -58,7 +73,7 @@
 				<h2 class="text-lg font-semibold text-text-primary">Parameters</h2>
 
 				<!-- Reset to Recommended Button -->
-				{#if !isUsingRecommended()}
+				{#if !isUsingRecommended}
 					<button
 						type="button"
 						onclick={resetToRecommended}
@@ -72,11 +87,11 @@
 			</div>
 
 			<!-- Preset Badge -->
-			{#if $selectedStrategy.preset}
+			{#if currentStrategy.preset}
 				<div class="flex items-center gap-2 text-xs text-text-secondary">
-					<span class="w-2 h-2 rounded-full {isUsingRecommended() ? 'bg-green-500' : 'bg-orange-500'}"></span>
+					<span class="w-2 h-2 rounded-full {isUsingRecommended ? 'bg-green-500' : 'bg-orange-500'}"></span>
 					<span>
-						{isUsingRecommended() ? 'Using recommended preset' : 'Custom parameters'}
+						{isUsingRecommended ? 'Using recommended preset' : 'Custom parameters'}
 					</span>
 				</div>
 			{/if}
@@ -85,16 +100,16 @@
 		<!-- Fields -->
 		<div class="flex-1 overflow-y-auto p-4 space-y-4">
 			<!-- Visible Fields -->
-			{#each visibleFields() as field (field.key)}
+			{#each visibleFields as field (field.key)}
 				<FieldRenderer
 					{field}
-					value={$strategy.params[field.key]}
+					value={params[field.key]}
 					onUpdate={(val) => handleFieldUpdate(field.key, val)}
 				/>
 			{/each}
 
 			<!-- Advanced Fields Toggle -->
-			{#if advancedFields().length > 0}
+			{#if advancedFields.length > 0}
 				<div class="pt-4 border-t border-border">
 					<button
 						type="button"
@@ -112,10 +127,10 @@
 					<!-- Advanced Fields -->
 					{#if showAdvanced}
 						<div class="mt-4 space-y-4">
-							{#each advancedFields() as field (field.key)}
+							{#each advancedFields as field (field.key)}
 								<FieldRenderer
 									{field}
-									value={$strategy.params[field.key]}
+									value={params[field.key]}
 									onUpdate={(val) => handleFieldUpdate(field.key, val)}
 								/>
 							{/each}
@@ -125,14 +140,14 @@
 			{/if}
 
 			<!-- Preset Information -->
-			{#if $selectedStrategy.preset}
+			{#if currentStrategy.preset}
 				<div class="pt-4 mt-4 border-t border-border">
 					<div class="bg-primary/5 rounded-lg p-3 border border-primary/20">
 						<h3 class="text-xs font-semibold text-primary mb-2">
 							💡 About These Defaults
 						</h3>
 						<p class="text-xs text-text-secondary">
-							{$selectedStrategy.preset.rationale}
+							{currentStrategy.preset.rationale}
 						</p>
 					</div>
 				</div>

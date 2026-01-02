@@ -1,23 +1,33 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import * as d3 from 'd3';
-	import { optimization } from '$lib/stores/optimization.svelte';
+	import { optimization, hasResult } from '$lib/stores/optimization';
 	import type { OptimizationResult } from '@one-love-wealth/backtesting';
 
 	let container = $state<HTMLDivElement>();
 	let xParam = $state<string>('');
 	let yParam = $state<string>('');
 
+	// Local state synced from store
+	let optimizationState = $state<any>(null);
+	let hasResultState = $state(false);
+
+	$effect(() => {
+		const unsub1 = optimization.subscribe(value => { optimizationState = value; });
+		const unsub2 = hasResult.subscribe(value => { hasResultState = value; });
+		return () => { unsub1(); unsub2(); };
+	});
+
 	// Get available parameters
-	const availableParams = $derived(() => {
-		if (!optimization.hasResult || optimization.allResults.length === 0) return [];
-		const firstResult = optimization.allResults[0];
+	const availableParams = $derived.by(() => {
+		if (!optimizationState?.result || optimizationState.result.allResults.length === 0) return [];
+		const firstResult = optimizationState.result.allResults[0];
 		return Object.keys(firstResult.params);
 	});
 
 	// Initialize selected params
 	$effect(() => {
-		const params = availableParams();
+		const params = availableParams;
 		if (params.length >= 2 && !xParam) {
 			xParam = params[0];
 			yParam = params[1];
@@ -30,11 +40,11 @@
 	// Render heatmap when params change
 	$effect(() => {
 		if (
-			!optimization.hasResult ||
+			!optimizationState?.result ||
 			!xParam ||
 			!yParam ||
 			!container ||
-			optimization.allResults.length === 0
+			optimizationState.result.allResults.length === 0
 		) {
 			return;
 		}
@@ -46,7 +56,7 @@
 		// Clear existing
 		d3.select(container).selectAll('*').remove();
 
-		const results = optimization.allResults;
+		const results = optimizationState.result.allResults;
 
 		// Dimensions
 		const margin = { top: 40, right: 100, bottom: 60, left: 60 };
@@ -213,7 +223,7 @@
 	}
 </script>
 
-{#if optimization.hasResult && availableParams().length >= 2}
+{#if hasResultState && availableParams.length >= 2}
 	<div class="space-y-4">
 		<!-- Parameter Selectors -->
 		<div class="grid grid-cols-2 gap-3">
@@ -226,7 +236,7 @@
 					bind:value={xParam}
 					class="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
 				>
-					{#each availableParams() as param}
+					{#each availableParams as param}
 						<option value={param}>{param}</option>
 					{/each}
 				</select>
@@ -240,7 +250,7 @@
 					bind:value={yParam}
 					class="w-full px-3 py-2 bg-surface border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/50"
 				>
-					{#each availableParams() as param}
+					{#each availableParams as param}
 						<option value={param}>{param}</option>
 					{/each}
 				</select>
@@ -256,7 +266,7 @@
 			indicate better objective values. Hover over cells to see exact values.
 		</div>
 	</div>
-{:else if optimization.hasResult}
+{:else if hasResultState}
 	<div class="p-4 rounded-lg bg-surface/50 border border-border text-center">
 		<p class="text-sm text-text-secondary">
 			Heatmap requires at least 2 numeric parameters. Selected strategy has only 1 or none.

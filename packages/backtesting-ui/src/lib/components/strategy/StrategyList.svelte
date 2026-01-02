@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Search, Info } from 'lucide-svelte';
-	import { strategy, selectedStrategy } from '$lib/stores/strategy.svelte';
+	import { strategy, selectedStrategy } from '$lib/stores/strategy';
 	import { STRATEGIES } from '$lib/strategies/registry';
 	import type { StrategyDefinition } from '$lib/strategies/types';
 	import StrategyDescription from './StrategyDescription.svelte';
@@ -22,8 +22,19 @@
 		'multi-symbol': 'Multi-Symbol',
 	};
 
+	// Local reactive state synced from store
+	let currentStrategy = $state<StrategyDefinition | null>(null);
+
+	// Sync store to local state
+	$effect(() => {
+		const unsub = selectedStrategy.subscribe(value => {
+			currentStrategy = value;
+		});
+		return unsub;
+	});
+
 	// Filtered and grouped strategies
-	const groupedStrategies = $derived(() => {
+	const groupedStrategies = $derived.by(() => {
 		const allStrategies = Object.values(STRATEGIES);
 		const q = searchQuery.toLowerCase().trim();
 
@@ -97,7 +108,7 @@
 	<!-- Strategy List -->
 	<div class="flex-1 overflow-y-auto">
 		{#each categoryOrder as category}
-			{@const strategiesInCategory = groupedStrategies()[category]}
+			{@const strategiesInCategory = groupedStrategies[category]}
 			{#if strategiesInCategory.length > 0}
 				<div class="py-3">
 					<!-- Category Header -->
@@ -107,7 +118,7 @@
 
 					<!-- Strategies -->
 					{#each strategiesInCategory as strategyDef}
-						{@const isSelected = $selectedStrategy?.id === strategyDef.id}
+						{@const isSelected = currentStrategy?.id === strategyDef.id}
 						<button
 							type="button"
 							class="w-full px-4 py-3 text-left hover:bg-surface transition-colors group relative {isSelected ? 'bg-primary/10 border-l-2 border-primary' : ''}"
@@ -160,7 +171,7 @@
 		{/each}
 
 		<!-- No Results -->
-		{#if Object.values(groupedStrategies()).every((arr) => arr.length === 0)}
+		{#if Object.values(groupedStrategies).every((arr) => arr.length === 0)}
 			<div class="p-8 text-center">
 				<div class="text-text-secondary text-sm mb-2">No strategies found</div>
 				<div class="text-text-secondary text-xs">

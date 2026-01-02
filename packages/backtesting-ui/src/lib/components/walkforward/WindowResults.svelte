@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { WalkForwardWindow } from '$lib/stores/walkforward.svelte';
+  import type { WalkForwardWindow } from '$lib/stores/walkforward';
 
   interface Props {
     windows: WalkForwardWindow[];
@@ -14,7 +14,7 @@
   let sortDirection = $state<SortDirection>('asc');
 
   // Sorted windows
-  const sortedWindows = $derived(() => {
+  const sortedWindows = $derived.by(() => {
     const sorted = [...windows];
 
     sorted.sort((a, b) => {
@@ -143,7 +143,7 @@
         </tr>
       </thead>
       <tbody>
-        {#each sortedWindows() as window}
+        {#each sortedWindows as window}
           <tr class="border-b border-border hover:bg-surface-hover transition-colors">
             <td class="px-4 py-3 text-sm text-text-primary font-medium">
               {window.windowNumber}

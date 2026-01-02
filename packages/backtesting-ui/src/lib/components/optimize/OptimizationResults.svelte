@@ -1,8 +1,8 @@
 <script lang="ts">
 	import { ChevronDown, ChevronUp, TrendingUp, TrendingDown, CheckCircle, BarChart3, Table } from 'lucide-svelte';
-	import { optimization } from '$lib/stores/optimization.svelte';
-	import { strategy } from '$lib/stores/strategy.svelte';
-	import { ui } from '$lib/stores/ui.svelte';
+	import { optimization } from '$lib/stores/optimization';
+	import { strategy } from '$lib/stores/strategy';
+	import { ui } from '$lib/stores/ui';
 	import { toastStore } from '@one-love-wealth/shared-ui';
 	import ParameterHeatmap from './ParameterHeatmap.svelte';
 	import type { OptimizationResult } from '@one-love-wealth/backtesting';
@@ -19,11 +19,20 @@
 	let showAll = $state(false);
 	const pageSize = 20;
 
-	// Get results
-	const results = $derived(() => {
-		if (!$optimization.result) return [];
+	// Local state synced from store
+	let optimizationState = $state<typeof $optimization | null>(null);
+	$effect(() => {
+		const unsub = optimization.subscribe(value => {
+			optimizationState = value;
+		});
+		return unsub;
+	});
 
-		let sorted = [...$optimization.result.allResults];
+	// Get results
+	const results = $derived.by(() => {
+		if (!optimizationState?.result) return [];
+
+		let sorted = [...optimizationState.result.allResults];
 
 		// Sort
 		switch (sortField) {
@@ -57,8 +66,8 @@
 	});
 
 	// Displayed results
-	const displayedResults = $derived(() => {
-		const r = results();
+	const displayedResults = $derived.by(() => {
+		const r = results;
 		return showAll ? r : r.slice(0, pageSize);
 	});
 
@@ -74,10 +83,10 @@
 
 	// Apply best parameters
 	function applyBestParameters() {
-		if (!$optimization.result || !$optimization.result?.bestParams) return;
+		if (!optimizationState?.result || !optimizationState.result?.bestParams) return;
 
 		// Copy best params to strategy store
-		strategy.updateParams({ ...$optimization.result.bestParams });
+		strategy.updateParams({ ...optimizationState.result.bestParams });
 
 		// Switch to backtest mode
 		ui.setMode('backtest');
@@ -102,7 +111,7 @@
 	}
 </script>
 
-{#if $optimization.result}
+{#if optimizationState?.result}
 	<div class="h-full flex flex-col">
 		<!-- Header -->
 		<div class="p-4 border-b border-border">
@@ -118,13 +127,13 @@
 				</button>
 			</div>
 			<div class="text-sm text-text-secondary">
-				{#if $optimization.result.symbols && $optimization.result.symbols.length > 0}
-					{$optimization.result.symbols.join(', ')} •
+				{#if optimizationState.result.symbols && optimizationState.result.symbols.length > 0}
+					{optimizationState.result.symbols.join(', ')} •
 				{/if}
-				Found {$optimization.result.allResults.length} results
-				{#if $optimization.result.method === 'grid'}
+				Found {optimizationState.result.allResults.length} results
+				{#if optimizationState.result.method === 'grid'}
 					(exhaustive search)
-				{:else if $optimization.result.method === 'random'}
+				{:else if optimizationState.result.method === 'random'}
 					(random sampling)
 				{:else}
 					(genetic evolution)
@@ -138,17 +147,17 @@
 			<div class="flex items-center justify-between">
 				<div>
 					<div class="text-sm font-medium text-text-primary">
-						{$optimization.result.objective === 'sharpe'
+						{optimizationState.result.objective === 'sharpe'
 							? 'Sharpe Ratio'
-							: $optimization.result.objective === 'sortino'
+							: optimizationState.result.objective === 'sortino'
 								? 'Sortino Ratio'
 								: 'Total Return'}:
 						<span class="text-primary ml-1">
-							{$optimization.result.bestObjectiveValue.toFixed(2)}
+							{optimizationState.result.bestObjectiveValue.toFixed(2)}
 						</span>
 					</div>
 					<div class="text-xs text-text-secondary mt-1">
-						{formatParams($optimization.result.bestParams)}
+						{formatParams(optimizationState.result.bestParams)}
 					</div>
 				</div>
 			</div>
@@ -255,7 +264,7 @@
 					</tr>
 				</thead>
 				<tbody>
-					{#each displayedResults() as result, index}
+					{#each displayedResults as result, index}
 						<tr class="border-b border-border/50 hover:bg-surface/50 transition-colors">
 							<td class="px-3 py-2 text-text-primary font-medium">#{index + 1}</td>
 							<td class="px-3 py-2 text-text-secondary text-xs">
@@ -283,14 +292,14 @@
 		</div>
 
 			<!-- Show All Button -->
-			{#if results().length > pageSize}
+			{#if results.length > pageSize}
 				<div class="border-t border-border p-3 text-center">
 					<button
 						type="button"
 						onclick={() => (showAll = !showAll)}
 						class="text-sm text-primary hover:text-primary/80 transition-colors"
 					>
-						{showAll ? 'Show Top 20' : `Show All ${results().length} Results`}
+						{showAll ? 'Show Top 20' : `Show All ${results.length} Results`}
 					</button>
 				</div>
 			{/if}

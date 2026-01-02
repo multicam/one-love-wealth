@@ -38,6 +38,7 @@ export class CacheManager {
   private memoryCache: MemoryCache;
   private storageCache: StorageCache;
   private config: CacheConfig;
+  private cleanupIntervalId: ReturnType<typeof setInterval> | null = null;
 
   constructor(config: Partial<CacheConfig> = {}) {
     this.config = { ...DEFAULT_CONFIG, ...config };
@@ -57,7 +58,7 @@ export class CacheManager {
    * Checks memory first, then storage
    * Promotes storage hits to memory
    */
-  async get(key: CacheKey): Promise<CachedData | null> {
+  get(key: CacheKey): CachedData | null {
     const keyStr = this.serializeKey(key);
 
     // Try memory cache first
@@ -272,12 +273,24 @@ export class CacheManager {
    */
   private scheduleCleanup(): void {
     // Clean up expired entries every hour
-    setInterval(
+    this.cleanupIntervalId = setInterval(
       () => {
         this.cleanExpired();
       },
       60 * 60 * 1000
     ); // 1 hour
+  }
+
+  /**
+   * Destroy cache manager
+   * Clears interval and releases resources
+   */
+  destroy(): void {
+    if (this.cleanupIntervalId) {
+      clearInterval(this.cleanupIntervalId);
+      this.cleanupIntervalId = null;
+    }
+    this.clear();
   }
 }
 
@@ -305,7 +318,7 @@ export function getCacheManager(config?: Partial<CacheConfig>): CacheManager {
  */
 export function resetCacheManager(): void {
   if (cacheManagerInstance) {
-    cacheManagerInstance.clear();
+    cacheManagerInstance.destroy();
   }
   cacheManagerInstance = null;
 }

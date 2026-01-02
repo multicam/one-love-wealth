@@ -2,17 +2,34 @@
 	import { onMount } from 'svelte';
 	import { Play, AlertCircle } from 'lucide-svelte';
 	import { toastStore } from '@one-love-wealth/shared-ui';
-	import { strategy } from '$lib/stores/strategy.svelte';
-	import { selectedStrategy } from '$lib/stores/strategy.svelte';
-	import { config } from '$lib/stores/config.svelte';
-	import { backtest } from '$lib/stores/backtest.svelte';
+	import { strategy } from '$lib/stores/strategy';
+	import { selectedStrategy } from '$lib/stores/strategy';
+	import { config } from '$lib/stores/config';
+	import { backtest, hasError } from '$lib/stores/backtest';
 	import { validateStrategyParams } from '$lib/strategies/types';
 	import { executeBacktest } from '$lib/services/backtest.service';
+	import type { StrategyDefinition } from '$lib/strategies/types';
+
+	// Local state synced from stores
+	let currentStrategy = $state<StrategyDefinition | null>(null);
+	let strategyState = $state<{ selectedStrategyId: string | null; params: Record<string, any> }>({ selectedStrategyId: null, params: {} });
+	let configState = $state<any>(null);
+	let backtestState = $state<any>(null);
+	let hasErrorState = $state(false);
+
+	$effect(() => {
+		const unsub1 = selectedStrategy.subscribe(value => { currentStrategy = value; });
+		const unsub2 = strategy.subscribe(value => { strategyState = value; });
+		const unsub3 = config.subscribe(value => { configState = value; });
+		const unsub4 = backtest.subscribe(value => { backtestState = value; });
+		const unsub5 = hasError.subscribe(value => { hasErrorState = value; });
+		return () => { unsub1(); unsub2(); unsub3(); unsub4(); unsub5(); };
+	});
 
 	// Listen for keyboard shortcut event
 	onMount(() => {
 		const handleRunEvent = () => {
-			if (isValid && !$backtest.isRunning) {
+			if (isValid && !backtestState?.isRunning) {
 				handleRunBacktest();
 			}
 		};
@@ -22,27 +39,27 @@
 	});
 
 	// Validation state
-	const validationErrors = $derived<string[]>(() => {
+	const validationErrors = $derived.by<string[]>(() => {
 		const errors: string[] = [];
 
 		// Check if strategy is selected
-		if (!$strategy.selectedStrategyId || !$selectedStrategy) {
+		if (!strategyState?.selectedStrategyId || !currentStrategy) {
 			errors.push('Please select a strategy');
 			return errors;
 		}
 
 		// Validate strategy parameters
-		const paramValidation = validateStrategyParams($selectedStrategy, $strategy.params);
+		const paramValidation = validateStrategyParams(currentStrategy, strategyState.params);
 		if (!paramValidation.valid) {
 			errors.push(...paramValidation.errors);
 		}
 
 		// Validate date range
-		if (!$config.dateRange.start || !$config.dateRange.end) {
+		if (!configState?.dateRange?.start || !configState?.dateRange?.end) {
 			errors.push('Date range is required');
 		} else {
-			const start = new Date($config.dateRange.start);
-			const end = new Date($config.dateRange.end);
+			const start = new Date(configState.dateRange.start);
+			const end = new Date(configState.dateRange.end);
 			if (start >= end) {
 				errors.push('Start date must be before end date');
 			}
@@ -54,7 +71,7 @@
 		}
 
 		// Validate initial capital
-		if (!$config.initialCapital || $config.initialCapital <= 0) {
+		if (!configState?.initialCapital || configState.initialCapital <= 0) {
 			errors.push('Initial capital must be greater than 0');
 		}
 
@@ -62,11 +79,11 @@
 	});
 
 	// Check if ready to run
-	const isValid = $derived(validationErrors().length === 0);
+	const isValid = $derived(validationErrors.length === 0);
 
 	// Handle run backtest
 	async function handleRunBacktest() {
-		if (!isValid || !$selectedStrategy) return;
+		if (!isValid || !currentStrategy) return;
 
 		try {
 			// Start backtest with loading state
@@ -75,12 +92,12 @@
 			// Execute backtest with progress tracking
 			const result = await executeBacktest(
 				{
-					strategy: $selectedStrategy,
-					strategyParams: $strategy.params,
-					dateRange: $config.dateRange,
-					interval: $config.interval,
-					initialCapital: $config.initialCapital,
-					gapFillStrategy: $config.gapFillStrategy,
+					strategy: currentStrategy,
+					strategyParams: strategyState.params,
+					dateRange: configState?.dateRange,
+					interval: configState?.interval,
+					initialCapital: configState?.initialCapital,
+					gapFillStrategy: configState?.gapFillStrategy,
 				},
 				(progress, message) => {
 					backtest.setProgress(progress);
@@ -91,8 +108,8 @@
 			// Set result in store with strategy info for history
 			backtest.setResult(
 				result,
-				$strategy.selectedStrategyId!,
-				$selectedStrategy!.name
+				strategyState.selectedStrategyId!,
+				currentStrategy!.name
 			);
 
 			// Show success toast
@@ -113,12 +130,12 @@
 	<button
 		type="button"
 		onclick={handleRunBacktest}
-		disabled={!isValid || $backtest.isRunning}
-		class="w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 {isValid && !$backtest.isRunning
+		disabled={!isValid || backtestState?.isRunning}
+		class="w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 {isValid && !backtestState?.isRunning
 			? 'bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20'
 			: 'bg-surface text-text-secondary cursor-not-allowed'}"
 	>
-		{#if $backtest.isRunning}
+		{#if backtestState?.isRunning}
 			<div class="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
 			<span>Running Backtest...</span>
 		{:else}
@@ -128,7 +145,7 @@
 	</button>
 
 	<!-- Validation Errors -->
-	{#if validationErrors().length > 0}
+	{#if validationErrors.length > 0}
 		<div class="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
 			<div class="flex items-start gap-2">
 				<AlertCircle size={16} class="text-red-500 flex-shrink-0 mt-0.5" />
@@ -137,7 +154,7 @@
 						Cannot run backtest:
 					</div>
 					<ul class="text-xs text-red-500/80 space-y-1">
-						{#each validationErrors() as error}
+						{#each validationErrors as error}
 							<li>• {error}</li>
 						{/each}
 					</ul>
@@ -147,23 +164,23 @@
 	{/if}
 
 	<!-- Progress Indicator -->
-	{#if $backtest.isRunning && $backtest.progress > 0}
+	{#if backtestState?.isRunning && backtestState?.progress > 0}
 		<div class="space-y-1">
 			<div class="flex justify-between text-xs text-text-secondary">
 				<span>Progress</span>
-				<span>{$backtest.progress}%</span>
+				<span>{backtestState.progress}%</span>
 			</div>
 			<div class="h-1 bg-background rounded-full overflow-hidden">
 				<div
 					class="h-full bg-primary transition-all duration-300"
-					style="width: {$backtest.progress}%"
+					style="width: {backtestState.progress}%"
 				></div>
 			</div>
 		</div>
 	{/if}
 
 	<!-- Error Display -->
-	{#if $backtest.hasError}
+	{#if hasErrorState}
 		<div class="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
 			<div class="flex items-start gap-2">
 				<AlertCircle size={16} class="text-red-500 flex-shrink-0 mt-0.5" />
@@ -172,7 +189,7 @@
 						Backtest failed:
 					</div>
 					<div class="text-xs text-red-500/80">
-						{$backtest.error}
+						{backtestState?.error}
 					</div>
 				</div>
 			</div>
@@ -180,7 +197,7 @@
 	{/if}
 
 	<!-- Keyboard Shortcut Hint -->
-	{#if isValid && !$backtest.isRunning}
+	{#if isValid && !backtestState?.isRunning}
 		<div class="text-xs text-text-secondary text-center">
 			Press <kbd
 				class="px-1.5 py-0.5 bg-background border border-border rounded text-text-primary font-mono"

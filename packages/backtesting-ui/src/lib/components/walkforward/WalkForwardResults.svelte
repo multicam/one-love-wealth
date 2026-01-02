@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { walkforward } from '$lib/stores/walkforward.svelte';
+  import { walkforward, hasResult } from '$lib/stores/walkforward';
   import WalkForwardTimeline from './WalkForwardTimeline.svelte';
   import WindowResults from './WindowResults.svelte';
   import EquityCurve from '../charts/EquityCurve.svelte';
-  import type { WalkForwardWindow } from '$lib/stores/walkforward.svelte';
+  import type { WalkForwardWindow } from '$lib/stores/walkforward';
 
   let activeTab = $state<'overview' | 'timeline' | 'windows' | 'equity'>('overview');
   let selectedWindow = $state<WalkForwardWindow | null>(null);
@@ -24,7 +24,7 @@
   }
 </script>
 
-{#if !$walkforward.hasResult}
+{#if !$hasResult}
   <div class="h-full flex flex-col items-center justify-center p-6">
     <svg
       class="w-16 h-16 text-text-tertiary mb-4"

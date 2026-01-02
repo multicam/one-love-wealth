@@ -45,6 +45,7 @@ export interface WalkForwardOutput {
 	config: WalkForwardConfig;
 	strategyId: string;
 	strategyName: string;
+	symbols?: string[]; // Optional symbols array
 	windows: WalkForwardWindow[];
 	aggregateInSample: WindowMetrics;
 	aggregateOutSample: WindowMetrics;
@@ -156,7 +157,7 @@ function createWalkForwardStore() {
 
 				if (strategyId && strategyName) {
 					const compressed: CompressedWalkForward = {
-						id: `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+						id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
 						timestamp: Date.now(),
 						strategyId,
 						strategyName,

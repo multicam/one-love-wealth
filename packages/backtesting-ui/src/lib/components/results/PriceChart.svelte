@@ -16,13 +16,13 @@
 	let lineSeries: ISeriesApi<'Line'> | null = null;
 
 	// Filter trades by symbol if specified
-	const filteredTrades = $derived(() => {
+	const filteredTrades = $derived.by(() => {
 		if (!symbol) return trades;
 		return trades.filter((t) => t.symbol === symbol);
 	});
 
 	// Get unique symbols
-	const symbols = $derived(() => {
+	const symbols = $derived.by(() => {
 		const unique = new Set(trades.map((t) => t.symbol));
 		return Array.from(unique).sort();
 	});
@@ -31,7 +31,7 @@
 
 	// Update selected symbol when symbols change
 	$effect(() => {
-		const syms = symbols();
+		const syms = symbols;
 		if (syms.length > 0 && !selectedSymbol) {
 			selectedSymbol = syms[0];
 		}

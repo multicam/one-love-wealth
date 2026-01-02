@@ -4,20 +4,20 @@
  */
 
 // Strategy store
-export { strategy } from './strategy.svelte';
+export { strategy } from './strategy';
 
 // Config store
-export { config } from './config.svelte';
+export { config } from './config';
 
 // Backtest store
-export { backtest } from './backtest.svelte';
+export { backtest } from './backtest';
 
 // Optimization store
-export { optimization } from './optimization.svelte';
+export { optimization } from './optimization';
 
 // UI store
-export { ui } from './ui.svelte';
-export type { AppMode } from './ui.svelte';
+export { ui } from './ui';
+export type { AppMode } from './ui';
 
 /**
  * Usage Examples:
@@ -29,9 +29,9 @@ export type { AppMode } from './ui.svelte';
  * ui.setMode('optimize');
  *
  * // Import specific stores
- * import { strategy } from '$lib/stores/strategy.svelte';
- * import { backtest } from '$lib/stores/backtest.svelte';
- * import { ui, type AppMode } from '$lib/stores/ui.svelte';
+ * import { strategy } from '$lib/stores/strategy';
+ * import { backtest } from '$lib/stores/backtest';
+ * import { ui, type AppMode } from '$lib/stores/ui';
  *
  * // Use in components
  * {#if backtest.isRunning}

@@ -4,12 +4,12 @@
     import AppHeader from '$lib/components/layout/AppHeader.svelte';
     import WalkForwardConfig from '$lib/components/walkforward/WalkForwardConfig.svelte';
     import WalkForwardResults from '$lib/components/walkforward/WalkForwardResults.svelte';
-    import { ui } from '$lib/stores/ui.svelte';
-    import { strategy } from '$lib/stores/strategy.svelte';
-    import { backtest } from '$lib/stores/backtest.svelte';
-    import { optimization } from '$lib/stores/optimization.svelte';
-    import { walkforward } from '$lib/stores/walkforward.svelte';
-    import { config } from '$lib/stores/config.svelte';
+    import { ui } from '$lib/stores/ui';
+    import { strategy } from '$lib/stores/strategy';
+    import { backtest } from '$lib/stores/backtest';
+    import { optimization } from '$lib/stores/optimization';
+    import { walkforward } from '$lib/stores/walkforward';
+    import { config } from '$lib/stores/config';
 
     // Svelte 5: use $effect for side effects
     $effect(() => {

@@ -122,7 +122,7 @@ export async function loadBacktestDataBySymbols(
 
   // Check cache first
   const cacheManager = getCacheManager();
-  const cached = await cacheManager.get(cacheKey);
+  const cached = cacheManager.get(cacheKey);
 
   if (cached) {
     // Return cached data

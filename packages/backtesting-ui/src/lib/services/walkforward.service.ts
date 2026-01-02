@@ -14,8 +14,8 @@ import type {
   WalkForwardOutput,
   WalkForwardWindow,
   WindowMetrics,
-} from '$lib/stores/walkforward.svelte';
-import { walkforward } from '$lib/stores/walkforward.svelte';
+} from '$lib/stores/walkforward';
+import { walkforward } from '$lib/stores/walkforward';
 
 // Local type definitions (temporary until types are properly exported)
 export type DateRange = { start: string; end: string };
@@ -44,16 +44,20 @@ export async function executeWalkForward(
   params: WalkForwardParams,
   onProgress?: ProgressCallback
 ): Promise<WalkForwardOutput> {
+  console.log('[walkforward] Starting analysis with params:', params);
+
   // Load historical data
   const historicalData = await fetchHistoricalData(
     params.symbols,
     params.dateRange,
     params.interval
   );
+  console.log('[walkforward] Historical data loaded');
 
   // Calculate windows
   const windows = calculateWindows(historicalData, params.wfConfig);
   const totalWindows = windows.length;
+  console.log(`[walkforward] Calculated ${totalWindows} windows`);
 
   walkforward.startAnalysis(totalWindows);
 
@@ -63,6 +67,7 @@ export async function executeWalkForward(
   // Analyze each window
   for (let i = 0; i < windows.length; i++) {
     const window = windows[i];
+    console.log(`[walkforward] Processing window ${i + 1}/${totalWindows}`);
 
     // 1. Optimize on in-sample data
     const inSampleData = window.inSampleData;
@@ -73,6 +78,7 @@ export async function executeWalkForward(
       params.initialCapital,
       params.gapFillStrategy
     );
+    console.log(`[walkforward] Window ${i + 1} optimization complete`);
 
     // 2. Test on in-sample (for comparison)
     const inSampleMetrics = await runBacktestOnData(
@@ -126,7 +132,12 @@ export async function executeWalkForward(
     if (onProgress) {
       onProgress(i + 1, totalWindows);
     }
+
+    // Add small delay to prevent blocking
+    await new Promise(resolve => setTimeout(resolve, 50));
   }
+
+  console.log('[walkforward] All windows processed');
 
   // Calculate aggregate metrics
   const aggregateInSample = calculateAggregateMetrics(
@@ -140,10 +151,17 @@ export async function executeWalkForward(
 
   const passFailStatus = averageDegradation < 20 ? 'pass' : 'fail';
 
-  return {
+  console.log('[walkforward] Analysis complete:', {
+    windowCount: analyzedWindows.length,
+    averageDegradation,
+    passFailStatus
+  });
+
+  const result = {
     config: params.wfConfig,
     strategyId: (params.strategy as any).id || 'unknown',
     strategyName: params.strategy.name,
+    symbols: params.symbols, // Add symbols to result
     windows: analyzedWindows,
     aggregateInSample,
     aggregateOutSample,
@@ -151,6 +169,9 @@ export async function executeWalkForward(
     passFailStatus,
     equityCurveStitched,
   };
+
+  console.log('[walkforward] Returning result');
+  return result;
 }
 
 /**
