@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, untrack } from "svelte";
   import {
     createChart,
     ColorType,
@@ -135,25 +135,27 @@
     // TODO: Implement markers using the new v5 API if needed
   }
 
-  // Watch for container and data - initialize chart when both are ready
+  // Initialize chart when container becomes available
   $effect(() => {
     const container = chartContainer;
+    if (container) {
+      untrack(() => {
+        if (!chart) {
+          initChart();
+        }
+      });
+    }
+  });
+
+  // Update data when it changes
+  $effect(() => {
     const eqLen = equityCurve.length;
     const trLen = trades.length;
-    
-    console.log('[EquityCurve] $effect - container:', !!container, 'chart:', !!chart, 'data:', eqLen);
-    
-    // Initialize chart when container is ready
-    if (container && !chart) {
-      console.log('[EquityCurve] Initializing chart');
-      initChart();
-    }
-    
-    // Update data when chart is ready and we have data
-    if (chart && lineSeries && eqLen > 0) {
-      console.log('[EquityCurve] Updating chart data');
-      updateChartData();
-    }
+    untrack(() => {
+      if (chart && lineSeries && eqLen > 0) {
+        updateChartData();
+      }
+    });
   });
 </script>
 

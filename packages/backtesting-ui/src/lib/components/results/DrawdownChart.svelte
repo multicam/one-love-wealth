@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount, onDestroy } from "svelte";
+	import { onMount, onDestroy, untrack } from "svelte";
 	import {
 		createChart,
 		ColorType,
@@ -144,19 +144,27 @@
 		}
 	}
 
+	// Initialize chart when container becomes available
 	$effect(() => {
 		const container = chartContainer;
+		if (container) {
+			untrack(() => {
+				if (!chart) {
+					initChart();
+				}
+			});
+		}
+	});
+
+	// Update data when it changes
+	$effect(() => {
 		const eqLen = equityCurve.length;
 		const vm = viewMode;
-		
-		// Initialize chart when container is ready
-		if (container && !chart) {
-			initChart();
-		}
-		// Update if chart is initialized
-		if (chart && eqLen > 0) {
-			updateChart();
-		}
+		untrack(() => {
+			if (chart && eqLen > 0) {
+				updateChart();
+			}
+		});
 	});
 
 	const maxDrawdown = $derived.by(() => {

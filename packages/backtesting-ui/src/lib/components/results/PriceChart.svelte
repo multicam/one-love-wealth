@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { onMount } from "svelte";
+	import { onMount, untrack } from "svelte";
 	import {
 		createChart,
 		ColorType,
@@ -142,18 +142,26 @@
 		// Note: Trade markers removed - setMarkers API changed in lightweight-charts v5
 	}
 
+	// Initialize chart when container becomes available
 	$effect(() => {
 		const container = chartContainer;
+		if (container) {
+			untrack(() => {
+				if (!chart) {
+					initChart();
+				}
+			});
+		}
+	});
+
+	// Update data when it changes
+	$effect(() => {
 		const dtLen = displayTrades.length;
-		
-		// Initialize chart when container is ready
-		if (container && !chart) {
-			initChart();
-		}
-		// Update if chart is initialized
-		if (chart && lineSeries && dtLen > 0) {
-			updateChartData();
-		}
+		untrack(() => {
+			if (chart && lineSeries && dtLen > 0) {
+				updateChartData();
+			}
+		});
 	});
 </script>
 
