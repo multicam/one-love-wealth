@@ -1,11 +1,11 @@
 <script lang="ts">
-    import { browser } from '$app/environment';
+    import { browser } from "$app/environment";
 
     // Props for slot content
     let { left, center, right } = $props();
 
     // Right panel state (Svelte 5 runes)
-    const STORAGE_KEY = 'backtesting-ui:right-panel-width';
+    const STORAGE_KEY = "backtesting-ui:right-panel-width";
     const DEFAULT_WIDTH = 320;
     const MIN_WIDTH = 280;
     const MAX_WIDTH = 500;
@@ -39,8 +39,8 @@
     function handleMouseDown(event: MouseEvent) {
         event.preventDefault();
         isDragging = true;
-        document.body.style.cursor = 'col-resize';
-        document.body.style.userSelect = 'none';
+        document.body.style.cursor = "col-resize";
+        document.body.style.userSelect = "none";
     }
 
     // Handle drag move
@@ -60,19 +60,19 @@
     // Handle drag end
     function handleMouseUp() {
         isDragging = false;
-        document.body.style.cursor = '';
-        document.body.style.userSelect = '';
+        document.body.style.cursor = "";
+        document.body.style.userSelect = "";
     }
 
     // Attach global event listeners for drag
     $effect(() => {
         if (browser) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener("mousemove", handleMouseMove);
+            window.addEventListener("mouseup", handleMouseUp);
 
             return () => {
-                window.removeEventListener('mousemove', handleMouseMove);
-                window.removeEventListener('mouseup', handleMouseUp);
+                window.removeEventListener("mousemove", handleMouseMove);
+                window.removeEventListener("mouseup", handleMouseUp);
             };
         }
     });
@@ -97,13 +97,30 @@
         aria-valuemin={MIN_WIDTH}
         aria-valuemax={MAX_WIDTH}
         aria-valuenow={rightPanelWidth}
+        tabindex="0"
         class="w-1 cursor-col-resize hover:bg-primary/50 active:bg-primary transition-colors relative group"
         class:bg-primary={isDragging}
         onmousedown={handleMouseDown}
+        onkeydown={(e) => {
+            if (e.key === "ArrowLeft") {
+                const newWidth = Math.min(MAX_WIDTH, rightPanelWidth + 10);
+                rightPanelWidth = newWidth;
+                saveWidth(newWidth);
+            }
+            if (e.key === "ArrowRight") {
+                const newWidth = Math.max(MIN_WIDTH, rightPanelWidth - 10);
+                rightPanelWidth = newWidth;
+                saveWidth(newWidth);
+            }
+        }}
     >
         <!-- Visual feedback on hover -->
-        <div class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-4 flex items-center justify-center">
-            <div class="w-0.5 h-8 bg-border group-hover:bg-primary/70 rounded-full transition-colors"></div>
+        <div
+            class="absolute inset-y-0 left-1/2 -translate-x-1/2 w-4 flex items-center justify-center"
+        >
+            <div
+                class="w-0.5 h-8 bg-border group-hover:bg-primary/70 rounded-full transition-colors"
+            ></div>
         </div>
     </div>
 

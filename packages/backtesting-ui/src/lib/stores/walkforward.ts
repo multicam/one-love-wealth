@@ -1,16 +1,9 @@
 /**
  * Walk-Forward Analysis Store
- *
- * Manages state for walk-forward analysis including:
- * - Window configuration (in-sample %, out-sample %, step size)
- * - Anchored vs Rolling mode
- * - Analysis execution state
- * - Results and history
- *
- * Uses traditional writable store pattern for reliable reactivity
+ * Manages state for walk-forward analysis
+ * Migrated to Svelte 5 Runes for better reactivity and performance
  */
 
-import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 
 export interface WalkForwardConfig {
@@ -65,187 +58,138 @@ interface CompressedWalkForward {
 	aggregateOutSample: WindowMetrics;
 }
 
-interface WalkForwardState {
-	config: WalkForwardConfig;
-	isRunning: boolean;
-	currentWindow: number;
-	totalWindows: number;
-	result: WalkForwardOutput | null;
-	error: string | null;
-	history: CompressedWalkForward[];
-}
-
-// Initial state
-const initialState: WalkForwardState = {
-	config: {
+class WalkForwardStore {
+	#config = $state<WalkForwardConfig>({
 		inSamplePercent: 60,
 		outSamplePercent: 40,
 		stepSizePercent: 20,
 		anchored: false,
-	},
-	isRunning: false,
-	currentWindow: 0,
-	totalWindows: 0,
-	result: null,
-	error: null,
-	history: [],
-};
+	});
+	#isRunning = $state<boolean>(false);
+	#currentWindow = $state<number>(0);
+	#totalWindows = $state<number>(0);
+	#result = $state<WalkForwardOutput | null>(null);
+	#error = $state<string | null>(null);
+	#history = $state<CompressedWalkForward[]>([]);
 
-function createWalkForwardStore() {
-	const { subscribe, set, update } = writable<WalkForwardState>(initialState);
+	constructor() {
+		this.loadHistory();
+	}
 
-	// Helper functions for history persistence
-	function saveHistory(history: CompressedWalkForward[]): void {
+	// Getters
+	get config() { return this.#config; }
+	get isRunning() { return this.#isRunning; }
+	get currentWindow() { return this.#currentWindow; }
+	get totalWindows() { return this.#totalWindows; }
+	get result() { return this.#result; }
+	get error() { return this.#error; }
+	get history() { return this.#history; }
+
+	// Derived state
+	get hasResult() { return this.#result !== null; }
+	get progress() {
+		return this.#totalWindows === 0
+			? 0
+			: (this.#currentWindow / this.#totalWindows) * 100;
+	}
+
+	// Actions
+	updateConfig(updates: Partial<WalkForwardConfig>) {
+		this.#config = { ...this.#config, ...updates };
+	}
+
+	resetConfig() {
+		this.#config = {
+			inSamplePercent: 60,
+			outSamplePercent: 40,
+			stepSizePercent: 20,
+			anchored: false,
+		};
+	}
+
+	startAnalysis(totalWindows: number) {
+		this.#isRunning = true;
+		this.#currentWindow = 0;
+		this.#totalWindows = totalWindows;
+		this.#error = null;
+	}
+
+	updateProgress(windowNumber: number) {
+		this.#currentWindow = windowNumber;
+	}
+
+	setResult(newResult: WalkForwardOutput, strategyId?: string, strategyName?: string) {
+		this.#isRunning = false;
+		this.#result = newResult;
+		this.#currentWindow = 0;
+		this.#totalWindows = 0;
+
+		if (strategyId && strategyName) {
+			const compressed: CompressedWalkForward = {
+				id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+				timestamp: Date.now(),
+				strategyId,
+				strategyName,
+				windowCount: newResult.windows.length,
+				averageDegradation: newResult.averageDegradation,
+				passFailStatus: newResult.passFailStatus,
+				aggregateOutSample: newResult.aggregateOutSample,
+			};
+
+			this.#history = [compressed, ...this.#history.slice(0, 9)];
+			this.saveHistory();
+		}
+	}
+
+	setError(errorMessage: string) {
+		this.#isRunning = false;
+		this.#error = errorMessage;
+		this.#currentWindow = 0;
+		this.#totalWindows = 0;
+	}
+
+	stopAnalysis() {
+		this.#isRunning = false;
+		this.#currentWindow = 0;
+		this.#totalWindows = 0;
+	}
+
+	clearResult() {
+		this.#result = null;
+		this.#error = null;
+		this.#currentWindow = 0;
+		this.#totalWindows = 0;
+	}
+
+	// History methods
+	clearHistory() {
+		this.#history = [];
+		this.saveHistory();
+	}
+
+	private saveHistory(): void {
 		if (!browser) return;
 		try {
-			localStorage.setItem('walkforward-history', JSON.stringify(history));
+			localStorage.setItem('walkforward-history', JSON.stringify(this.#history));
 		} catch (error) {
 			console.error('Failed to save walk-forward history to localStorage:', error);
 		}
 	}
 
-	return {
-		subscribe,
-
-		// Configuration methods
-		updateConfig: (updates: Partial<WalkForwardConfig>) => {
-			update((state) => ({
-				...state,
-				config: { ...state.config, ...updates },
-			}));
-		},
-
-		resetConfig: () => {
-			update((state) => ({
-				...state,
-				config: {
-					inSamplePercent: 60,
-					outSamplePercent: 40,
-					stepSizePercent: 20,
-					anchored: false,
-				},
-			}));
-		},
-
-		// Execution methods
-		startAnalysis: (totalWindows: number) => {
-			update((state) => ({
-				...state,
-				isRunning: true,
-				currentWindow: 0,
-				totalWindows,
-				error: null,
-			}));
-		},
-
-		updateProgress: (windowNumber: number) => {
-			update((state) => ({
-				...state,
-				currentWindow: windowNumber,
-			}));
-		},
-
-		setResult: (newResult: WalkForwardOutput, strategyId?: string, strategyName?: string) => {
-			update((state) => {
-				const newState = {
-					...state,
-					isRunning: false,
-					result: newResult,
-					currentWindow: 0,
-					totalWindows: 0,
-				};
-
-				if (strategyId && strategyName) {
-					const compressed: CompressedWalkForward = {
-						id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-						timestamp: Date.now(),
-						strategyId,
-						strategyName,
-						windowCount: newResult.windows.length,
-						averageDegradation: newResult.averageDegradation,
-						passFailStatus: newResult.passFailStatus,
-						aggregateOutSample: newResult.aggregateOutSample,
-					};
-
-					newState.history = [compressed, ...state.history.slice(0, 9)]; // Keep last 10
-					saveHistory(newState.history);
+	loadHistory(): void {
+		if (!browser) return;
+		try {
+			const stored = localStorage.getItem('walkforward-history');
+			if (stored) {
+				const history = JSON.parse(stored);
+				if (Array.isArray(history)) {
+					this.#history = history;
 				}
-
-				return newState;
-			});
-		},
-
-		setError: (errorMessage: string) => {
-			update((state) => ({
-				...state,
-				isRunning: false,
-				error: errorMessage,
-				currentWindow: 0,
-				totalWindows: 0,
-			}));
-		},
-
-		stopAnalysis: () => {
-			update((state) => ({
-				...state,
-				isRunning: false,
-				currentWindow: 0,
-				totalWindows: 0,
-			}));
-		},
-
-		clearResult: () => {
-			update((state) => ({
-				...state,
-				result: null,
-				error: null,
-				currentWindow: 0,
-				totalWindows: 0,
-			}));
-		},
-
-		// History methods
-		loadHistoryItem: (id: string) => {
-			// TODO: Implement full result loading from localStorage
-			// For now, this is a placeholder
-			console.log(`Loading walk-forward history item: ${id}`);
-		},
-
-		clearHistory: () => {
-			update((state) => {
-				const newState = { ...state, history: [] };
-				saveHistory(newState.history);
-				return newState;
-			});
-		},
-
-		loadHistory: () => {
-			if (!browser) return;
-			try {
-				const stored = localStorage.getItem('walkforward-history');
-				if (stored) {
-					const history = JSON.parse(stored);
-					if (Array.isArray(history)) {
-						update((state) => ({
-							...state,
-							history,
-						}));
-					}
-				}
-			} catch (error) {
-				console.error('Failed to load walk-forward history from localStorage:', error);
 			}
-		},
-	};
+		} catch (error) {
+			console.error('Failed to load walk-forward history from localStorage:', error);
+		}
+	}
 }
 
-// Export store instance
-export const walkforward = createWalkForwardStore();
-
-// Derived stores for convenient access
-export const hasResult = derived(walkforward, ($walkforward) => $walkforward.result !== null);
-export const progress = derived(walkforward, ($walkforward) =>
-	$walkforward.totalWindows === 0
-		? 0
-		: ($walkforward.currentWindow / $walkforward.totalWindows) * 100
-);
+export const walkforward = new WalkForwardStore();

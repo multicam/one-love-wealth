@@ -1,142 +1,118 @@
 /**
  * Strategy Store
  * Manages selected strategy and its parameters
- * Uses traditional writable store pattern for reliable reactivity
- * Persists to localStorage automatically
+ * Migrated to Svelte 5 Runes for better reactivity and performance
  */
 
-import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { StrategyDefinition } from '$lib/strategies/types';
 import { getStrategy } from '$lib/strategies';
 
 const STORAGE_KEY = 'backtest-strategy';
 
-interface StrategyState {
-	selectedStrategyId: string | null;
-	params: Record<string, any>;
-}
-
 // Initial state
-const initialState: StrategyState = {
-	selectedStrategyId: null,
-	params: {},
-};
+const initialSelectedId = null;
+const initialParams = {};
 
-function createStrategyStore() {
-	const { subscribe, set, update } = writable<StrategyState>(initialState);
+class StrategyStore {
+	#selectedStrategyId = $state<string | null>(initialSelectedId);
+	#params = $state<Record<string, any>>(initialParams);
 
-	// Helper function for persistence
-	function save(state: StrategyState): void {
+	constructor() {
+		this.load();
+	}
+
+	// Getters
+	get selectedStrategyId() {
+		return this.#selectedStrategyId;
+	}
+
+	get params() {
+		return this.#params;
+	}
+
+	// Derived state
+	get selectedStrategy() {
+		return this.#selectedStrategyId ? getStrategy(this.#selectedStrategyId) : null;
+	}
+
+	get hasStrategy() {
+		return this.#selectedStrategyId !== null;
+	}
+
+	get isReady() {
+		return this.#selectedStrategyId !== null && Object.keys(this.#params).length > 0;
+	}
+
+	// Actions
+	selectStrategy(strategyId: string) {
+		const strategyDef = getStrategy(strategyId);
+		this.#selectedStrategyId = strategyId;
+		this.#params = strategyDef ? { ...strategyDef.defaults } : {};
+		this.save();
+	}
+
+	updateParam(key: string, value: any) {
+		this.#params[key] = value;
+		this.save();
+	}
+
+	updateParams(newParams: Record<string, any>) {
+		this.#params = { ...this.#params, ...newParams };
+		this.save();
+	}
+
+	resetParams() {
+		const strategyDef = this.#selectedStrategyId ? getStrategy(this.#selectedStrategyId) : null;
+		this.#params = strategyDef ? { ...strategyDef.defaults } : {};
+		this.save();
+	}
+
+	clearStrategy() {
+		this.#selectedStrategyId = null;
+		this.#params = {};
+		this.save();
+	}
+
+	// Persistence
+	private save(): void {
 		if (!browser) return;
-
 		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+			localStorage.setItem(STORAGE_KEY, JSON.stringify({
+				selectedStrategyId: this.#selectedStrategyId,
+				params: this.#params
+			}));
 		} catch (error) {
 			console.error('Failed to save strategy to localStorage:', error);
 		}
 	}
 
-	return {
-		subscribe,
+	public load(): void {
+		if (!browser) return;
+		try {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (!stored) return;
 
-		// Actions
-		selectStrategy: (strategyId: string) => {
-			update((state) => {
-				const strategy = getStrategy(strategyId);
-				const newState = {
-					selectedStrategyId: strategyId,
-					params: strategy ? { ...strategy.defaults } : {},
-				};
-				save(newState);
-				return newState;
-			});
-		},
-
-		updateParam: (key: string, value: any) => {
-			update((state) => {
-				const newState = {
-					...state,
-					params: { ...state.params, [key]: value },
-				};
-				save(newState);
-				return newState;
-			});
-		},
-
-		updateParams: (newParams: Record<string, any>) => {
-			update((state) => {
-				const newState = {
-					...state,
-					params: { ...state.params, ...newParams },
-				};
-				save(newState);
-				return newState;
-			});
-		},
-
-		resetParams: () => {
-			update((state) => {
-				const strategy = state.selectedStrategyId ? getStrategy(state.selectedStrategyId) : null;
-				const newState = {
-					...state,
-					params: strategy ? { ...strategy.defaults } : {},
-				};
-				save(newState);
-				return newState;
-			});
-		},
-
-		clearStrategy: () => {
-			const newState = {
-				selectedStrategyId: null,
-				params: {},
-			};
-			save(newState);
-			set(newState);
-		},
-
-		// Persistence
-		load: () => {
-			if (!browser) return;
-
-			try {
-				const stored = localStorage.getItem(STORAGE_KEY);
-				if (!stored) return;
-
-				const state = JSON.parse(stored);
-
-				// Validate and restore state
-				if (state.selectedStrategyId) {
-					// Verify strategy still exists
-					const strategy = getStrategy(state.selectedStrategyId);
-					if (strategy) {
-						const newState = {
-							selectedStrategyId: state.selectedStrategyId,
-							params:
-								state.params && Object.keys(state.params).length > 0
-									? state.params
-									: { ...strategy.defaults },
-						};
-						set(newState);
-					}
+			const state = JSON.parse(stored);
+			if (state.selectedStrategyId) {
+				const strategyDef = getStrategy(state.selectedStrategyId);
+				if (strategyDef) {
+					this.#selectedStrategyId = state.selectedStrategyId;
+					this.#params = (state.params && Object.keys(state.params).length > 0)
+						? state.params
+						: { ...strategyDef.defaults };
 				}
-			} catch (error) {
-				console.error('Failed to load strategy from localStorage:', error);
 			}
-		},
-	};
+		} catch (error) {
+			console.error('Failed to load strategy from localStorage:', error);
+		}
+	}
 }
 
-// Export store instance
-export const strategy = createStrategyStore();
+// Export a single instance of the store
+export const strategy = new StrategyStore();
 
-// Derived stores for convenient access
-export const selectedStrategy = derived(strategy, ($strategy) =>
-	$strategy.selectedStrategyId ? getStrategy($strategy.selectedStrategyId) : null
-);
-export const hasStrategy = derived(strategy, ($strategy) => $strategy.selectedStrategyId !== null);
-export const isReady = derived(
-	strategy,
-	($strategy) => $strategy.selectedStrategyId !== null && Object.keys($strategy.params).length > 0
-);
+// Compatibility exports
+export const selectedStrategyId = { get value() { return strategy.selectedStrategyId; } };
+export const params = { get value() { return strategy.params; } };
+export const selectedStrategy = { get value() { return strategy.selectedStrategy; } };

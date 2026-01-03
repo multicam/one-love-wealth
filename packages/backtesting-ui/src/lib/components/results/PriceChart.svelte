@@ -1,7 +1,16 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { createChart, ColorType, type IChartApi, type ISeriesApi, type LineData } from 'lightweight-charts';
-	import type { Trade } from '@one-love-wealth/backtesting';
+	import { onMount } from "svelte";
+	import {
+		createChart,
+		ColorType,
+		LineSeries,
+		type IChartApi,
+		type ISeriesApi,
+		type LineData,
+		type SeriesMarker,
+		type Time,
+	} from "lightweight-charts";
+	import type { Trade } from "@one-love-wealth/backtesting";
 
 	interface Props {
 		trades: Trade[];
@@ -11,120 +20,130 @@
 
 	let { trades, height = 400, symbol }: Props = $props();
 
-	let chartContainer: HTMLDivElement;
+	let chartContainer = $state<HTMLDivElement>();
 	let chart: IChartApi | null = null;
-	let lineSeries: ISeriesApi<'Line'> | null = null;
+	let lineSeries: ISeriesApi<"Line"> | null = null;
 
-	// Filter trades by symbol if specified
-	const filteredTrades = $derived.by(() => {
-		if (!symbol) return trades;
-		return trades.filter((t) => t.symbol === symbol);
+	// Get unique symbols for the selector (if no symbol prop is provided)
+	let uniqueSymbols = $derived.by(() => {
+		const list = Array.from(new Set(trades.map((t) => t.symbol))).sort();
+		return list;
 	});
 
-	// Get unique symbols
-	const symbols = $derived.by(() => {
-		const unique = new Set(trades.map((t) => t.symbol));
-		return Array.from(unique).sort();
-	});
+	let selectedSymbol = $state<string>("");
 
-	let selectedSymbol = $state<string>('');
-
-	// Update selected symbol when symbols change
+	// Update selected symbol when trades change
 	$effect(() => {
-		const syms = symbols;
-		if (syms.length > 0 && !selectedSymbol) {
-			selectedSymbol = syms[0];
+		if (uniqueSymbols.length > 0 && !selectedSymbol && !symbol) {
+			selectedSymbol = uniqueSymbols[0];
 		}
+	});
+
+	// Filtered trades for display
+	let displayTrades = $derived.by(() => {
+		const sym = symbol || selectedSymbol;
+		if (!sym) return [];
+		return trades.filter((t) => t.symbol === sym);
 	});
 
 	// Initialize chart
 	onMount(() => {
 		if (!chartContainer) return;
 
-		// Create chart
 		chart = createChart(chartContainer, {
 			layout: {
-				background: { type: ColorType.Solid, color: 'transparent' },
-				textColor: '#9ca3af',
+				background: { type: ColorType.Solid, color: "transparent" },
+				textColor: "#9ca3af",
+				fontFamily: "Inter, system-ui, sans-serif",
 			},
 			grid: {
-				vertLines: { color: '#2a2e39' },
-				horzLines: { color: '#2a2e39' },
+				vertLines: { color: "#2a2e39", style: 1 },
+				horzLines: { color: "#2a2e39", style: 1 },
 			},
 			width: chartContainer.clientWidth,
 			height: height,
 			timeScale: {
 				timeVisible: true,
 				secondsVisible: false,
+				borderColor: "#374151",
+			},
+			rightPriceScale: {
+				borderColor: "#374151",
 			},
 			crosshair: {
 				mode: 1,
 			},
 		});
 
-		// Create line series
-		lineSeries = chart.addLineSeries({
-			color: '#8b5cf6',
+		lineSeries = chart.addSeries(LineSeries, {
+			color: "#8b5cf6",
 			lineWidth: 2,
 			priceFormat: {
-				type: 'price',
+				type: "price",
 				precision: 2,
 				minMove: 0.01,
 			},
 		});
 
-		// Handle resize
-		const handleResize = () => {
-			if (chart && chartContainer) {
-				chart.applyOptions({ width: chartContainer.clientWidth });
+		updateChartData();
+
+		const resizeObserver = new ResizeObserver((entries) => {
+			if (entries.length === 0 || !chart) return;
+			chart.applyOptions({ width: entries[0].contentRect.width });
+		});
+		resizeObserver.observe(chartContainer);
+
+		return () => {
+			resizeObserver.disconnect();
+			if (chart) {
+				chart.remove();
+				chart = null;
 			}
 		};
-
-		window.addEventListener('resize', handleResize);
-
-		// Cleanup
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
 	});
 
-	// Cleanup chart on unmount
-	onDestroy(() => {
-		if (chart) {
-			chart.remove();
-		}
-	});
-
-	// Update chart when data changes
-	$effect(() => {
-		if (!lineSeries) return;
-
-		const displayTrades = symbol ? trades.filter((t) => t.symbol === symbol) :
-			trades.filter((t) => t.symbol === selectedSymbol);
-
-		if (displayTrades.length === 0) {
-			lineSeries.setData([]);
+	function updateChartData() {
+		if (!lineSeries || !displayTrades.length) {
+			if (lineSeries) lineSeries.setData([]);
 			return;
 		}
 
-		// Create price points from trades
+		// Convert data to chart format
+		// Note: We use trade prices as a proxy for the price curve
 		const priceData: LineData[] = displayTrades.map((trade) => ({
-			time: Math.floor(trade.timestamp / 1000) as any,
+			time: Math.floor(trade.timestamp / 1000) as Time,
 			value: trade.price,
 		}));
 
-		lineSeries.setData(priceData);
+		priceData.sort((a, b) => (a.time as number) - (b.time as number));
+
+		// Remote duplicates for same timestamp
+		const uniqueData = priceData.filter(
+			(val, index, self) =>
+				index === 0 || val.time !== self[index - 1].time,
+		);
+
+		lineSeries.setData(uniqueData);
 
 		// Add trade markers
-		const markers = displayTrades.map((trade) => ({
-			time: Math.floor(trade.timestamp / 1000) as any,
-			position: trade.side === 'buy' ? ('belowBar' as const) : ('aboveBar' as const),
-			color: trade.side === 'buy' ? '#10b981' : '#ef4444',
-			shape: trade.side === 'buy' ? ('arrowUp' as const) : ('arrowDown' as const),
-			text: `${trade.side.toUpperCase()} @ ${trade.price.toFixed(2)}`,
-		}));
+		const markers: SeriesMarker<Time>[] = displayTrades
+			.filter((t) => t.timestamp)
+			.map((trade) => ({
+				time: Math.floor(trade.timestamp / 1000) as Time,
+				position: trade.side === "buy" ? "belowBar" : "aboveBar",
+				color: trade.side === "buy" ? "#10b981" : "#ef4444",
+				shape: trade.side === "buy" ? "arrowUp" : "arrowDown",
+				text: `${trade.side.toUpperCase()} @ ${trade.price.toFixed(2)}`,
+			}));
 
-		lineSeries.setMarkers(markers);
+		markers.sort((a, b) => (a.time as number) - (b.time as number));
+		(lineSeries as any).setMarkers(markers);
+	}
+
+	$effect(() => {
+		if (displayTrades) {
+			updateChartData();
+		}
 	});
 </script>
 
@@ -132,16 +151,25 @@
 	<!-- Chart Header -->
 	<div class="flex items-center justify-between">
 		<div class="flex items-center gap-3">
-			<h3 class="text-sm font-semibold text-text-primary">Trade Prices</h3>
-			{#if !symbol && symbols().length > 1}
+			<h3 class="text-sm font-semibold text-text-primary">
+				Trade Prices
+			</h3>
+			{#if !symbol && uniqueSymbols.length > 1}
 				<select
 					bind:value={selectedSymbol}
-					class="px-2 py-1 text-xs bg-surface border border-border rounded text-text-primary focus:outline-none focus:border-primary"
+					class="px-2 py-1 text-xs bg-surface border border-border rounded text-text-primary outline-none focus:border-primary"
 				>
-					{#each symbols() as sym}
+					{#each uniqueSymbols as sym}
 						<option value={sym}>{sym}</option>
 					{/each}
 				</select>
+			{/if}
+			{#if symbol || selectedSymbol}
+				<span
+					class="text-xs font-medium text-primary px-2 py-0.5 bg-primary/10 rounded"
+				>
+					{symbol || selectedSymbol}
+				</span>
 			{/if}
 		</div>
 		<div class="flex items-center gap-4 text-xs text-text-secondary">
@@ -161,13 +189,27 @@
 	</div>
 
 	<!-- Chart Container -->
-	<div class="bg-surface rounded-lg border border-border p-4">
-		<div bind:this={chartContainer} style="width: 100%; height: {height}px;"></div>
+	<div
+		class="bg-surface-primary rounded-xl border border-border overflow-hidden p-1 shadow-sm relative"
+	>
+		<div bind:this={chartContainer} class="w-full"></div>
+
+		{#if displayTrades.length === 0}
+			<div
+				class="absolute inset-0 flex items-center justify-center bg-surface/50 pointer-events-none"
+			>
+				<p class="text-sm text-text-secondary">
+					No trade data for this symbol
+				</p>
+			</div>
+		{/if}
 	</div>
 
-	<!-- Note about limitations -->
-	<div class="text-xs text-text-secondary bg-surface/30 rounded-lg p-3 border border-border/50">
-		<strong>Note:</strong> This chart shows trade execution prices. Full OHLCV candlestick data will be available
-		once the data-layer integration is complete.
+	<div
+		class="text-xs text-text-secondary bg-surface/30 rounded-lg p-3 border border-border/50"
+	>
+		<strong>Note:</strong> This chart displays individual trade execution points.
+		Full historical price data (candlesticks) will be integrated from the data-layer
+		in a future update.
 	</div>
 </div>

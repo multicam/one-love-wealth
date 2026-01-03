@@ -1,12 +1,12 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { browser } from '$app/environment';
-    import AppHeader from './AppHeader.svelte';
-    import StrategyList from '$lib/components/strategy/StrategyList.svelte';
-    import ErrorBoundary from '$lib/components/common/ErrorBoundary.svelte';
+    import { onMount } from "svelte";
+    import { browser } from "$app/environment";
+    import AppHeader from "./AppHeader.svelte";
+    import StrategyList from "$lib/components/strategy/StrategyList.svelte";
+    import ErrorBoundary from "$lib/components/common/ErrorBoundary.svelte";
 
     // Right panel width state
-    const STORAGE_KEY = 'backtesting-ui:right-panel-width';
+    const STORAGE_KEY = "backtesting-ui:right-panel-width";
     const DEFAULT_WIDTH = 320;
     const MIN_WIDTH = 280;
     const MAX_WIDTH = 500;
@@ -49,18 +49,18 @@
 
     $effect(() => {
         if (browser) {
-            window.addEventListener('mousemove', handleMouseMove);
-            window.addEventListener('mouseup', handleMouseUp);
+            window.addEventListener("mousemove", handleMouseMove);
+            window.addEventListener("mouseup", handleMouseUp);
             return () => {
-                window.removeEventListener('mousemove', handleMouseMove);
-                window.removeEventListener('mouseup', handleMouseUp);
+                window.removeEventListener("mousemove", handleMouseMove);
+                window.removeEventListener("mouseup", handleMouseUp);
             };
         }
     });
 
     interface Props {
-        centerContent: import('svelte').Snippet;
-        rightContent: import('svelte').Snippet;
+        centerContent: import("svelte").Snippet;
+        rightContent: import("svelte").Snippet;
     }
 
     let { centerContent, rightContent }: Props = $props();
@@ -73,7 +73,9 @@
     <!-- Three-Column Layout -->
     <div class="flex-1 flex overflow-hidden bg-background">
         <!-- Left Column: Strategy List -->
-        <div class="w-[200px] flex-shrink-0 border-r border-border overflow-y-auto">
+        <div
+            class="w-[200px] flex-shrink-0 border-r border-border overflow-y-auto"
+        >
             <ErrorBoundary name="Strategy List">
                 <StrategyList />
             </ErrorBoundary>
@@ -86,6 +88,8 @@
 
         <!-- Drag Handle -->
         <div
+            role="separator"
+            aria-label="Resize right panel"
             class="w-1 cursor-col-resize hover:bg-primary/50 transition-colors"
             class:bg-primary={isDragging}
             onmousedown={handleMouseDown}

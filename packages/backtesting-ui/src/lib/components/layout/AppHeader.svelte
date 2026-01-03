@@ -77,7 +77,7 @@
     <!-- Right Section: Loading Indicator & Settings -->
     <div class="flex items-center gap-4">
         <!-- Global Loading Indicator -->
-        {#if $backtest.isRunning || $optimization.isRunning || $walkforward.isRunning}
+        {#if backtest.isRunning || optimization.isRunning || walkforward.isRunning}
             <div class="flex items-center gap-2 text-sm text-text-secondary">
                 <Spinner size={16} />
                 <span>Processing...</span>

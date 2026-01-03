@@ -1,7 +1,17 @@
 <script lang="ts">
-	import { onMount, onDestroy } from 'svelte';
-	import { createChart, ColorType, type IChartApi, type ISeriesApi, type LineData, type AreaData } from 'lightweight-charts';
-	import type { EquityPoint } from '@one-love-wealth/backtesting';
+	import { onMount, onDestroy } from "svelte";
+	import {
+		createChart,
+		ColorType,
+		LineSeries,
+		AreaSeries,
+		type IChartApi,
+		type ISeriesApi,
+		type LineData,
+		type AreaData,
+		type Time,
+	} from "lightweight-charts";
+	import type { EquityPoint } from "@one-love-wealth/backtesting";
 
 	interface Props {
 		equityCurve: EquityPoint[];
@@ -10,65 +20,63 @@
 
 	let { equityCurve, height = 400 }: Props = $props();
 
-	let chartContainer: HTMLDivElement;
+	let chartContainer = $state<HTMLDivElement>();
 	let chart: IChartApi | null = null;
-	let lineSeries: ISeriesApi<'Line'> | null = null;
-	let areaSeries: ISeriesApi<'Area'> | null = null;
+	let lineSeries: ISeriesApi<"Line"> | null = null;
+	let areaSeries: ISeriesApi<"Area"> | null = null;
 
-	let viewMode = $state<'overlay' | 'separate'>('overlay');
+	let viewMode = $state<"overlay" | "separate">("overlay");
 
 	// Initialize chart
 	onMount(() => {
 		if (!chartContainer) return;
 
-		// Create chart
 		chart = createChart(chartContainer, {
 			layout: {
-				background: { type: ColorType.Solid, color: 'transparent' },
-				textColor: '#9ca3af',
+				background: { type: ColorType.Solid, color: "transparent" },
+				textColor: "#9ca3af",
+				fontFamily: "Inter, system-ui, sans-serif",
 			},
 			grid: {
-				vertLines: { color: '#2a2e39' },
-				horzLines: { color: '#2a2e39' },
+				vertLines: { color: "#2a2e39", style: 1 },
+				horzLines: { color: "#2a2e39", style: 1 },
 			},
 			width: chartContainer.clientWidth,
 			height: height,
 			timeScale: {
 				timeVisible: true,
 				secondsVisible: false,
+				borderColor: "#374151",
+			},
+			rightPriceScale: {
+				borderColor: "#374151",
 			},
 			crosshair: {
 				mode: 1,
 			},
 		});
 
-		// Handle resize
-		const handleResize = () => {
-			if (chart && chartContainer) {
-				chart.applyOptions({ width: chartContainer.clientWidth });
+		updateChart();
+
+		const resizeObserver = new ResizeObserver((entries) => {
+			if (entries.length === 0 || !chart) return;
+			chart.applyOptions({ width: entries[0].contentRect.width });
+		});
+		resizeObserver.observe(chartContainer);
+
+		return () => {
+			resizeObserver.disconnect();
+			if (chart) {
+				chart.remove();
+				chart = null;
 			}
 		};
-
-		window.addEventListener('resize', handleResize);
-
-		// Cleanup
-		return () => {
-			window.removeEventListener('resize', handleResize);
-		};
 	});
 
-	// Cleanup chart on unmount
-	onDestroy(() => {
-		if (chart) {
-			chart.remove();
-		}
-	});
-
-	// Update chart when data or view mode changes
-	$effect(() => {
+	function updateChart() {
 		if (!chart) return;
 
-		// Remove existing series
+		// Clear existing
 		if (lineSeries) {
 			chart.removeSeries(lineSeries);
 			lineSeries = null;
@@ -78,78 +86,65 @@
 			areaSeries = null;
 		}
 
-		if (viewMode === 'overlay') {
-			// Overlay mode: equity line + drawdown area
-			lineSeries = chart.addLineSeries({
-				color: '#3b82f6',
+		if (viewMode === "overlay") {
+			lineSeries = chart.addSeries(LineSeries, {
+				color: "#34d399",
 				lineWidth: 2,
-				priceFormat: {
-					type: 'price',
-					precision: 2,
-					minMove: 0.01,
-				},
+				priceFormat: { type: "price", precision: 2, minMove: 0.01 },
 			});
 
-			areaSeries = chart.addAreaSeries({
-				topColor: 'rgba(239, 68, 68, 0.4)',
-				bottomColor: 'rgba(239, 68, 68, 0.1)',
-				lineColor: 'rgba(239, 68, 68, 0.8)',
+			areaSeries = chart.addSeries(AreaSeries, {
+				topColor: "rgba(239, 68, 68, 0.4)",
+				bottomColor: "rgba(239, 68, 68, 0.05)",
+				lineColor: "rgba(239, 68, 68, 0.8)",
 				lineWidth: 1,
-				priceFormat: {
-					type: 'percent',
-					precision: 2,
-				},
+				priceFormat: { type: "percent", precision: 2 },
 			});
 
-			// Set equity data
-			const equityData: LineData[] = equityCurve.map((point) => ({
-				time: Math.floor(point.time / 1000) as any,
-				value: point.equity,
+			const equityData: LineData[] = equityCurve.map((p) => ({
+				time: Math.floor(p.time / 1000) as Time,
+				value: p.equity,
 			}));
 			lineSeries.setData(equityData);
 
-			// Set drawdown data (as percentage, negative values)
-			const drawdownData: AreaData[] = equityCurve.map((point) => ({
-				time: Math.floor(point.time / 1000) as any,
-				value: point.drawdownPercent, // Already negative from 0 to -1
+			const drawdownData: AreaData[] = equityCurve.map((p) => ({
+				time: Math.floor(p.time / 1000) as Time,
+				value: p.drawdownPercent * 100, // Use percent for overlay
 			}));
 			areaSeries.setData(drawdownData);
 		} else {
-			// Separate mode: only drawdown area
-			areaSeries = chart.addAreaSeries({
-				topColor: 'rgba(239, 68, 68, 0.05)',
-				bottomColor: 'rgba(239, 68, 68, 0.4)',
-				lineColor: 'rgba(239, 68, 68, 0.8)',
+			areaSeries = chart.addSeries(AreaSeries, {
+				topColor: "rgba(239, 68, 68, 0.05)",
+				bottomColor: "rgba(239, 68, 68, 0.4)",
+				lineColor: "rgba(239, 68, 68, 0.8)",
 				lineWidth: 2,
-				priceFormat: {
-					type: 'percent',
-					precision: 2,
-				},
+				priceFormat: { type: "percent", precision: 2 },
 			});
 
-			// Set drawdown data (invert for better visualization)
-			const drawdownData: AreaData[] = equityCurve.map((point) => ({
-				time: Math.floor(point.time / 1000) as any,
-				value: point.drawdownPercent, // Negative values show as depth
+			const drawdownData: AreaData[] = equityCurve.map((p) => ({
+				time: Math.floor(p.time / 1000) as Time,
+				value: p.drawdownPercent * 100,
 			}));
 			areaSeries.setData(drawdownData);
 		}
+	}
+
+	$effect(() => {
+		if (viewMode || equityCurve) {
+			updateChart();
+		}
 	});
 
-	// Calculate max drawdown info
 	const maxDrawdown = $derived.by(() => {
-		if (equityCurve.length === 0) return { percent: 0, date: '' };
-
+		if (equityCurve.length === 0) return { percent: 0, date: "" };
 		let maxDD = 0;
 		let maxDDTime = 0;
-
 		for (const point of equityCurve) {
 			if (point.drawdownPercent < maxDD) {
 				maxDD = point.drawdownPercent;
 				maxDDTime = point.time;
 			}
 		}
-
 		return {
 			percent: maxDD,
 			date: new Date(maxDDTime).toLocaleDateString(),
@@ -160,9 +155,10 @@
 <div class="space-y-3">
 	<!-- Chart Header -->
 	<div class="flex items-center justify-between">
-		<h3 class="text-sm font-semibold text-text-primary">Drawdown Analysis</h3>
+		<h3 class="text-sm font-semibold text-text-primary">
+			Drawdown Analysis
+		</h3>
 		<div class="flex items-center gap-4">
-			<!-- Max Drawdown Info -->
 			{#if equityCurve.length > 0}
 				<div class="text-xs text-text-secondary">
 					<span class="font-medium text-red-500">
@@ -172,55 +168,60 @@
 				</div>
 			{/if}
 
-			<!-- View Mode Toggle -->
-			<div class="flex items-center gap-2 bg-surface/50 rounded-lg p-1 border border-border">
+			<div
+				class="flex items-center gap-1 bg-surface-tertiary rounded-lg p-0.5 border border-border"
+			>
 				<button
 					type="button"
-					onclick={() => (viewMode = 'overlay')}
-					class="px-3 py-1 text-xs font-medium rounded transition-colors {viewMode === 'overlay'
-						? 'bg-primary text-white'
+					onclick={() => (viewMode = "overlay")}
+					class="px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded transition-all {viewMode ===
+					'overlay'
+						? 'bg-primary text-white shadow-sm'
 						: 'text-text-secondary hover:text-text-primary'}"
 				>
 					Overlay
 				</button>
 				<button
 					type="button"
-					onclick={() => (viewMode = 'separate')}
-					class="px-3 py-1 text-xs font-medium rounded transition-colors {viewMode === 'separate'
-						? 'bg-primary text-white'
+					onclick={() => (viewMode = "separate")}
+					class="px-2.5 py-1 text-[10px] uppercase tracking-wider font-bold rounded transition-all {viewMode ===
+					'separate'
+						? 'bg-primary text-white shadow-sm'
 						: 'text-text-secondary hover:text-text-primary'}"
 				>
-					Separate
+					Depth
 				</button>
 			</div>
 		</div>
 	</div>
 
-	<!-- Chart Container -->
-	<div class="bg-surface rounded-lg border border-border p-4">
-		<div bind:this={chartContainer} style="width: 100%; height: {height}px;"></div>
+	<div
+		class="bg-surface-primary rounded-xl border border-border overflow-hidden p-1 shadow-sm relative"
+	>
+		<div bind:this={chartContainer} class="w-full"></div>
+
+		{#if equityCurve.length === 0}
+			<div
+				class="absolute inset-0 flex items-center justify-center bg-surface/50 pointer-events-none"
+			>
+				<p class="text-sm text-text-secondary">
+					No drawdown data available
+				</p>
+			</div>
+		{/if}
 	</div>
 
 	<!-- Legend -->
 	<div class="flex items-center gap-6 text-xs text-text-secondary">
-		{#if viewMode === 'overlay'}
+		{#if viewMode === "overlay"}
 			<div class="flex items-center gap-1.5">
-				<div class="w-3 h-0.5 bg-blue-500"></div>
+				<div class="w-3 h-0.5 bg-emerald-400"></div>
 				<span>Equity</span>
 			</div>
 		{/if}
 		<div class="flex items-center gap-1.5">
 			<div class="w-3 h-2 bg-red-500/40"></div>
 			<span>Drawdown</span>
-		</div>
-		<div class="text-xs text-text-secondary ml-auto">
-			<span>
-				{#if viewMode === 'overlay'}
-					Showing equity curve with drawdown overlay
-				{:else}
-					Showing drawdown depth from peak
-				{/if}
-			</span>
 		</div>
 	</div>
 </div>

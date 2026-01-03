@@ -1,43 +1,33 @@
 <script lang="ts">
-	import { RotateCcw, ChevronDown, ChevronUp, Settings } from 'lucide-svelte';
-	import { strategy, selectedStrategy } from '$lib/stores/strategy';
-	import FieldRenderer from './FieldRenderer.svelte';
-	import BacktestConfig from '$lib/components/config/BacktestConfig.svelte';
-	import RunBacktestButton from '$lib/components/backtest/RunBacktestButton.svelte';
-	import RecentResults from '$lib/components/results/RecentResults.svelte';
-	import type { StrategyField, StrategyDefinition } from '$lib/strategies/types';
+	import { RotateCcw, ChevronDown, ChevronUp, Settings } from "lucide-svelte";
+	import { strategy } from "$lib/stores/strategy";
+	import FieldRenderer from "./FieldRenderer.svelte";
+	import BacktestConfig from "$lib/components/config/BacktestConfig.svelte";
+	import RunBacktestButton from "$lib/components/backtest/RunBacktestButton.svelte";
+	import RecentResults from "$lib/components/results/RecentResults.svelte";
+	import type { StrategyField } from "$lib/strategies/types";
 
 	// Show/hide advanced parameters
 	let showAdvanced = $state(false);
 	// Show/hide backtest config
 	let showConfig = $state(false);
 
-	// Local reactive state synced from stores
-	let currentStrategy = $state<StrategyDefinition | null>(null);
-	let params = $state<Record<string, any>>({});
-
-	// Sync store values to local state
-	$effect(() => {
-		const unsubStrategy = selectedStrategy.subscribe(value => {
-			currentStrategy = value;
-		});
-		const unsubParams = strategy.subscribe(value => {
-			params = value.params;
-		});
-		return () => {
-			unsubStrategy();
-			unsubParams();
-		};
-	});
+	// Derived state synced from strategy store
+	const currentStrategy = $derived(strategy.selectedStrategy);
+	const params = $derived(strategy.params);
 
 	// Get visible fields (showByDefault !== false)
 	const visibleFields = $derived(
-		currentStrategy?.fields.filter((f: StrategyField) => f.showByDefault !== false) ?? []
+		currentStrategy?.fields.filter(
+			(f: StrategyField) => f.showByDefault !== false,
+		) ?? [],
 	);
 
 	// Get advanced fields (showByDefault === false)
 	const advancedFields = $derived(
-		currentStrategy?.fields.filter((f: StrategyField) => f.showByDefault === false) ?? []
+		currentStrategy?.fields.filter(
+			(f: StrategyField) => f.showByDefault === false,
+		) ?? [],
 	);
 
 	// Check if current params match recommended preset
@@ -70,7 +60,9 @@
 		<!-- Header -->
 		<div class="p-4 border-b border-border">
 			<div class="flex items-center justify-between mb-3">
-				<h2 class="text-lg font-semibold text-text-primary">Parameters</h2>
+				<h2 class="text-lg font-semibold text-text-primary">
+					Parameters
+				</h2>
 
 				<!-- Reset to Recommended Button -->
 				{#if !isUsingRecommended}
@@ -88,10 +80,18 @@
 
 			<!-- Preset Badge -->
 			{#if currentStrategy.preset}
-				<div class="flex items-center gap-2 text-xs text-text-secondary">
-					<span class="w-2 h-2 rounded-full {isUsingRecommended ? 'bg-green-500' : 'bg-orange-500'}"></span>
+				<div
+					class="flex items-center gap-2 text-xs text-text-secondary"
+				>
+					<span
+						class="w-2 h-2 rounded-full {isUsingRecommended
+							? 'bg-green-500'
+							: 'bg-orange-500'}"
+					></span>
 					<span>
-						{isUsingRecommended ? 'Using recommended preset' : 'Custom parameters'}
+						{isUsingRecommended
+							? "Using recommended preset"
+							: "Custom parameters"}
 					</span>
 				</div>
 			{/if}
@@ -131,7 +131,8 @@
 								<FieldRenderer
 									{field}
 									value={params[field.key]}
-									onUpdate={(val) => handleFieldUpdate(field.key, val)}
+									onUpdate={(val) =>
+										handleFieldUpdate(field.key, val)}
 								/>
 							{/each}
 						</div>
@@ -142,7 +143,9 @@
 			<!-- Preset Information -->
 			{#if currentStrategy.preset}
 				<div class="pt-4 mt-4 border-t border-border">
-					<div class="bg-primary/5 rounded-lg p-3 border border-primary/20">
+					<div
+						class="bg-primary/5 rounded-lg p-3 border border-primary/20"
+					>
 						<h3 class="text-xs font-semibold text-primary mb-2">
 							💡 About These Defaults
 						</h3>

@@ -14,7 +14,8 @@
 | Phase 2: Optimize | 18 | 20-25h | ✅ Complete |
 | Phase 3: Walk-Forward | 15 | 15-20h | ✅ Complete |
 | Phase 4: Polish | 10 | 12-15h | ✅ Complete |
-| **TOTAL** | **71** | **73-91h** | **100%** |
+| Phase 5: Svelte 5 | 8 | 10h | ✅ Complete |
+| **TOTAL** | **79** | **83-101h** | **100%** |
 
 ---
 
@@ -1177,6 +1178,29 @@
 
 ---
 
+## Phase 5: Svelte 5 Modernization (10h)
+
+### 5.1: Store Migration
+- [x] Migrate `backtest.ts` to Svelte 5 Runes ($state, $derived)
+- [x] Migrate `strategy.ts` to Svelte 5 Runes
+- [x] Migrate `optimization.ts` to Svelte 5 Runes
+- [x] Migrate `walkforward.ts` to Svelte 5 Runes
+- [x] Migrate `config.ts` to Svelte 5 Runes
+
+### 5.2: Component Refactor
+- [x] Update all components to use direct store access (removing manual subscriptions)
+- [x] Refactor `EquityCurve`, `PriceChart`, `DrawdownChart` to use `lightweight-charts` v5 API
+- [x] Implement Svelte 5 Snippets and Render tags for flexible layouts
+- [x] Resolve 200+ TypeScript and Lint errors arising from Svelte 5 / TS 5 migration
+
+**Acceptance Criteria:**
+- No legacy `.subscribe` calls in components
+- All charts use modern v5 API
+- Full type safety for store access
+- Responsive and performant reactivity via Runes
+
+---
+
 ## Progress Tracking
 
 Update this section as tasks complete:
@@ -1186,8 +1210,9 @@ Phase 1: [███████████████████████�
 Phase 2: [██████████████████] 18/18 (100%)
 Phase 3: [███████████████] 15/15 (100%)
 Phase 4: [██████████] 10/10 (100%)
+Phase 5: [████████] 8/8 (100%)
 
-Overall: [██████████████████████████████] 71/71 (100%)
+Overall: [██████████████████████████████] 79/79 (100%)
 ```
 
 ---

@@ -3,52 +3,15 @@
 	import { Play, AlertCircle } from "lucide-svelte";
 	import { toastStore, Spinner } from "@one-love-wealth/shared-ui";
 	import { strategy } from "$lib/stores/strategy";
-	import { selectedStrategy } from "$lib/stores/strategy";
 	import { config } from "$lib/stores/config";
-	import { backtest, hasError } from "$lib/stores/backtest";
+	import { backtest } from "$lib/stores/backtest";
 	import { validateStrategyParams } from "$lib/strategies/types";
 	import { executeBacktest } from "$lib/services/backtest.service";
-	import type { StrategyDefinition } from "$lib/strategies/types";
-
-	// Local state synced from stores
-	let currentStrategy = $state<StrategyDefinition | null>(null);
-	let strategyState = $state<{
-		selectedStrategyId: string | null;
-		params: Record<string, any>;
-	}>({ selectedStrategyId: null, params: {} });
-	let configState = $state<any>(null);
-	let backtestState = $state<any>(null);
-	let hasErrorState = $state(false);
-
-	$effect(() => {
-		const unsub1 = selectedStrategy.subscribe((value) => {
-			currentStrategy = value;
-		});
-		const unsub2 = strategy.subscribe((value) => {
-			strategyState = value;
-		});
-		const unsub3 = config.subscribe((value) => {
-			configState = value;
-		});
-		const unsub4 = backtest.subscribe((value) => {
-			backtestState = value;
-		});
-		const unsub5 = hasError.subscribe((value) => {
-			hasErrorState = value;
-		});
-		return () => {
-			unsub1();
-			unsub2();
-			unsub3();
-			unsub4();
-			unsub5();
-		};
-	});
 
 	// Listen for keyboard shortcut event
 	onMount(() => {
 		const handleRunEvent = () => {
-			if (isValid && !backtestState?.isRunning) {
+			if (isValid && !backtest.isRunning) {
 				handleRunBacktest();
 			}
 		};
@@ -62,26 +25,26 @@
 		const errors: string[] = [];
 
 		// Check if strategy is selected
-		if (!strategyState?.selectedStrategyId || !currentStrategy) {
+		if (!strategy.selectedStrategyId || !strategy.selectedStrategy) {
 			errors.push("Please select a strategy");
 			return errors;
 		}
 
 		// Validate strategy parameters
 		const paramValidation = validateStrategyParams(
-			currentStrategy,
-			strategyState.params,
+			strategy.selectedStrategy,
+			strategy.params,
 		);
 		if (!paramValidation.valid) {
 			errors.push(...paramValidation.errors);
 		}
 
 		// Validate date range
-		if (!configState?.dateRange?.start || !configState?.dateRange?.end) {
+		if (!config.dateRange?.start || !config.dateRange?.end) {
 			errors.push("Date range is required");
 		} else {
-			const start = new Date(configState.dateRange.start);
-			const end = new Date(configState.dateRange.end);
+			const start = config.dateRange.start;
+			const end = config.dateRange.end;
 			if (start >= end) {
 				errors.push("Start date must be before end date");
 			}
@@ -94,7 +57,7 @@
 		}
 
 		// Validate initial capital
-		if (!configState?.initialCapital || configState.initialCapital <= 0) {
+		if (!config.initialCapital || config.initialCapital <= 0) {
 			errors.push("Initial capital must be greater than 0");
 		}
 
@@ -106,7 +69,7 @@
 
 	// Handle run backtest
 	async function handleRunBacktest() {
-		if (!isValid || !currentStrategy) return;
+		if (!isValid || !strategy.selectedStrategy) return;
 
 		try {
 			// Start backtest with loading state
@@ -115,24 +78,23 @@
 			// Execute backtest with progress tracking
 			const result = await executeBacktest(
 				{
-					strategy: currentStrategy,
-					strategyParams: strategyState.params,
-					dateRange: configState?.dateRange,
-					interval: configState?.interval,
-					initialCapital: configState?.initialCapital,
-					gapFillStrategy: configState?.gapFillStrategy,
+					strategy: strategy.selectedStrategy,
+					strategyParams: strategy.params,
+					dateRange: config.dateRange,
+					interval: config.interval,
+					initialCapital: config.initialCapital,
+					gapFillStrategy: config.gapFillStrategy,
 				},
-				(progress, message) => {
+				(progress, _message) => {
 					backtest.setProgress(progress);
-					// Could show message in UI if desired
 				},
 			);
 
 			// Set result in store with strategy info for history
 			backtest.setResult(
 				result,
-				strategyState.selectedStrategyId!,
-				currentStrategy!.name,
+				strategy.selectedStrategyId!,
+				strategy.selectedStrategy.name,
 			);
 
 			// Show success toast
@@ -156,13 +118,13 @@
 	<button
 		type="button"
 		onclick={handleRunBacktest}
-		disabled={!isValid || backtestState?.isRunning}
+		disabled={!isValid || backtest.isRunning}
 		class="w-full px-4 py-3 rounded-lg font-medium transition-all flex items-center justify-center gap-2 {isValid &&
-		!backtestState?.isRunning
+		!backtest.isRunning
 			? 'bg-primary text-white hover:bg-primary/90 shadow-lg shadow-primary/20'
 			: 'bg-surface text-text-secondary cursor-not-allowed'}"
 	>
-		{#if backtestState?.isRunning}
+		{#if backtest.isRunning}
 			<Spinner size={20} color="white" />
 			<span>Running Backtest...</span>
 		{:else}
@@ -194,23 +156,23 @@
 	{/if}
 
 	<!-- Progress Indicator -->
-	{#if backtestState?.isRunning && backtestState?.progress > 0}
+	{#if backtest.isRunning && backtest.progress > 0}
 		<div class="space-y-1">
 			<div class="flex justify-between text-xs text-text-secondary">
 				<span>Progress</span>
-				<span>{backtestState.progress}%</span>
+				<span>{backtest.progress}%</span>
 			</div>
 			<div class="h-1 bg-background rounded-full overflow-hidden">
 				<div
 					class="h-full bg-primary transition-all duration-300"
-					style="width: {backtestState.progress}%"
+					style="width: {backtest.progress}%"
 				></div>
 			</div>
 		</div>
 	{/if}
 
 	<!-- Error Display -->
-	{#if hasErrorState}
+	{#if backtest.hasError}
 		<div class="bg-red-500/10 border border-red-500/20 rounded-lg p-3">
 			<div class="flex items-start gap-2">
 				<AlertCircle
@@ -222,7 +184,7 @@
 						Backtest failed:
 					</div>
 					<div class="text-xs text-red-500/80">
-						{backtestState?.error}
+						{backtest.error}
 					</div>
 				</div>
 			</div>
@@ -230,7 +192,7 @@
 	{/if}
 
 	<!-- Keyboard Shortcut Hint -->
-	{#if isValid && !backtestState?.isRunning}
+	{#if isValid && !backtest.isRunning}
 		<div class="text-xs text-text-secondary text-center">
 			Press <kbd
 				class="px-1.5 py-0.5 bg-background border border-border rounded text-text-primary font-mono"

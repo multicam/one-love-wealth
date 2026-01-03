@@ -1,37 +1,37 @@
 <script lang="ts">
-	import { Search, Info } from 'lucide-svelte';
-	import { strategy, selectedStrategy } from '$lib/stores/strategy';
-	import { STRATEGIES } from '$lib/strategies/registry';
-	import type { StrategyDefinition } from '$lib/strategies/types';
-	import StrategyDescription from './StrategyDescription.svelte';
+	import { Search, Info } from "lucide-svelte";
+	import { strategy } from "$lib/stores/strategy";
+	import { STRATEGIES } from "$lib/strategies/registry";
+	import type { StrategyDefinition } from "$lib/strategies/types";
+	import StrategyDescription from "./StrategyDescription.svelte";
 
 	// Search state
-	let searchQuery = $state('');
+	let searchQuery = $state("");
 
 	// Modal state
 	let showDescriptionModal = $state(false);
-	let selectedStrategyForDescription = $state<StrategyDefinition | null>(null);
+	let selectedStrategyForDescription = $state<StrategyDefinition | null>(
+		null,
+	);
 
 	// Group strategies by category
-	const categoryOrder = ['trend', 'momentum', 'mean-reversion', 'volatility', 'multi-symbol'];
+	const categoryOrder = [
+		"trend",
+		"momentum",
+		"mean-reversion",
+		"volatility",
+		"multi-symbol",
+	];
 	const categoryLabels: Record<string, string> = {
-		trend: 'Trend Following',
-		momentum: 'Momentum',
-		'mean-reversion': 'Mean Reversion',
-		volatility: 'Volatility',
-		'multi-symbol': 'Multi-Symbol',
+		trend: "Trend Following",
+		momentum: "Momentum",
+		"mean-reversion": "Mean Reversion",
+		volatility: "Volatility",
+		"multi-symbol": "Multi-Symbol",
 	};
 
-	// Local reactive state synced from store
-	let currentStrategy = $state<StrategyDefinition | null>(null);
-
-	// Sync store to local state
-	$effect(() => {
-		const unsub = selectedStrategy.subscribe(value => {
-			currentStrategy = value;
-		});
-		return unsub;
-	});
+	// Reactive state from store
+	const currentStrategy = $derived(strategy.selectedStrategy);
 
 	// Filtered and grouped strategies
 	const groupedStrategies = $derived.by(() => {
@@ -40,13 +40,13 @@
 
 		// Filter by search query
 		const filtered =
-			q === ''
+			q === ""
 				? allStrategies
 				: allStrategies.filter(
 						(s) =>
 							s.name.toLowerCase().includes(q) ||
 							s.description.toLowerCase().includes(q) ||
-							s.tags?.some((t) => t.toLowerCase().includes(q))
+							s.tags?.some((t) => t.toLowerCase().includes(q)),
 					);
 
 		// Group by category
@@ -64,7 +64,10 @@
 	}
 
 	// Handle info button click
-	function showDescription(strategyDef: StrategyDefinition, event: MouseEvent | KeyboardEvent) {
+	function showDescription(
+		strategyDef: StrategyDefinition,
+		event: MouseEvent | KeyboardEvent,
+	) {
 		event.stopPropagation(); // Prevent triggering the select action
 		selectedStrategyForDescription = strategyDef;
 		showDescriptionModal = true;
@@ -78,7 +81,7 @@
 
 	// Keyboard handler for modal
 	function handleKeydown(event: KeyboardEvent) {
-		if (event.key === 'Escape' && showDescriptionModal) {
+		if (event.key === "Escape" && showDescriptionModal) {
 			closeModal();
 		}
 	}
@@ -93,7 +96,9 @@
 
 		<!-- Search Input -->
 		<div class="relative">
-			<div class="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary">
+			<div
+				class="absolute left-3 top-1/2 -translate-y-1/2 text-text-secondary"
+			>
 				<Search size={16} />
 			</div>
 			<input
@@ -112,24 +117,33 @@
 			{#if strategiesInCategory.length > 0}
 				<div class="py-3">
 					<!-- Category Header -->
-					<div class="px-4 py-1 text-xs font-semibold text-text-secondary uppercase tracking-wide">
+					<div
+						class="px-4 py-1 text-xs font-semibold text-text-secondary uppercase tracking-wide"
+					>
 						{categoryLabels[category]}
 					</div>
 
 					<!-- Strategies -->
 					{#each strategiesInCategory as strategyDef}
-						{@const isSelected = currentStrategy?.id === strategyDef.id}
+						{@const isSelected =
+							currentStrategy?.id === strategyDef.id}
 						<button
 							type="button"
-							class="w-full px-4 py-3 text-left hover:bg-surface transition-colors group relative {isSelected ? 'bg-primary/10 border-l-2 border-primary' : ''}"
+							class="w-full px-4 py-3 text-left hover:bg-surface transition-colors group relative {isSelected
+								? 'bg-primary/10 border-l-2 border-primary'
+								: ''}"
 							onclick={() => selectStrategy(strategyDef.id)}
 						>
 							<div class="flex items-start justify-between gap-2">
 								<div class="flex-1 min-w-0">
-									<div class="font-medium text-sm text-text-primary mb-1">
+									<div
+										class="font-medium text-sm text-text-primary mb-1"
+									>
 										{strategyDef.name}
 									</div>
-									<div class="text-xs text-text-secondary line-clamp-2">
+									<div
+										class="text-xs text-text-secondary line-clamp-2"
+									>
 										{strategyDef.description}
 									</div>
 								</div>
@@ -139,9 +153,13 @@
 									role="button"
 									tabindex="0"
 									class="flex-shrink-0 w-6 h-6 rounded flex items-center justify-center text-text-secondary hover:text-primary hover:bg-surface transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 cursor-pointer"
-									onclick={(e) => showDescription(strategyDef, e)}
+									onclick={(e) =>
+										showDescription(strategyDef, e)}
 									onkeydown={(e) => {
-										if (e.key === 'Enter' || e.key === ' ') {
+										if (
+											e.key === "Enter" ||
+											e.key === " "
+										) {
 											e.preventDefault();
 											showDescription(strategyDef, e);
 										}
@@ -173,7 +191,9 @@
 		<!-- No Results -->
 		{#if Object.values(groupedStrategies).every((arr) => arr.length === 0)}
 			<div class="p-8 text-center">
-				<div class="text-text-secondary text-sm mb-2">No strategies found</div>
+				<div class="text-text-secondary text-sm mb-2">
+					No strategies found
+				</div>
 				<div class="text-text-secondary text-xs">
 					Try adjusting your search query
 				</div>
@@ -184,5 +204,8 @@
 
 <!-- Strategy Description Modal -->
 {#if showDescriptionModal && selectedStrategyForDescription}
-	<StrategyDescription strategy={selectedStrategyForDescription} onClose={closeModal} />
+	<StrategyDescription
+		strategy={selectedStrategyForDescription}
+		onClose={closeModal}
+	/>
 {/if}

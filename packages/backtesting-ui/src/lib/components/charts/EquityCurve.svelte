@@ -1,149 +1,179 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import * as d3 from 'd3';
+  import { onMount, onDestroy } from "svelte";
+  import {
+    createChart,
+    ColorType,
+    LineSeries,
+    type IChartApi,
+    type ISeriesApi,
+    type LineData,
+    type SeriesMarker,
+    type Time,
+  } from "lightweight-charts";
+  import type { EquityPoint, Trade } from "@one-love-wealth/backtesting";
 
   interface Props {
-    data: Array<{ date: string; value: number }>;
+    equityCurve: EquityPoint[];
+    trades?: Trade[];
+    height?: number;
+    title?: string;
   }
 
-  let { data }: Props = $props();
+  let {
+    equityCurve,
+    trades = [],
+    height = 400,
+    title = "Portfolio Equity",
+  }: Props = $props();
 
-  let container = $state<HTMLDivElement>();
+  let chartContainer = $state<HTMLDivElement>();
+  let chart: IChartApi | null = null;
+  let lineSeries: ISeriesApi<"Line"> | null = null;
 
-  // Re-render when data changes
-  $effect(() => {
-    if (container && data.length > 0) {
-      renderChart();
-    }
-  });
-
+  // Initialize chart
   onMount(() => {
-    if (container && data.length > 0) {
-      renderChart();
-    }
+    if (!chartContainer) return;
+
+    // Create chart
+    chart = createChart(chartContainer, {
+      layout: {
+        background: { type: ColorType.Solid, color: "transparent" },
+        textColor: "#9ca3af",
+        fontFamily: "Inter, system-ui, sans-serif",
+      },
+      grid: {
+        vertLines: { color: "#2a2e39", style: 1 },
+        horzLines: { color: "#2a2e39", style: 1 },
+      },
+      width: chartContainer.clientWidth,
+      height: height,
+      timeScale: {
+        timeVisible: true,
+        secondsVisible: false,
+        borderColor: "#374151",
+      },
+      rightPriceScale: {
+        borderColor: "#374151",
+      },
+      crosshair: {
+        mode: 1, // Normal
+      },
+    });
+
+    // Create series using v5 addSeries API
+    lineSeries = chart.addSeries(LineSeries, {
+      color: "#34d399",
+      lineWidth: 2,
+      priceFormat: {
+        type: "price",
+        precision: 2,
+        minMove: 0.01,
+      },
+    });
+
+    updateChartData();
+
+    // Handle resize
+    const resizeObserver = new ResizeObserver((entries) => {
+      if (entries.length === 0 || !chart) return;
+      const { width } = entries[0].contentRect;
+      chart.applyOptions({ width });
+    });
+
+    resizeObserver.observe(chartContainer);
+
+    // Cleanup
+    return () => {
+      resizeObserver.disconnect();
+      if (chart) {
+        chart.remove();
+        chart = null;
+      }
+    };
   });
 
-  function renderChart() {
-    if (!container) return;
+  // Function to update data and markers
+  function updateChartData() {
+    if (!lineSeries || !equityCurve.length) return;
 
-    // Clear existing
-    d3.select(container).selectAll('*').remove();
-
-    const margin = { top: 20, right: 30, bottom: 40, left: 60 };
-    const width = container.clientWidth - margin.left - margin.right;
-    const height = 400 - margin.top - margin.bottom;
-
-    const svg = d3
-      .select(container)
-      .append('svg')
-      .attr('width', container.clientWidth)
-      .attr('height', 400)
-      .append('g')
-      .attr('transform', `translate(${margin.left},${margin.top})`);
-
-    // Parse dates
-    const parsedData = data.map((d) => ({
-      date: new Date(d.date),
-      value: d.value,
+    // Convert data to chart format
+    const chartData: LineData[] = equityCurve.map((point) => ({
+      time: Math.floor(point.time / 1000) as Time,
+      value: point.equity,
     }));
 
-    // Scales
-    const xScale = d3
-      .scaleTime()
-      .domain(d3.extent(parsedData, (d) => d.date) as [Date, Date])
-      .range([0, width]);
+    // Data must be sorted by time
+    chartData.sort((a, b) => (a.time as number) - (b.time as number));
 
-    const yScale = d3
-      .scaleLinear()
-      .domain([0, d3.max(parsedData, (d) => d.value)!])
-      .nice()
-      .range([height, 0]);
+    // Remove duplicates
+    const uniqueData = chartData.filter(
+      (val, index, self) => index === 0 || val.time !== self[index - 1].time,
+    );
 
-    // Axes
-    const xAxis = d3
-      .axisBottom(xScale)
-      .ticks(6)
-      .tickFormat(d3.timeFormat('%Y-%m') as any);
+    lineSeries.setData(uniqueData);
 
-    const yAxis = d3
-      .axisLeft(yScale)
-      .ticks(6)
-      .tickFormat((d) => `$${d3.format(',.0f')(d as number)}`);
+    // Add trade markers if available
+    if (trades && trades.length > 0) {
+      const markers: SeriesMarker<Time>[] = trades
+        .filter((t) => t.timestamp) // Ensure timestamp exists
+        .map((trade) => ({
+          time: Math.floor(trade.timestamp / 1000) as Time,
+          position: trade.side === "buy" ? "belowBar" : "aboveBar",
+          color: trade.side === "buy" ? "#10b981" : "#ef4444",
+          shape: trade.side === "buy" ? "arrowUp" : "arrowDown",
+          text: `${trade.side.toUpperCase()} ${trade.symbol}`,
+        }));
 
-    svg
-      .append('g')
-      .attr('transform', `translate(0,${height})`)
-      .call(xAxis)
-      .selectAll('text')
-      .style('fill', '#9CA3AF')
-      .style('font-size', '11px');
-
-    svg.append('g').call(yAxis).selectAll('text').style('fill', '#9CA3AF').style('font-size', '11px');
-
-    // Grid lines
-    svg
-      .append('g')
-      .attr('class', 'grid')
-      .call(d3.axisLeft(yScale).ticks(6).tickSize(-width).tickFormat(() => ''))
-      .style('stroke', '#374151')
-      .style('stroke-opacity', 0.1)
-      .style('stroke-dasharray', '2,2');
-
-    // Line generator
-    const line = d3
-      .line<{ date: Date; value: number }>()
-      .x((d) => xScale(d.date))
-      .y((d) => yScale(d.value))
-      .curve(d3.curveMonotoneX);
-
-    // Draw line
-    svg
-      .append('path')
-      .datum(parsedData)
-      .attr('fill', 'none')
-      .attr('stroke', '#10B981')
-      .attr('stroke-width', 2)
-      .attr('d', line);
-
-    // Add dots
-    svg
-      .selectAll('circle')
-      .data(parsedData)
-      .enter()
-      .append('circle')
-      .attr('cx', (d) => xScale(d.date))
-      .attr('cy', (d) => yScale(d.value))
-      .attr('r', 3)
-      .attr('fill', '#10B981')
-      .append('title')
-      .text((d) => `${d.date.toISOString().split('T')[0]}: $${d.value.toFixed(2)}`);
-
-    // Labels
-    svg
-      .append('text')
-      .attr('x', width / 2)
-      .attr('y', height + 35)
-      .attr('text-anchor', 'middle')
-      .style('fill', '#9CA3AF')
-      .style('font-size', '12px')
-      .text('Date');
-
-    svg
-      .append('text')
-      .attr('transform', 'rotate(-90)')
-      .attr('x', -height / 2)
-      .attr('y', -45)
-      .attr('text-anchor', 'middle')
-      .style('fill', '#9CA3AF')
-      .style('font-size', '12px')
-      .text('Equity Value');
+      // Markers must also be sorted
+      markers.sort((a, b) => (a.time as number) - (b.time as number));
+      (lineSeries as any).setMarkers(markers);
+    }
   }
+
+  // React to data changes
+  $effect(() => {
+    if (equityCurve || trades) {
+      updateChartData();
+    }
+  });
 </script>
 
-<div bind:this={container} class="w-full"></div>
+<div class="space-y-3">
+  {#if title}
+    <div class="flex items-center justify-between">
+      <h3 class="text-sm font-semibold text-text-primary">{title}</h3>
+      {#if equityCurve.length > 0}
+        <div class="flex items-center gap-4 text-xs text-text-secondary">
+          <div class="flex items-center gap-1.5">
+            <div class="w-3 h-0.5 bg-emerald-400"></div>
+            <span>Equity</span>
+          </div>
+          {#if trades.length > 0}
+            <div class="flex items-center gap-1.5">
+              <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+              <span>Buy</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-2 h-2 bg-red-500 rounded-full"></div>
+              <span>Sell</span>
+            </div>
+          {/if}
+        </div>
+      {/if}
+    </div>
+  {/if}
 
-{#if data.length === 0}
-  <div class="h-96 flex items-center justify-center bg-surface-secondary rounded-lg">
-    <p class="text-sm text-text-secondary">No equity curve data available</p>
+  <div
+    class="bg-surface-primary rounded-xl border border-border overflow-hidden p-1 shadow-sm"
+  >
+    <div bind:this={chartContainer} class="w-full"></div>
   </div>
-{/if}
+
+  {#if equityCurve.length === 0}
+    <div
+      class="absolute inset-0 flex items-center justify-center bg-surface/50 rounded-xl pointer-events-none"
+    >
+      <p class="text-sm text-text-secondary">No equity curve data available</p>
+    </div>
+  {/if}
+</div>

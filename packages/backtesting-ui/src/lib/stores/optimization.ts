@@ -1,10 +1,9 @@
 /**
  * Optimization Store
  * Manages optimization execution state and results
- * Uses traditional writable store pattern for reliable reactivity
+ * Migrated to Svelte 5 Runes for better reactivity and performance
  */
 
-import { writable, derived } from 'svelte/store';
 import { browser } from '$app/environment';
 import type { OptimizationOutput } from '@one-love-wealth/backtesting';
 
@@ -23,205 +22,154 @@ interface CompressedOptimization {
 	totalResults: number;
 }
 
-interface OptimizationState {
-	result: OptimizationOutput | null;
-	isRunning: boolean;
-	error: string | null;
-	progress: number; // 0-100
-	currentIteration: number;
-	totalIterations: number;
-	paramRanges: Record<string, { min: number; max: number; step: number }>;
-	history: CompressedOptimization[];
-}
+class OptimizationStore {
+	#result = $state<OptimizationOutput | null>(null);
+	#isRunning = $state<boolean>(false);
+	#error = $state<string | null>(null);
+	#progress = $state<number>(0);
+	#currentIteration = $state<number>(0);
+	#totalIterations = $state<number>(0);
+	#paramRanges = $state<Record<string, { min: number; max: number; step: number }>>({});
+	#history = $state<CompressedOptimization[]>([]);
 
-// Initial state
-const initialState: OptimizationState = {
-	result: null,
-	isRunning: false,
-	error: null,
-	progress: 0,
-	currentIteration: 0,
-	totalIterations: 0,
-	paramRanges: {},
-	history: [],
-};
+	constructor() {
+		this.loadHistory();
+	}
 
-function createOptimizationStore() {
-	const { subscribe, set, update } = writable<OptimizationState>(initialState);
+	// Getters
+	get result() { return this.#result; }
+	get isRunning() { return this.#isRunning; }
+	get error() { return this.#error; }
+	get progress() { return this.#progress; }
+	get currentIteration() { return this.#currentIteration; }
+	get totalIterations() { return this.#totalIterations; }
+	get paramRanges() { return this.#paramRanges; }
+	get history() { return this.#history; }
 
-	// Helper functions for history persistence
-	function saveHistory(history: CompressedOptimization[]): void {
+	// Derived state
+	get hasResult() { return this.#result !== null; }
+	get hasError() { return this.#error !== null; }
+	get bestParams() { return this.#result?.bestResult?.params ?? null; }
+	get allResults() { return this.#result?.allResults ?? []; }
+	get progressPercent() {
+		return this.#totalIterations > 0
+			? Math.round((this.#currentIteration / this.#totalIterations) * 100)
+			: 0;
+	}
+
+	// Actions
+	startOptimization(
+		ranges: Record<string, { min: number; max: number; step: number }>,
+		iterations: number
+	) {
+		this.#isRunning = true;
+		this.#error = null;
+		this.#progress = 0;
+		this.#currentIteration = 0;
+		this.#totalIterations = iterations;
+		this.#paramRanges = ranges;
+	}
+
+	updateProgress(iteration: number) {
+		this.#currentIteration = iteration;
+		this.#progress = this.#totalIterations > 0
+			? Math.round((iteration / this.#totalIterations) * 100)
+			: 0;
+	}
+
+	setResult(
+		newResult: OptimizationOutput,
+		strategyId?: string,
+		strategyName?: string
+	) {
+		this.#result = newResult;
+		this.#isRunning = false;
+		this.#error = null;
+		this.#progress = 100;
+
+		// Add to history if strategy info provided
+		if (strategyId && strategyName) {
+			const compressed: CompressedOptimization = {
+				id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
+				timestamp: Date.now(),
+				strategyId,
+				strategyName,
+				method: newResult.method,
+				objective: newResult.objective,
+				bestObjectiveValue: newResult.bestResult.objectiveValue,
+				bestParams: newResult.bestResult.params as Record<string, number>,
+				totalResults: newResult.allResults.length,
+			};
+
+			this.#history = [compressed, ...this.#history.slice(0, MAX_HISTORY - 1)];
+			this.saveHistory();
+		}
+	}
+
+	setError(errorMessage: string) {
+		this.#error = errorMessage;
+		this.#isRunning = false;
+		this.#progress = 0;
+	}
+
+	clearResult() {
+		this.#result = null;
+		this.#error = null;
+		this.#progress = 0;
+		this.#currentIteration = 0;
+		this.#totalIterations = 0;
+		this.#paramRanges = {};
+	}
+
+	clearError() {
+		this.#error = null;
+	}
+
+	cancelOptimization() {
+		this.#isRunning = false;
+		this.#progress = 0;
+	}
+
+	updateParamRanges(ranges: Record<string, { min: number; max: number; step: number }>) {
+		this.#paramRanges = ranges;
+	}
+
+	// History Management
+	removeFromHistory(id: string) {
+		this.#history = this.#history.filter((h) => h.id !== id);
+		this.saveHistory();
+	}
+
+	clearHistory() {
+		if (browser) {
+			localStorage.removeItem(STORAGE_KEY);
+		}
+		this.#history = [];
+	}
+
+	private saveHistory(): void {
 		if (!browser) return;
 		try {
-			localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+			localStorage.setItem(STORAGE_KEY, JSON.stringify(this.#history));
 		} catch (error) {
 			console.error('Failed to save optimization history to localStorage:', error);
 		}
 	}
 
-	return {
-		subscribe,
+	loadHistory(): void {
+		if (!browser) return;
+		try {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (!stored) return;
 
-		// Actions
-		startOptimization: (
-			ranges: Record<string, { min: number; max: number; step: number }>,
-			iterations: number
-		) => {
-			update((state) => ({
-				...state,
-				isRunning: true,
-				error: null,
-				progress: 0,
-				currentIteration: 0,
-				totalIterations: iterations,
-				paramRanges: ranges,
-			}));
-		},
-
-		updateProgress: (iteration: number) => {
-			update((state) => {
-				const progress =
-					state.totalIterations > 0
-						? Math.round((iteration / state.totalIterations) * 100)
-						: 0;
-				return {
-					...state,
-					currentIteration: iteration,
-					progress,
-				};
-			});
-		},
-
-		setResult: (
-			newResult: OptimizationOutput,
-			strategyId?: string,
-			strategyName?: string
-		) => {
-			update((state) => {
-				const newState = {
-					...state,
-					result: newResult,
-					isRunning: false,
-					error: null,
-					progress: 100,
-				};
-
-				// Add to history if strategy info provided
-				if (strategyId && strategyName) {
-					const compressed: CompressedOptimization = {
-						id: `${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
-						timestamp: Date.now(),
-						strategyId,
-						strategyName,
-						method: newResult.method,
-						objective: newResult.objective,
-						bestObjectiveValue: newResult.bestObjectiveValue,
-						bestParams: newResult.bestParams,
-						totalResults: newResult.allResults.length,
-					};
-
-					newState.history = [compressed, ...state.history.slice(0, MAX_HISTORY - 1)];
-					saveHistory(newState.history);
-				}
-
-				return newState;
-			});
-		},
-
-		setError: (errorMessage: string) => {
-			update((state) => ({
-				...state,
-				error: errorMessage,
-				isRunning: false,
-				progress: 0,
-			}));
-		},
-
-		clearResult: () => {
-			update((state) => ({
-				...state,
-				result: null,
-				error: null,
-				progress: 0,
-				currentIteration: 0,
-				totalIterations: 0,
-				paramRanges: {},
-			}));
-		},
-
-		clearError: () => {
-			update((state) => ({
-				...state,
-				error: null,
-			}));
-		},
-
-		cancelOptimization: () => {
-			update((state) => ({
-				...state,
-				isRunning: false,
-				progress: 0,
-			}));
-		},
-
-		updateParamRanges: (ranges: Record<string, { min: number; max: number; step: number }>) => {
-			update((state) => ({
-				...state,
-				paramRanges: ranges,
-			}));
-		},
-
-		// History Management
-		removeFromHistory: (id: string) => {
-			update((state) => {
-				const newState = {
-					...state,
-					history: state.history.filter((h) => h.id !== id),
-				};
-				saveHistory(newState.history);
-				return newState;
-			});
-		},
-
-		clearHistory: () => {
-			update((state) => {
-				if (browser) {
-					localStorage.removeItem(STORAGE_KEY);
-				}
-				return { ...state, history: [] };
-			});
-		},
-
-		loadHistory: () => {
-			if (!browser) return;
-			try {
-				const stored = localStorage.getItem(STORAGE_KEY);
-				if (!stored) return;
-
-				const history = JSON.parse(stored);
-				if (Array.isArray(history)) {
-					update((state) => ({
-						...state,
-						history: history.slice(0, MAX_HISTORY),
-					}));
-				}
-			} catch (error) {
-				console.error('Failed to load optimization history from localStorage:', error);
+			const history = JSON.parse(stored);
+			if (Array.isArray(history)) {
+				this.#history = history.slice(0, MAX_HISTORY);
 			}
-		},
-	};
+		} catch (error) {
+			console.error('Failed to load optimization history from localStorage:', error);
+		}
+	}
 }
 
-// Export store instance
-export const optimization = createOptimizationStore();
-
-// Derived stores for convenient access
-export const hasResult = derived(optimization, ($optimization) => $optimization.result !== null);
-export const hasError = derived(optimization, ($optimization) => $optimization.error !== null);
-export const bestParams = derived(optimization, ($optimization) => $optimization.result?.bestParams ?? null);
-export const allResults = derived(optimization, ($optimization) => $optimization.result?.allResults ?? []);
-export const progressPercent = derived(optimization, ($optimization) =>
-	$optimization.totalIterations > 0
-		? Math.round(($optimization.currentIteration / $optimization.totalIterations) * 100)
-		: 0
-);
+export const optimization = new OptimizationStore();
