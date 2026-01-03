@@ -4,8 +4,8 @@
     import WalkForwardConfig from '$lib/components/walkforward/WalkForwardConfig.svelte';
     import WalkForwardResults from '$lib/components/walkforward/WalkForwardResults.svelte';
     import ErrorBoundary from '$lib/components/common/ErrorBoundary.svelte';
-    import { strategy } from '$lib/stores/strategy';
-    import { config } from '$lib/stores/config';
+    import { strategy } from '$lib/stores/strategy.svelte';
+    import { config } from '$lib/stores/config.svelte';
 
     // Load persisted state on mount
     onMount(() => {

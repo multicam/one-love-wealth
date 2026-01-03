@@ -14,8 +14,8 @@ import type {
   WalkForwardOutput,
   WalkForwardWindow,
   WindowMetrics,
-} from '$lib/stores/walkforward';
-import { walkforward } from '$lib/stores/walkforward';
+} from '$lib/stores/walkforward.svelte';
+import { walkforward } from '$lib/stores/walkforward.svelte';
 
 // Local type definitions (temporary until types are properly exported)
 export type DateRange = { start: string; end: string };

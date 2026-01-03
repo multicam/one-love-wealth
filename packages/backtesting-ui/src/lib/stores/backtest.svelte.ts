@@ -7,8 +7,8 @@
 
 import { browser } from '$app/environment';
 import type { BacktestResult } from '@one-love-wealth/backtesting';
-import { config } from './config';
-import { strategy } from './strategy';
+import { config } from './config.svelte';
+import { strategy } from './strategy.svelte';
 
 const STORAGE_KEY = 'backtest-history';
 const MAX_HISTORY = 10;

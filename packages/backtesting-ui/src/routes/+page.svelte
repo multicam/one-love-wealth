@@ -5,11 +5,11 @@
     import ParameterForm from "$lib/components/strategy/ParameterForm.svelte";
     import ResultsView from "$lib/components/results/ResultsView.svelte";
     import ErrorBoundary from "$lib/components/common/ErrorBoundary.svelte";
-    import { strategy } from "$lib/stores/strategy";
-    import { backtest } from "$lib/stores/backtest";
-    import { optimization } from "$lib/stores/optimization";
-    import { walkforward } from "$lib/stores/walkforward";
-    import { config } from "$lib/stores/config";
+    import { strategy } from "$lib/stores/strategy.svelte";
+    import { backtest } from "$lib/stores/backtest.svelte";
+    import { optimization } from "$lib/stores/optimization.svelte";
+    import { walkforward } from "$lib/stores/walkforward.svelte";
+    import { config } from "$lib/stores/config.svelte";
 
     // Load persisted state on mount
     onMount(() => {

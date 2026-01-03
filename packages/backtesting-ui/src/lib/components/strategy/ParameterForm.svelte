@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { RotateCcw, ChevronDown, ChevronUp, Settings } from "lucide-svelte";
-	import { strategy } from "$lib/stores/strategy";
+	import { strategy } from "$lib/stores/strategy.svelte";
 	import FieldRenderer from "./FieldRenderer.svelte";
 	import BacktestConfig from "$lib/components/config/BacktestConfig.svelte";
 	import RunBacktestButton from "$lib/components/backtest/RunBacktestButton.svelte";

@@ -7,9 +7,9 @@
 		BarChart3,
 		Table,
 	} from "lucide-svelte";
-	import { optimization } from "$lib/stores/optimization";
-	import { strategy } from "$lib/stores/strategy";
-	import { ui } from "$lib/stores/ui";
+	import { optimization } from "$lib/stores/optimization.svelte";
+	import { strategy } from "$lib/stores/strategy.svelte";
+	import { ui } from "$lib/stores/ui.svelte";
 	import { toastStore } from "@one-love-wealth/shared-ui";
 	import ParameterHeatmap from "./ParameterHeatmap.svelte";
 

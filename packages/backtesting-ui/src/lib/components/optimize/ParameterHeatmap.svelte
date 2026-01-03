@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from "svelte";
 	import * as d3 from "d3";
-	import { optimization } from "$lib/stores/optimization";
+	import { optimization } from "$lib/stores/optimization.svelte";
 
 	let container = $state<HTMLDivElement>();
 	let xParam = $state<string>("");

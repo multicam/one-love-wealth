@@ -1,6 +1,6 @@
 <script lang="ts">
-	import { strategy } from "$lib/stores/strategy";
-	import { optimization } from "$lib/stores/optimization";
+	import { strategy } from "$lib/stores/strategy.svelte";
+	import { optimization } from "$lib/stores/optimization.svelte";
 	import type {
 		StrategyField,
 		StrategyDefinition,

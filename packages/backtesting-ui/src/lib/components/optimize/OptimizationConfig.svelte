@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { Settings, Play, X } from "lucide-svelte";
 	import { toastStore } from "@one-love-wealth/shared-ui";
-	import { strategy } from "$lib/stores/strategy";
-	import { config } from "$lib/stores/config";
-	import { optimization } from "$lib/stores/optimization";
+	import { strategy } from "$lib/stores/strategy.svelte";
+	import { config } from "$lib/stores/config.svelte";
+	import { optimization } from "$lib/stores/optimization.svelte";
 	import ParameterRanges from "./ParameterRanges.svelte";
 	import {
 		executeOptimization,

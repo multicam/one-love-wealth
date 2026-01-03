@@ -21,7 +21,7 @@ import type { BacktestData, MultiBar, Bar } from '../types';
 /**
  * Strategy for handling missing data points
  */
-export type GapFillStrategy = 
+export type GapFillStrategy =
   | 'forward-fill'  // Use the last known value (most common for price data)
   | 'backward-fill' // Use the next known value
   | 'interpolate'   // Linear interpolation between known values
@@ -79,10 +79,14 @@ export class BacktestDataLoader {
     mockMode: false,
   };
 
-  constructor() {
-    const cache = new MemoryAdapter();
-    const request = createDirectAdapter();
-    this.provider = new YahooProvider(cache, request);
+  constructor(provider?: YahooProvider) {
+    if (provider) {
+      this.provider = provider;
+    } else {
+      const cache = new MemoryAdapter();
+      const request = createDirectAdapter();
+      this.provider = new YahooProvider(cache, request);
+    }
   }
 
   /**
@@ -405,10 +409,12 @@ export class BacktestDataLoader {
 /**
  * Convenience function to load backtest data
  */
-export async function loadBacktestData(config: DataLoaderConfig): Promise<BacktestData> {
-  const loader = new BacktestDataLoader();
-  const result = await loader.load(config);
-  return result.data;
+export async function loadBacktestData(
+  config: DataLoaderConfig,
+  provider?: YahooProvider
+): Promise<DataLoaderResult> {
+  const loader = new BacktestDataLoader(provider);
+  return loader.load(config);
 }
 
 /**

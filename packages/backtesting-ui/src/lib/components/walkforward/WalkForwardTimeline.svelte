@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import * as d3 from 'd3';
-  import type { WalkForwardWindow } from '$lib/stores/walkforward';
+  import type { WalkForwardWindow } from '$lib/stores/walkforward.svelte';
 
   interface Props {
     windows: WalkForwardWindow[];

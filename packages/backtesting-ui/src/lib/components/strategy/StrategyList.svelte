@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Search, Info } from "lucide-svelte";
-	import { strategy } from "$lib/stores/strategy";
+	import { strategy } from "$lib/stores/strategy.svelte";
 	import { STRATEGIES } from "$lib/strategies/registry";
 	import type { StrategyDefinition } from "$lib/strategies/types";
 	import StrategyDescription from "./StrategyDescription.svelte";

@@ -5,13 +5,53 @@
  * Includes smart caching for fast repeat loads
  */
 
-import { loadBacktestData, type BacktestData } from '@one-love-wealth/backtesting';
+import { loadBacktestData, type BacktestData, type DataLoaderResult } from '@one-love-wealth/backtesting';
+import { YahooProvider, ProxyRequestAdapter, MemoryAdapter, DirectRequestAdapter, DEFAULT_PROVIDER_CONFIGS, type RequestAdapter, type RequestConfig } from '@one-love-wealth/data-layer';
+import { browser } from '$app/environment';
 import type { StrategyDefinition } from '../strategies/types';
 import { getRequiredSymbols } from '../strategies/types';
 import { calculateDateRange, type DateRange } from '../utils/date-range';
 import { analyzeGaps, type GapAnalysis } from '../utils/gap-analysis';
 import { getCacheManager } from '../cache/manager';
 import type { CacheKey } from '../cache/types';
+
+/**
+ * Custom Proxy Adapter for Backtesting UI
+ * Encodes the target URL as a query parameter for our local proxy
+ */
+class BacktestingUIProxyAdapter implements RequestAdapter {
+  constructor(private proxyBase: string) { }
+
+  buildRequest(config: RequestConfig): Request {
+    const providerConfig = DEFAULT_PROVIDER_CONFIGS[config.provider];
+    if (!providerConfig) {
+      throw new Error(`Unknown provider: ${config.provider}`);
+    }
+
+    const params = new URLSearchParams(config.params);
+    const targetUrl = `${providerConfig.baseUrl}${config.endpoint}?${params}`;
+    const url = `${this.proxyBase}/${config.provider}?url=${encodeURIComponent(targetUrl)}`;
+
+    return new Request(url, {
+      method: config.method || 'GET',
+      headers: { 'Accept': 'application/json' }
+    });
+  }
+}
+
+/**
+ * Create a browser-aware provider for data fetching
+ */
+function getProvider(): YahooProvider {
+  const cache = new MemoryAdapter();
+  const request = browser
+    ? new BacktestingUIProxyAdapter('/api/proxy')
+    : new DirectRequestAdapter();
+  return new YahooProvider(cache, request);
+}
+
+const defaultProvider = getProvider();
+
 
 /**
  * Data loading configuration
@@ -147,10 +187,10 @@ export async function loadBacktestDataBySymbols(
       interval,
       gapFillStrategy,
       requireAllSymbols: true, // Fail if any symbol is missing
-    });
+    }, defaultProvider);
 
     // Perform gap analysis
-    const timestamps = result.data.bars.map((b) => b.time);
+    const timestamps = result.data.bars.map((b: { time: number }) => b.time);
     const expectedInterval = interval === '1wk' ? 7 * 86400000 : interval === '1mo' ? 30 * 86400000 : 86400000;
 
     const gapAnalysis = analyzeGaps(

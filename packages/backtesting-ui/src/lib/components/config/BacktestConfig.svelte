@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Calendar, TrendingUp, DollarSign } from 'lucide-svelte';
-	import { config } from '$lib/stores/config';
+	import { config } from '$lib/stores/config.svelte';
 
 	// Format date for input (YYYY-MM-DD)
 	function formatDateForInput(dateStr: string): string {

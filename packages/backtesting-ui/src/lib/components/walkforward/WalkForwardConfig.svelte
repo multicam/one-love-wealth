@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { walkforward } from "$lib/stores/walkforward";
-  import { strategy } from "$lib/stores/strategy";
-  import { config } from "$lib/stores/config";
+  import { walkforward } from "$lib/stores/walkforward.svelte";
+  import { strategy } from "$lib/stores/strategy.svelte";
+  import { config } from "$lib/stores/config.svelte";
   import { toastStore } from "@one-love-wealth/shared-ui";
   import { executeWalkForward } from "$lib/services/walkforward.service";
 

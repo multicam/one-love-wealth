@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { WalkForwardWindow } from '$lib/stores/walkforward';
+  import type { WalkForwardWindow } from '$lib/stores/walkforward.svelte';
 
   interface Props {
     windows: WalkForwardWindow[];

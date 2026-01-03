@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { History, TrendingUp, TrendingDown, Trash2 } from 'lucide-svelte';
-	import { backtest } from '$lib/stores/backtest';
+	import { backtest } from '$lib/stores/backtest.svelte';
 
 	function formatPercent(value: number): string {
 		return `${(value * 100).toFixed(2)}%`;

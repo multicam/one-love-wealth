@@ -2,9 +2,9 @@
 	import { onMount } from "svelte";
 	import { Play, AlertCircle } from "lucide-svelte";
 	import { toastStore, Spinner } from "@one-love-wealth/shared-ui";
-	import { strategy } from "$lib/stores/strategy";
-	import { config } from "$lib/stores/config";
-	import { backtest } from "$lib/stores/backtest";
+	import { strategy } from "$lib/stores/strategy.svelte";
+	import { config } from "$lib/stores/config.svelte";
+	import { backtest } from "$lib/stores/backtest.svelte";
 	import { validateStrategyParams } from "$lib/strategies/types";
 	import { executeBacktest } from "$lib/services/backtest.service";
 

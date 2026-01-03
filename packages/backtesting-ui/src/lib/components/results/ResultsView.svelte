@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { BarChart3, TrendingUp, List, TrendingDown } from "lucide-svelte";
-	import { backtest } from "$lib/stores/backtest";
-	import { strategy } from "$lib/stores/strategy";
+	import { backtest } from "$lib/stores/backtest.svelte";
+	import { strategy } from "$lib/stores/strategy.svelte";
 	import MetricsGrid from "./MetricsGrid.svelte";
 	import TradeLog from "./TradeLog.svelte";
 	import EquityCurve from "../charts/EquityCurve.svelte";

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { walkforward } from "$lib/stores/walkforward";
+  import { walkforward } from "$lib/stores/walkforward.svelte";
   import WalkForwardTimeline from "./WalkForwardTimeline.svelte";
   import WindowResults from "./WindowResults.svelte";
   import EquityCurve from "../charts/EquityCurve.svelte";
-  import type { WalkForwardWindow } from "$lib/stores/walkforward";
+  import type { WalkForwardWindow } from "$lib/stores/walkforward.svelte";
 
   let activeTab = $state<"overview" | "timeline" | "windows" | "equity">(
     "overview",

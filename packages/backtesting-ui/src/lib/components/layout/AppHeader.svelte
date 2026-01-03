@@ -1,9 +1,9 @@
 <script lang="ts">
     import { page } from "$app/stores";
     import { goto } from "$app/navigation";
-    import { backtest } from "$lib/stores/backtest";
-    import { optimization } from "$lib/stores/optimization";
-    import { walkforward } from "$lib/stores/walkforward";
+    import { backtest } from "$lib/stores/backtest.svelte";
+    import { optimization } from "$lib/stores/optimization.svelte";
+    import { walkforward } from "$lib/stores/walkforward.svelte";
     import { Spinner } from "@one-love-wealth/shared-ui";
 
     // Route definitions

@@ -4,8 +4,8 @@
     import OptimizationConfig from '$lib/components/optimize/OptimizationConfig.svelte';
     import OptimizationResults from '$lib/components/optimize/OptimizationResults.svelte';
     import ErrorBoundary from '$lib/components/common/ErrorBoundary.svelte';
-    import { strategy } from '$lib/stores/strategy';
-    import { config } from '$lib/stores/config';
+    import { strategy } from '$lib/stores/strategy.svelte';
+    import { config } from '$lib/stores/config.svelte';
 
     // Load persisted state on mount
     onMount(() => {
