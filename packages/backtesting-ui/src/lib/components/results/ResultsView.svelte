@@ -160,12 +160,26 @@
 				<!-- Charts Tab -->
 				<div class="p-6">
 					{#if backtest.result}
+						{@const equityData = backtest.result.equityCurve}
+						{@const tradeData = backtest.result.trades}
 						<div class="space-y-6">
-							<EquityCurve
-								equityCurve={backtest.result.equityCurve}
-								trades={backtest.result.trades}
-							/>
-							<PriceChart trades={backtest.result.trades} />
+							{#if equityData && equityData.length > 0}
+								<EquityCurve
+									equityCurve={equityData}
+									trades={tradeData}
+								/>
+							{:else}
+								<div class="bg-surface/50 rounded-lg p-8 border border-border text-center">
+									<p class="text-sm text-text-secondary">No equity curve data available</p>
+								</div>
+							{/if}
+							{#if tradeData && tradeData.length > 0}
+								<PriceChart trades={tradeData} />
+							{:else}
+								<div class="bg-surface/50 rounded-lg p-8 border border-border text-center">
+									<p class="text-sm text-text-secondary">No trade data available</p>
+								</div>
+							{/if}
 						</div>
 					{/if}
 				</div>
@@ -180,9 +194,14 @@
 				<!-- Drawdowns Tab -->
 				<div class="p-6">
 					{#if backtest.result}
-						<DrawdownChart
-							equityCurve={backtest.result.equityCurve}
-						/>
+						{@const equityData = backtest.result.equityCurve}
+						{#if equityData && equityData.length > 0}
+							<DrawdownChart equityCurve={equityData} />
+						{:else}
+							<div class="bg-surface/50 rounded-lg p-8 border border-border text-center">
+								<p class="text-sm text-text-secondary">No drawdown data available</p>
+							</div>
+						{/if}
 					{/if}
 				</div>
 			{/if}

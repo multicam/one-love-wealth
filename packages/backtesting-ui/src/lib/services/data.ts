@@ -6,14 +6,14 @@
  */
 
 import { loadBacktestData, type BacktestData, type DataLoaderResult } from '@one-love-wealth/backtesting';
-import { YahooProvider, ProxyRequestAdapter, MemoryAdapter, DirectRequestAdapter, DEFAULT_PROVIDER_CONFIGS, type RequestAdapter, type RequestConfig } from '@one-love-wealth/data-layer';
-import { browser } from '$app/environment';
-import type { StrategyDefinition } from '../strategies/types';
-import { getRequiredSymbols } from '../strategies/types';
+import type { YahooPeriod } from '@one-love-wealth/data-layer';
+import { YahooProvider, MemoryAdapter, DEFAULT_PROVIDER_CONFIGS, type RequestAdapter, type RequestConfig } from '@one-love-wealth/data-layer';
+import type { StrategyDefinition } from '$lib/strategies';
+import { getRequiredSymbols } from '$lib/strategies';
 import { calculateDateRange, type DateRange } from '../utils/date-range';
 import { analyzeGaps, type GapAnalysis } from '../utils/gap-analysis';
-import { getCacheManager } from '../cache/manager';
-import type { CacheKey } from '../cache/types';
+import { getCacheManager } from '$lib/cache';
+import type { CacheKey } from '$lib/cache';
 
 /**
  * Custom Proxy Adapter for Backtesting UI
@@ -41,16 +41,21 @@ class BacktestingUIProxyAdapter implements RequestAdapter {
 
 /**
  * Create a browser-aware provider for data fetching
+ * Note: Must be called lazily (not at module load) because `browser` 
+ * is false during SSR and the module may be loaded on the server first.
  */
-function getProvider(): YahooProvider {
-  const cache = new MemoryAdapter();
-  const request = browser
-    ? new BacktestingUIProxyAdapter('/api/proxy')
-    : new DirectRequestAdapter();
-  return new YahooProvider(cache, request);
-}
+let _cachedProvider: YahooProvider | null = null;
 
-const defaultProvider = getProvider();
+function getProvider(): YahooProvider {
+  // Always use proxy adapter - works in both browser and SSR
+  // The proxy endpoint handles the actual fetch server-side
+  if (!_cachedProvider) {
+    const cache = new MemoryAdapter();
+    const request = new BacktestingUIProxyAdapter('/api/proxy');
+    _cachedProvider = new YahooProvider(cache, request);
+  }
+  return _cachedProvider;
+}
 
 
 /**
@@ -187,28 +192,42 @@ export async function loadBacktestDataBySymbols(
       interval,
       gapFillStrategy,
       requireAllSymbols: true, // Fail if any symbol is missing
-    }, defaultProvider);
+    }, getProvider());
 
     // Perform gap analysis
     const timestamps = result.data.bars.map((b: { time: number }) => b.time);
     const expectedInterval = interval === '1wk' ? 7 * 86400000 : interval === '1mo' ? 30 * 86400000 : 86400000;
 
+    // Sum up filled gaps across all symbols
+    const totalFilledGaps = Object.values(result.stats.filledGaps).reduce((sum, n) => sum + n, 0);
+
     const gapAnalysis = analyzeGaps(
       timestamps,
       expectedInterval,
-      result.stats.filledGaps,
+      totalFilledGaps,
       result.stats.droppedBars
     );
 
+    // Convert stats to expected format
+    const stats: DataLoadResult['stats'] = {
+      totalBars: result.stats.totalBars,
+      droppedBars: result.stats.droppedBars,
+      filledGaps: totalFilledGaps,
+      dateRange: {
+        start: result.stats.dateRange.start.toISOString(),
+        end: result.stats.dateRange.end.toISOString(),
+      },
+    };
+
     // Build warnings
-    const warnings = buildWarnings(result.stats, gapAnalysis, gapFillStrategy);
+    const warnings = buildWarnings(stats, gapAnalysis, gapFillStrategy);
 
     // Cache the result
-    cacheManager.set(cacheKey, result.data, result.stats, gapAnalysis);
+    cacheManager.set(cacheKey, result.data, stats, gapAnalysis);
 
     return {
       data: result.data,
-      stats: result.stats,
+      stats,
       gapAnalysis,
       warnings: warnings.length > 0 ? warnings : undefined,
     };
@@ -342,7 +361,7 @@ export function getCacheStats() {
  * Convert date range to Yahoo Finance period string
  * Used by data-layer
  */
-function dateRangeToPeriod(range: DateRange): string {
+function dateRangeToPeriod(range: DateRange): YahooPeriod {
   const diffMs = range.end.getTime() - range.start.getTime();
   const diffDays = diffMs / (1000 * 60 * 60 * 24);
   const diffYears = diffDays / 365.25;

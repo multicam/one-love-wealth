@@ -35,18 +35,21 @@
 </script>
 
 <!-- Modal Backdrop -->
+<!-- svelte-ignore a11y_click_events_have_key_events -->
 <div
 	class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
 	onclick={onClose}
-	role="button"
-	tabindex="-1"
+	role="presentation"
 >
 	<!-- Modal Content -->
+	<!-- svelte-ignore a11y_click_events_have_key_events -->
 	<div
 		class="bg-surface rounded-lg shadow-xl max-w-2xl w-full max-h-[85vh] overflow-hidden flex flex-col"
 		onclick={(e) => e.stopPropagation()}
 		role="dialog"
 		aria-labelledby="modal-title"
+		aria-modal="true"
+		tabindex="-1"
 	>
 		<!-- Header -->
 		<div class="flex items-start justify-between p-6 border-b border-border">

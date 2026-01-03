@@ -26,13 +26,14 @@
     title = "Portfolio Equity",
   }: Props = $props();
 
-  let chartContainer = $state<HTMLDivElement>();
+  let chartContainer: HTMLDivElement | undefined = $state(undefined);
   let chart: IChartApi | null = null;
   let lineSeries: ISeriesApi<"Line"> | null = null;
+  let resizeObserver: ResizeObserver | null = null;
 
-  // Initialize chart
-  onMount(() => {
-    if (!chartContainer) return;
+  // Initialize chart when container is available
+  function initChart() {
+    if (!chartContainer || chart) return;
 
     // Create chart
     chart = createChart(chartContainer, {
@@ -45,7 +46,7 @@
         vertLines: { color: "#2a2e39", style: 1 },
         horzLines: { color: "#2a2e39", style: 1 },
       },
-      width: chartContainer.clientWidth,
+      width: chartContainer.clientWidth || 400,
       height: height,
       timeScale: {
         timeVisible: true,
@@ -74,27 +75,38 @@
     updateChartData();
 
     // Handle resize
-    const resizeObserver = new ResizeObserver((entries) => {
+    resizeObserver = new ResizeObserver((entries) => {
       if (entries.length === 0 || !chart) return;
       const { width } = entries[0].contentRect;
-      chart.applyOptions({ width });
+      if (width > 0) {
+        chart.applyOptions({ width });
+      }
     });
 
     resizeObserver.observe(chartContainer);
+  }
 
-    // Cleanup
+  // Initialize on mount
+  onMount(() => {
+    initChart();
     return () => {
-      resizeObserver.disconnect();
+      resizeObserver?.disconnect();
       if (chart) {
         chart.remove();
         chart = null;
+        lineSeries = null;
       }
     };
   });
 
   // Function to update data and markers
   function updateChartData() {
-    if (!lineSeries || !equityCurve.length) return;
+    if (!lineSeries || !equityCurve.length) {
+      console.log('[EquityCurve] No data to render:', { hasLineSeries: !!lineSeries, dataLength: equityCurve.length });
+      return;
+    }
+
+    console.log('[EquityCurve] Rendering', equityCurve.length, 'points');
 
     // Convert data to chart format
     const chartData: LineData[] = equityCurve.map((point) => ({
@@ -110,29 +122,36 @@
       (val, index, self) => index === 0 || val.time !== self[index - 1].time,
     );
 
+    console.log('[EquityCurve] Setting', uniqueData.length, 'unique points, first:', uniqueData[0], 'last:', uniqueData[uniqueData.length - 1]);
+
     lineSeries.setData(uniqueData);
 
-    // Add trade markers if available
-    if (trades && trades.length > 0) {
-      const markers: SeriesMarker<Time>[] = trades
-        .filter((t) => t.timestamp) // Ensure timestamp exists
-        .map((trade) => ({
-          time: Math.floor(trade.timestamp / 1000) as Time,
-          position: trade.side === "buy" ? "belowBar" : "aboveBar",
-          color: trade.side === "buy" ? "#10b981" : "#ef4444",
-          shape: trade.side === "buy" ? "arrowUp" : "arrowDown",
-          text: `${trade.side.toUpperCase()} ${trade.symbol}`,
-        }));
-
-      // Markers must also be sorted
-      markers.sort((a, b) => (a.time as number) - (b.time as number));
-      (lineSeries as any).setMarkers(markers);
+    // Fit content to view
+    if (chart) {
+      chart.timeScale().fitContent();
     }
+
+    // Note: Trade markers removed - setMarkers API changed in lightweight-charts v5
+    // TODO: Implement markers using the new v5 API if needed
   }
 
-  // React to data changes
+  // Watch for container and data - initialize chart when both are ready
   $effect(() => {
-    if (equityCurve || trades) {
+    const container = chartContainer;
+    const eqLen = equityCurve.length;
+    const trLen = trades.length;
+    
+    console.log('[EquityCurve] $effect - container:', !!container, 'chart:', !!chart, 'data:', eqLen);
+    
+    // Initialize chart when container is ready
+    if (container && !chart) {
+      console.log('[EquityCurve] Initializing chart');
+      initChart();
+    }
+    
+    // Update data when chart is ready and we have data
+    if (chart && lineSeries && eqLen > 0) {
+      console.log('[EquityCurve] Updating chart data');
       updateChartData();
     }
   });
@@ -166,7 +185,7 @@
   <div
     class="bg-surface-primary rounded-xl border border-border overflow-hidden p-1 shadow-sm"
   >
-    <div bind:this={chartContainer} class="w-full"></div>
+    <div bind:this={chartContainer} class="w-full" style="height: {height}px;"></div>
   </div>
 
   {#if equityCurve.length === 0}

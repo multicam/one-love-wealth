@@ -90,9 +90,14 @@
         <div
             role="separator"
             aria-label="Resize right panel"
+            tabindex="0"
             class="w-1 cursor-col-resize hover:bg-primary/50 transition-colors"
             class:bg-primary={isDragging}
             onmousedown={handleMouseDown}
+            onkeydown={(e) => {
+                if (e.key === 'ArrowLeft') rightPanelWidth = Math.min(MAX_WIDTH, rightPanelWidth + 10);
+                if (e.key === 'ArrowRight') rightPanelWidth = Math.max(MIN_WIDTH, rightPanelWidth - 10);
+            }}
         ></div>
 
         <!-- Right Column: Configuration Panel -->

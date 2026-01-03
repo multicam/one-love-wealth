@@ -1,106 +1,98 @@
+# One Love Wealth - Development Guide
 
-Default to using Bun instead of Node.js.
+## Project Structure
+
+This is a monorepo workspace with the following packages:
+- `backtesting` - Backtesting engine
+- `backtesting-ui` - SvelteKit UI for backtesting
+- `crypto-viz` - Cryptocurrency visualization dashboard
+- `data-layer` - Shared data access layer
+- `macro-view` - Macro economics visualization
+- `shared-ui` - Shared UI components
+- `trading-dashboards` - Trading analytics dashboards
+
+## Bun Usage
+
+Default to using Bun instead of Node.js:
 
 - Use `bun <file>` instead of `node <file>` or `ts-node <file>`
-- Use `bun test` instead of `jest` or `vitest`
-- Use `bun build <file.html|file.ts|file.css>` instead of `webpack` or `esbuild`
-- Use `bun install` instead of `npm install` or `yarn install` or `pnpm install`
-- Use `bun run <script>` instead of `npm run <script>` or `yarn run <script>` or `pnpm run <script>`
-- Use `bunx <package> <command>` instead of `npx <package> <command>`
-- Bun automatically loads .env, so don't use dotenv.
+- Use `bun install` instead of `npm install`
+- Use `bun run <script>` instead of `npm run <script>`
+- Use `bunx <package>` instead of `npx <package>`
+- Bun automatically loads .env files
 
-## APIs
+## Tech Stack
 
-- `Bun.serve()` supports WebSockets, HTTPS, and routes. Don't use `express`.
-- `bun:sqlite` for SQLite. Don't use `better-sqlite3`.
-- `Bun.redis` for Redis. Don't use `ioredis`.
-- `Bun.sql` for Postgres. Don't use `pg` or `postgres.js`.
-- `WebSocket` is built-in. Don't use `ws`.
-- Prefer `Bun.file` over `node:fs`'s readFile/writeFile
-- Bun.$`ls` instead of execa.
+- **Frontend**: SvelteKit 2.x with Svelte 5.x
+- **Build Tool**: Vite 6.x/7.x
+- **Styling**: Tailwind CSS 4.x with `@tailwindcss/vite`
+- **Charts**: lightweight-charts, d3, chart.js
+- **Testing**: Vitest for unit tests, Playwright for E2E
+- **Database**: Dexie (IndexedDB wrapper)
+- **Package Manager**: Bun with workspaces
 
-## Testing
+## Development Commands
 
-Use `bun test` to run tests.
+### Root Level
+- `bun install` - Install all dependencies
+- `bun run test:e2e` - Run all E2E tests
+- `bun run test:e2e:crypto-viz` - Run crypto-viz E2E tests
+- `bun run test:e2e:macro-view` - Run macro-view E2E tests
+- `bun run test:e2e:trading-dashboards` - Run trading-dashboards E2E tests
+- `bun run playwright:install` - Install Playwright browsers
 
-```ts#index.test.ts
-import { test, expect } from "bun:test";
+### Package Level (in packages/*)
+- `bun run dev` - Start dev server (ports defined in workspace.config.ts)
+- `bun run build` - Build for production
+- `bun run preview` - Preview production build
+- `bun run test` - Run unit tests with Vitest
+- `bun run test:e2e` - Run E2E tests for package
 
-test("hello world", () => {
-  expect(1).toBe(1);
+### Data Layer Specific
+- `bun run populate-db` - Populate database
+- `bun run build` - Build TypeScript to dist/
+- `bun run dev` - Watch mode for TypeScript
+- `bun run test:provider` - Test data provider
+
+## Workspace Configuration
+
+Dev server ports are centralized in `workspace.config.ts`:
+- backtesting-ui: 6036 (dev), 6136 (preview)
+- crypto-viz: 6006 (dev), 6106 (preview)
+- macro-view: 6003 (dev), 6103 (preview)
+- trading-dashboards: 6009 (dev), 6109 (preview)
+
+## Testing Strategy
+
+- **Unit tests**: Use Vitest with `bun test` or `vitest`
+- **E2E tests**: Use Playwright from root or package level
+- **Browser tests**: macro-view uses `@vitest/browser-playwright`
+
+## Frontend Development
+
+### SvelteKit Structure
+All UI packages use SvelteKit with:
+- `src/routes/` - Page routes
+- `src/lib/` - Reusable components and utilities
+- `src/app.html` - HTML template
+- `vite.config.js` - Vite configuration
+- `svelte.config.js` - SvelteKit configuration
+
+### Shared Dependencies
+Packages reference each other using workspace protocol:
+```json
+"@one-love-wealth/shared-ui": "workspace:*"
+"@one-love-wealth/data-layer": "workspace:*"
+```
+
+### Vite Configuration Pattern
+Packages use centralized port configuration:
+```js
+import { packages } from '../../workspace.config';
+const pkg = packages['package-name'];
+
+export default defineConfig({
+  server: { port: pkg.devPort },
+  preview: { port: pkg.previewPort }
 });
 ```
-
-## Frontend
-
-Use HTML imports with `Bun.serve()`. Don't use `vite`. HTML imports fully support React, CSS, Tailwind.
-
-Server:
-
-```ts#index.ts
-import index from "./index.html"
-
-Bun.serve({
-  routes: {
-    "/": index,
-    "/api/users/:id": {
-      GET: (req) => {
-        return new Response(JSON.stringify({ id: req.params.id }));
-      },
-    },
-  },
-  // optional websocket support
-  websocket: {
-    open: (ws) => {
-      ws.send("Hello, world!");
-    },
-    message: (ws, message) => {
-      ws.send(message);
-    },
-    close: (ws) => {
-      // handle close
-    }
-  },
-  development: {
-    hmr: true,
-    console: true,
-  }
-})
-```
-
-HTML files can import .tsx, .jsx or .js files directly and Bun's bundler will transpile & bundle automatically. `<link>` tags can point to stylesheets and Bun's CSS bundler will bundle.
-
-```html#index.html
-<html>
-  <body>
-    <h1>Hello, world!</h1>
-    <script type="module" src="./frontend.tsx"></script>
-  </body>
-</html>
-```
-
-With the following `frontend.tsx`:
-
-```tsx#frontend.tsx
-import React from "react";
-import { createRoot } from "react-dom/client";
-
-// import .css files directly and it works
-import './index.css';
-
-const root = createRoot(document.body);
-
-export default function Frontend() {
-  return <h1>Hello, world!</h1>;
-}
-
-root.render(<Frontend />);
-```
-
-Then, run index.ts
-
-```sh
-bun --hot ./index.ts
-```
-
-For more information, read the Bun API docs in `node_modules/bun-types/docs/**.mdx`.

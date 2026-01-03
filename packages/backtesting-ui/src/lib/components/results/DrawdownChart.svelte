@@ -20,16 +20,17 @@
 
 	let { equityCurve, height = 400 }: Props = $props();
 
-	let chartContainer = $state<HTMLDivElement>();
+	let chartContainer: HTMLDivElement | undefined = $state(undefined);
 	let chart: IChartApi | null = null;
 	let lineSeries: ISeriesApi<"Line"> | null = null;
 	let areaSeries: ISeriesApi<"Area"> | null = null;
+	let resizeObserver: ResizeObserver | null = null;
 
 	let viewMode = $state<"overlay" | "separate">("overlay");
 
-	// Initialize chart
-	onMount(() => {
-		if (!chartContainer) return;
+	// Initialize chart when container is available
+	function initChart() {
+		if (!chartContainer || chart) return;
 
 		chart = createChart(chartContainer, {
 			layout: {
@@ -41,7 +42,7 @@
 				vertLines: { color: "#2a2e39", style: 1 },
 				horzLines: { color: "#2a2e39", style: 1 },
 			},
-			width: chartContainer.clientWidth,
+			width: chartContainer.clientWidth || 400,
 			height: height,
 			timeScale: {
 				timeVisible: true,
@@ -58,17 +59,26 @@
 
 		updateChart();
 
-		const resizeObserver = new ResizeObserver((entries) => {
+		resizeObserver = new ResizeObserver((entries) => {
 			if (entries.length === 0 || !chart) return;
-			chart.applyOptions({ width: entries[0].contentRect.width });
+			const { width } = entries[0].contentRect;
+			if (width > 0) {
+				chart.applyOptions({ width });
+			}
 		});
 		resizeObserver.observe(chartContainer);
+	}
 
+	// Initialize on mount
+	onMount(() => {
+		initChart();
 		return () => {
-			resizeObserver.disconnect();
+			resizeObserver?.disconnect();
 			if (chart) {
 				chart.remove();
 				chart = null;
+				lineSeries = null;
+				areaSeries = null;
 			}
 		};
 	});
@@ -127,10 +137,24 @@
 			}));
 			areaSeries.setData(drawdownData);
 		}
+
+		// Fit content to view
+		if (chart) {
+			chart.timeScale().fitContent();
+		}
 	}
 
 	$effect(() => {
-		if (viewMode || equityCurve) {
+		const container = chartContainer;
+		const eqLen = equityCurve.length;
+		const vm = viewMode;
+		
+		// Initialize chart when container is ready
+		if (container && !chart) {
+			initChart();
+		}
+		// Update if chart is initialized
+		if (chart && eqLen > 0) {
 			updateChart();
 		}
 	});
@@ -198,7 +222,7 @@
 	<div
 		class="bg-surface-primary rounded-xl border border-border overflow-hidden p-1 shadow-sm relative"
 	>
-		<div bind:this={chartContainer} class="w-full"></div>
+		<div bind:this={chartContainer} class="w-full" style="height: {height}px;"></div>
 
 		{#if equityCurve.length === 0}
 			<div

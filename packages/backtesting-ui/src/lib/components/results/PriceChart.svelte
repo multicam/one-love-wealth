@@ -20,9 +20,10 @@
 
 	let { trades, height = 400, symbol }: Props = $props();
 
-	let chartContainer = $state<HTMLDivElement>();
+	let chartContainer: HTMLDivElement | undefined = $state(undefined);
 	let chart: IChartApi | null = null;
 	let lineSeries: ISeriesApi<"Line"> | null = null;
+	let resizeObserver: ResizeObserver | null = null;
 
 	// Get unique symbols for the selector (if no symbol prop is provided)
 	let uniqueSymbols = $derived.by(() => {
@@ -46,9 +47,9 @@
 		return trades.filter((t) => t.symbol === sym);
 	});
 
-	// Initialize chart
-	onMount(() => {
-		if (!chartContainer) return;
+	// Initialize chart when container is available
+	function initChart() {
+		if (!chartContainer || chart) return;
 
 		chart = createChart(chartContainer, {
 			layout: {
@@ -60,7 +61,7 @@
 				vertLines: { color: "#2a2e39", style: 1 },
 				horzLines: { color: "#2a2e39", style: 1 },
 			},
-			width: chartContainer.clientWidth,
+			width: chartContainer.clientWidth || 400,
 			height: height,
 			timeScale: {
 				timeVisible: true,
@@ -87,17 +88,25 @@
 
 		updateChartData();
 
-		const resizeObserver = new ResizeObserver((entries) => {
+		resizeObserver = new ResizeObserver((entries) => {
 			if (entries.length === 0 || !chart) return;
-			chart.applyOptions({ width: entries[0].contentRect.width });
+			const { width } = entries[0].contentRect;
+			if (width > 0) {
+				chart.applyOptions({ width });
+			}
 		});
 		resizeObserver.observe(chartContainer);
+	}
 
+	// Initialize on mount
+	onMount(() => {
+		initChart();
 		return () => {
-			resizeObserver.disconnect();
+			resizeObserver?.disconnect();
 			if (chart) {
 				chart.remove();
 				chart = null;
+				lineSeries = null;
 			}
 		};
 	});
@@ -125,23 +134,24 @@
 
 		lineSeries.setData(uniqueData);
 
-		// Add trade markers
-		const markers: SeriesMarker<Time>[] = displayTrades
-			.filter((t) => t.timestamp)
-			.map((trade) => ({
-				time: Math.floor(trade.timestamp / 1000) as Time,
-				position: trade.side === "buy" ? "belowBar" : "aboveBar",
-				color: trade.side === "buy" ? "#10b981" : "#ef4444",
-				shape: trade.side === "buy" ? "arrowUp" : "arrowDown",
-				text: `${trade.side.toUpperCase()} @ ${trade.price.toFixed(2)}`,
-			}));
+		// Fit content to view
+		if (chart) {
+			chart.timeScale().fitContent();
+		}
 
-		markers.sort((a, b) => (a.time as number) - (b.time as number));
-		(lineSeries as any).setMarkers(markers);
+		// Note: Trade markers removed - setMarkers API changed in lightweight-charts v5
 	}
 
 	$effect(() => {
-		if (displayTrades) {
+		const container = chartContainer;
+		const dtLen = displayTrades.length;
+		
+		// Initialize chart when container is ready
+		if (container && !chart) {
+			initChart();
+		}
+		// Update if chart is initialized
+		if (chart && lineSeries && dtLen > 0) {
 			updateChartData();
 		}
 	});
@@ -192,7 +202,7 @@
 	<div
 		class="bg-surface-primary rounded-xl border border-border overflow-hidden p-1 shadow-sm relative"
 	>
-		<div bind:this={chartContainer} class="w-full"></div>
+		<div bind:this={chartContainer} class="w-full" style="height: {height}px;"></div>
 
 		{#if displayTrades.length === 0}
 			<div
