@@ -19,48 +19,52 @@
 		);
 	});
 
-	// Initialize ranges with defaults
+	// Initialize ranges with defaults - only for new fields
 	$effect(() => {
 		const fields = numericFields;
 		if (fields.length === 0) return;
 
-		const ranges: Record<
+		// Only initialize ranges for fields that don't have them yet
+		const newRanges: Record<
 			string,
 			{ min: number; max: number; step: number }
-		> = {};
+		> = { ...optimization.paramRanges };
+
+		let hasNewFields = false;
 
 		for (const field of fields) {
-			// Use existing range if available, otherwise create default
-			const existing = optimization.paramRanges[field.key];
-			if (existing) {
-				ranges[field.key] = existing;
+			// Skip if range already exists
+			if (newRanges[field.key]) continue;
+
+			hasNewFields = true;
+
+			// Create sensible defaults based on field type
+			const currentValue =
+				strategy.params[field.key] ?? field.default ?? 0;
+			let min: number, max: number, step: number;
+
+			if (field.type === "percent") {
+				min = Math.max(0, currentValue - 0.2);
+				max = Math.min(1, currentValue + 0.2);
+				step = 0.05;
+			} else if (field.min !== undefined && field.max !== undefined) {
+				min = field.min;
+				max = field.max;
+				step = field.step ?? 1;
 			} else {
-				// Create sensible defaults based on field type
-				const currentValue =
-					strategy.params[field.key] ?? field.default ?? 0;
-				let min: number, max: number, step: number;
-
-				if (field.type === "percent") {
-					min = Math.max(0, currentValue - 0.2);
-					max = Math.min(1, currentValue + 0.2);
-					step = 0.05;
-				} else if (field.min !== undefined && field.max !== undefined) {
-					min = field.min;
-					max = field.max;
-					step = field.step ?? 1;
-				} else {
-					// Generic number
-					min = Math.max(0, currentValue * 0.5);
-					max = currentValue * 1.5;
-					step = (max - min) / 10;
-				}
-
-				ranges[field.key] = { min, max, step };
+				// Generic number
+				min = Math.max(0, currentValue * 0.5);
+				max = currentValue * 1.5;
+				step = (max - min) / 10;
 			}
+
+			newRanges[field.key] = { min, max, step };
 		}
 
-		// Update store
-		optimization.updateParamRanges(ranges);
+		// Only update if we added new fields
+		if (hasNewFields) {
+			optimization.updateParamRanges(newRanges);
+		}
 	});
 
 	// Handle range updates
