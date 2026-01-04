@@ -4,13 +4,26 @@
  * Supports: Grid Search, Random Search, Genetic Algorithm
  */
 
-import { BacktestEngine, type Strategy, type BacktestConfig } from '@one-love-wealth/backtesting';
-import type {
-	OptimizationMethod,
-	OptimizationObjective,
-	OptimizationOutput,
-	OptimizationResult
+import {
+	BacktestEngine,
+	type Strategy,
+	type BacktestConfig,
+	type OptimizationMethod,
+	type OptimizationObjective,
+	type OptimizationOutput,
+	type OptimizationResult,
+	MACrossoverStrategy,
+	RSIReversionStrategy,
+	BuyAndHoldStrategy
 } from '@one-love-wealth/backtesting';
+
+// Serialized data format (Date objects converted to timestamps for worker transfer)
+interface SerializedBacktestData {
+	symbols: string[];
+	bars: any[];
+	startDate: number; // timestamp
+	endDate: number;   // timestamp
+}
 
 interface WorkerMessage {
 	type: 'start';
@@ -19,10 +32,25 @@ interface WorkerMessage {
 		objective: OptimizationObjective;
 		paramRanges: Record<string, { min: number; max: number; step: number }>;
 		iterations?: number; // For random/genetic
-		strategy: Strategy;
+		strategyId: string;
+		strategyParams: Record<string, any>;
 		backtestConfig: BacktestConfig;
-		historicalData: any; // Preloaded data
+		historicalData: SerializedBacktestData; // Serialized data with timestamps
 	};
+}
+
+// Strategy factory - creates strategy instances from ID and params
+function createStrategy(strategyId: string, params: Record<string, any>): Strategy {
+	switch (strategyId) {
+		case 'ma-crossover':
+			return new MACrossoverStrategy(params);
+		case 'rsi-reversion':
+			return new RSIReversionStrategy(params);
+		case 'buy-and-hold':
+			return new BuyAndHoldStrategy(params);
+		default:
+			throw new Error(`Unknown strategy: ${strategyId}`);
+	}
 }
 
 interface WorkerResponse {
@@ -30,14 +58,50 @@ interface WorkerResponse {
 	data: any;
 }
 
+interface CurrentBest {
+	value: number;
+	params: Record<string, number>;
+}
+
+// Helper to create a plain serializable copy of params
+function serializeParams(params: Record<string, any>): Record<string, number> {
+	const result: Record<string, number> = {};
+	for (const key in params) {
+		const val = params[key];
+		if (typeof val === 'number') {
+			result[key] = val;
+		}
+	}
+	return result;
+}
+
+// Helper to serialize optimization output for postMessage (convert Date objects to timestamps)
+function serializeOutput(output: OptimizationOutput): any {
+	const serializeResult = (r: OptimizationResult) => ({
+		...r,
+		result: {
+			...r.result,
+			startDate: r.result.startDate instanceof Date ? r.result.startDate.getTime() : r.result.startDate,
+			endDate: r.result.endDate instanceof Date ? r.result.endDate.getTime() : r.result.endDate,
+		}
+	});
+
+	return {
+		...output,
+		bestResult: output.bestResult ? serializeResult(output.bestResult) : undefined,
+		topResults: output.topResults?.map(serializeResult),
+		allResults: output.allResults?.map(serializeResult),
+	};
+}
+
 // Listen for messages from main thread
 self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
-	const { type, data } = event.message;
+	const { type, data } = event.data;
 
 	if (type === 'start') {
 		try {
 			const result = await runOptimization(data);
-			postMessage({ type: 'result', data: result } as WorkerResponse);
+			postMessage({ type: 'result', data: serializeOutput(result) } as WorkerResponse);
 		} catch (error) {
 			const errorMessage = error instanceof Error ? error.message : 'Unknown optimization error';
 			postMessage({ type: 'error', data: errorMessage } as WorkerResponse);
@@ -46,18 +110,27 @@ self.onmessage = async (event: MessageEvent<WorkerMessage>) => {
 };
 
 async function runOptimization(data: WorkerMessage['data']): Promise<OptimizationOutput> {
-	const { method, objective, paramRanges, iterations, strategy, backtestConfig, historicalData } =
+	const { method, objective, paramRanges, iterations, strategyId, strategyParams, backtestConfig, historicalData: serializedData } =
 		data;
+
+	// Reconstruct Date objects from timestamps
+	const historicalData = {
+		symbols: serializedData.symbols,
+		bars: serializedData.bars,
+		startDate: new Date(serializedData.startDate),
+		endDate: new Date(serializedData.endDate),
+	};
 
 	switch (method) {
 		case 'grid':
-			return await gridSearch(paramRanges, objective, strategy, backtestConfig, historicalData);
+			return await gridSearch(paramRanges, objective, strategyId, strategyParams, backtestConfig, historicalData);
 		case 'random':
 			return await randomSearch(
 				paramRanges,
 				objective,
 				iterations ?? 100,
-				strategy,
+				strategyId,
+				strategyParams,
 				backtestConfig,
 				historicalData
 			);
@@ -66,7 +139,8 @@ async function runOptimization(data: WorkerMessage['data']): Promise<Optimizatio
 				paramRanges,
 				objective,
 				iterations ?? 50,
-				strategy,
+				strategyId,
+				strategyParams,
 				backtestConfig,
 				historicalData
 			);
@@ -79,12 +153,14 @@ async function runOptimization(data: WorkerMessage['data']): Promise<Optimizatio
 async function gridSearch(
 	paramRanges: Record<string, { min: number; max: number; step: number }>,
 	objective: OptimizationObjective,
-	strategy: Strategy,
+	strategyId: string,
+	baseParams: Record<string, any>,
 	backtestConfig: BacktestConfig,
 	historicalData: any
 ): Promise<OptimizationOutput> {
 	const paramNames = Object.keys(paramRanges);
 	const allResults: OptimizationResult[] = [];
+	let currentBest: CurrentBest | null = null;
 
 	// Generate all combinations
 	const combinations = generateGridCombinations(paramRanges);
@@ -94,22 +170,32 @@ async function gridSearch(
 		const params = combinations[i];
 
 		// Run backtest with these parameters
-		const result = await runBacktestWithParams(params, strategy, backtestConfig, historicalData);
+		const result = await runBacktestWithParams(params, strategyId, baseParams, backtestConfig, historicalData);
 
 		// Extract objective value
 		const objectiveValue = getObjectiveValue(result.metrics, objective);
 
 		allResults.push({
 			params,
+			result,
 			objectiveValue,
-			metrics: result.metrics
+			rank: 0
 		});
+
+		// Track current best
+		if (currentBest === null || objectiveValue > currentBest.value) {
+			currentBest = { value: objectiveValue, params: serializeParams(params) };
+		}
 
 		// Post progress every 5 iterations
 		if (i % 5 === 0 || i === combinations.length - 1) {
 			postMessage({
 				type: 'progress',
-				data: { iteration: i + 1, total }
+				data: { 
+					iteration: i + 1, 
+					total, 
+					currentBest: currentBest ? { value: currentBest.value, params: { ...currentBest.params } } : null 
+				}
 			} as WorkerResponse);
 		}
 	}
@@ -120,9 +206,12 @@ async function gridSearch(
 	return {
 		method: 'grid',
 		objective,
-		bestParams: allResults[0].params,
-		bestObjectiveValue: allResults[0].objectiveValue,
-		allResults
+		totalCombinations: total,
+		testedCombinations: allResults.length,
+		bestResult: allResults[0],
+		topResults: allResults.slice(0, 10),
+		allResults,
+		duration: 0 // Duration tracked by caller
 	};
 }
 
@@ -131,33 +220,45 @@ async function randomSearch(
 	paramRanges: Record<string, { min: number; max: number; step: number }>,
 	objective: OptimizationObjective,
 	iterations: number,
-	strategy: Strategy,
+	strategyId: string,
+	baseParams: Record<string, any>,
 	backtestConfig: BacktestConfig,
 	historicalData: any
 ): Promise<OptimizationOutput> {
 	const allResults: OptimizationResult[] = [];
+	let currentBest: CurrentBest | null = null;
 
 	for (let i = 0; i < iterations; i++) {
 		// Generate random parameters
 		const params = generateRandomParams(paramRanges);
 
 		// Run backtest
-		const result = await runBacktestWithParams(params, strategy, backtestConfig, historicalData);
+		const result = await runBacktestWithParams(params, strategyId, baseParams, backtestConfig, historicalData);
 
 		// Extract objective value
 		const objectiveValue = getObjectiveValue(result.metrics, objective);
 
 		allResults.push({
 			params,
+			result,
 			objectiveValue,
-			metrics: result.metrics
+			rank: 0
 		});
+
+		// Track current best
+		if (currentBest === null || objectiveValue > currentBest.value) {
+			currentBest = { value: objectiveValue, params: serializeParams(params) };
+		}
 
 		// Post progress every 5 iterations
 		if (i % 5 === 0 || i === iterations - 1) {
 			postMessage({
 				type: 'progress',
-				data: { iteration: i + 1, total: iterations }
+				data: { 
+					iteration: i + 1, 
+					total: iterations, 
+					currentBest: currentBest ? { value: currentBest.value, params: { ...currentBest.params } } : null 
+				}
 			} as WorkerResponse);
 		}
 	}
@@ -168,9 +269,12 @@ async function randomSearch(
 	return {
 		method: 'random',
 		objective,
-		bestParams: allResults[0].params,
-		bestObjectiveValue: allResults[0].objectiveValue,
-		allResults
+		totalCombinations: iterations,
+		testedCombinations: allResults.length,
+		bestResult: allResults[0],
+		topResults: allResults.slice(0, 10),
+		allResults,
+		duration: 0 // Duration tracked by caller
 	};
 }
 
@@ -179,21 +283,28 @@ async function geneticAlgorithm(
 	paramRanges: Record<string, { min: number; max: number; step: number }>,
 	objective: OptimizationObjective,
 	generations: number,
-	strategy: Strategy,
+	strategyId: string,
+	baseParams: Record<string, any>,
 	backtestConfig: BacktestConfig,
 	historicalData: any
 ): Promise<OptimizationOutput> {
 	const populationSize = 20;
 	const eliteSize = 4;
 	const mutationRate = 0.2;
+	let currentBest: CurrentBest | null = null;
 
 	// Initialize population
 	let population: OptimizationResult[] = [];
 	for (let i = 0; i < populationSize; i++) {
 		const params = generateRandomParams(paramRanges);
-		const result = await runBacktestWithParams(params, strategy, backtestConfig, historicalData);
+		const result = await runBacktestWithParams(params, strategyId, baseParams, backtestConfig, historicalData);
 		const objectiveValue = getObjectiveValue(result.metrics, objective);
-		population.push({ params, objectiveValue, metrics: result.metrics });
+		population.push({ params, result, objectiveValue, rank: 0 });
+		
+		// Track current best
+		if (currentBest === null || objectiveValue > currentBest.value) {
+			currentBest = { value: objectiveValue, params: serializeParams(params) };
+		}
 	}
 
 	const allResults: OptimizationResult[] = [...population];
@@ -213,8 +324,8 @@ async function geneticAlgorithm(
 			const parent1 = tournamentSelect(population, 3);
 			const parent2 = tournamentSelect(population, 3);
 
-			// Crossover
-			let childParams = crossover(parent1.params, parent2.params, paramRanges);
+			// Crossover (extract only numeric params for genetic operations)
+			let childParams = crossover(serializeParams(parent1.params), serializeParams(parent2.params), paramRanges);
 
 			// Mutate
 			if (Math.random() < mutationRate) {
@@ -224,7 +335,8 @@ async function geneticAlgorithm(
 			// Evaluate child
 			const result = await runBacktestWithParams(
 				childParams,
-				strategy,
+				strategyId,
+				baseParams,
 				backtestConfig,
 				historicalData
 			);
@@ -232,19 +344,29 @@ async function geneticAlgorithm(
 
 			const child: OptimizationResult = {
 				params: childParams,
+				result,
 				objectiveValue,
-				metrics: result.metrics
+				rank: 0
 			};
 
 			nextGeneration.push(child);
 			allResults.push(child);
 			iterationCount++;
 
+			// Track current best
+			if (currentBest === null || objectiveValue > currentBest.value) {
+				currentBest = { value: objectiveValue, params: serializeParams(childParams) };
+			}
+
 			// Post progress
 			if (iterationCount % 5 === 0) {
 				postMessage({
 					type: 'progress',
-					data: { iteration: iterationCount, total: generations * populationSize }
+					data: { 
+						iteration: iterationCount, 
+						total: generations * populationSize, 
+						currentBest: currentBest ? { value: currentBest.value, params: { ...currentBest.params } } : null 
+					}
 				} as WorkerResponse);
 			}
 		}
@@ -255,12 +377,16 @@ async function geneticAlgorithm(
 	// Sort all results
 	allResults.sort((a, b) => b.objectiveValue - a.objectiveValue);
 
+	const totalCombinations = generations * populationSize;
 	return {
 		method: 'genetic',
 		objective,
-		bestParams: allResults[0].params,
-		bestObjectiveValue: allResults[0].objectiveValue,
-		allResults: allResults.slice(0, 100) // Keep top 100
+		totalCombinations,
+		testedCombinations: allResults.length,
+		bestResult: allResults[0],
+		topResults: allResults.slice(0, 10),
+		allResults: allResults.slice(0, 100), // Keep top 100
+		duration: 0 // Duration tracked by caller
 	};
 }
 
@@ -361,17 +487,21 @@ function mutate(
 
 // Helper: Run backtest with specific parameters
 async function runBacktestWithParams(
-	params: Record<string, number>,
-	strategy: Strategy,
+	optimizedParams: Record<string, number>,
+	strategyId: string,
+	baseParams: Record<string, any>,
 	backtestConfig: BacktestConfig,
 	historicalData: any
 ) {
-	// Create strategy instance with params
-	const strategyInstance = new (strategy as any)(params);
+	// Merge base params with optimized params
+	const mergedParams = { ...baseParams, ...optimizedParams };
+	
+	// Create strategy instance with merged params
+	const strategyInstance = createStrategy(strategyId, mergedParams);
 
 	// Run backtest
-	const engine = new BacktestEngine(strategyInstance, backtestConfig);
-	const result = await engine.run(historicalData);
+	const engine = new BacktestEngine(backtestConfig);
+	const result = engine.run(strategyInstance, historicalData);
 
 	return result;
 }
@@ -382,12 +512,22 @@ function getObjectiveValue(
 	objective: OptimizationObjective
 ): number {
 	switch (objective) {
-		case 'sharpe':
+		case 'sharpeRatio':
 			return metrics.sharpeRatio ?? 0;
-		case 'sortino':
+		case 'sortinoRatio':
 			return metrics.sortinoRatio ?? 0;
-		case 'return':
+		case 'totalReturn':
 			return metrics.totalReturnPercent ?? 0;
+		case 'calmarRatio':
+			return metrics.calmarRatio ?? 0;
+		case 'cagr':
+			return metrics.cagr ?? 0;
+		case 'profitFactor':
+			return metrics.profitFactor ?? 0;
+		case 'winRate':
+			return metrics.winRate ?? 0;
+		case 'maxDrawdownPercent':
+			return metrics.maxDrawdownPercent ?? 0;
 		default:
 			return 0;
 	}

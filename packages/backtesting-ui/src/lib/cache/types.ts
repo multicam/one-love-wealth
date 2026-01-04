@@ -59,7 +59,7 @@ export interface CacheKey {
   /** Interval */
   interval: '1d' | '1wk' | '1mo';
   /** Gap fill strategy */
-  gapFillStrategy: 'forward-fill' | 'backward-fill' | 'drop';
+  gapFillStrategy: 'forward-fill' | 'backward-fill' | 'drop' | 'interpolate';
 }
 
 /**

@@ -59,7 +59,7 @@ export function saveConfig(config: typeof DEFAULT_CONFIG): void {
     }
 
     // Backtest config overrides
-    const backtestOverrides: Partial<typeof DEFAULT_CONFIG.backtest> = {};
+    const backtestOverrides: Record<string, unknown> = {};
     for (const key in config.backtest) {
       const k = key as keyof typeof config.backtest;
       if (config.backtest[k] !== DEFAULT_CONFIG.backtest[k]) {
@@ -71,7 +71,7 @@ export function saveConfig(config: typeof DEFAULT_CONFIG): void {
     }
 
     // Strategy overrides
-    const strategyOverrides: Partial<typeof DEFAULT_CONFIG.strategy> = {};
+    const strategyOverrides: Record<string, unknown> = {};
     for (const key in config.strategy) {
       const k = key as keyof typeof config.strategy;
       if (config.strategy[k] !== DEFAULT_CONFIG.strategy[k]) {
@@ -83,7 +83,7 @@ export function saveConfig(config: typeof DEFAULT_CONFIG): void {
     }
 
     // Optimization overrides
-    const optimizationOverrides: Partial<typeof DEFAULT_CONFIG.optimization> = {};
+    const optimizationOverrides: Record<string, unknown> = {};
     for (const key in config.optimization) {
       const k = key as keyof typeof config.optimization;
       if (config.optimization[k] !== DEFAULT_CONFIG.optimization[k]) {
@@ -95,7 +95,7 @@ export function saveConfig(config: typeof DEFAULT_CONFIG): void {
     }
 
     // Validation overrides
-    const validationOverrides: Partial<typeof DEFAULT_CONFIG.validation> = {};
+    const validationOverrides: Record<string, unknown> = {};
     for (const key in config.validation) {
       const k = key as keyof typeof config.validation;
       if (config.validation[k] !== DEFAULT_CONFIG.validation[k]) {
@@ -107,7 +107,7 @@ export function saveConfig(config: typeof DEFAULT_CONFIG): void {
     }
 
     // UI overrides
-    const uiOverrides: Partial<typeof DEFAULT_CONFIG.ui> = {};
+    const uiOverrides: Record<string, unknown> = {};
     for (const key in config.ui) {
       const k = key as keyof typeof config.ui;
       if (JSON.stringify(config.ui[k]) !== JSON.stringify(DEFAULT_CONFIG.ui[k])) {
@@ -119,7 +119,7 @@ export function saveConfig(config: typeof DEFAULT_CONFIG): void {
     }
 
     // Data overrides
-    const dataOverrides: Partial<typeof DEFAULT_CONFIG.data> = {};
+    const dataOverrides: Record<string, unknown> = {};
     for (const key in config.data) {
       const k = key as keyof typeof config.data;
       if (config.data[k] !== DEFAULT_CONFIG.data[k]) {

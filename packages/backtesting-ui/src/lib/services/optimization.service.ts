@@ -4,7 +4,6 @@
  */
 
 import type {
-	Strategy,
 	BacktestConfig,
 	OptimizationMethod,
 	OptimizationObjective,
@@ -21,7 +20,7 @@ export interface OptimizationParams {
 	objective: OptimizationObjective;
 	paramRanges: Record<string, { min: number; max: number; step: number }>;
 	iterations?: number; // For random/genetic
-	strategy: Strategy;
+	strategyId: string;
 	strategyParams: Record<string, any>;
 	dateRange: DateRange;
 	interval: '1d' | '1wk' | '1mo';
@@ -30,9 +29,25 @@ export interface OptimizationParams {
 	symbols: string[];
 }
 
-export type ProgressCallback = (iteration: number, total: number) => void;
+export interface CurrentBest {
+	value: number;
+	params: Record<string, number>;
+}
+
+export type ProgressCallback = (iteration: number, total: number, currentBest?: CurrentBest) => void;
 
 let currentWorker: Worker | null = null;
+
+// Deep clone and serialize an object to plain JSON-safe data
+// Handles: Date objects, Svelte proxies, and any non-serializable objects
+function deepSerialize(obj: any): any {
+	// Use JSON round-trip to strip proxies and non-serializable data
+	return JSON.parse(JSON.stringify(obj, (key, value) => {
+		if (value instanceof Date) return value.getTime();
+		if (typeof value === 'function') return undefined; // Skip functions
+		return value;
+	}));
+}
 
 export async function executeOptimization(
 	params: OptimizationParams,
@@ -49,11 +64,7 @@ export async function executeOptimization(
 
 	// Create backtest config
 	const backtestConfig: BacktestConfig = {
-		symbols: params.symbols,
-		startDate: new Date(params.dateRange.start),
-		endDate: new Date(params.dateRange.end),
-		initialCapital: params.initialCapital,
-		gapFillStrategy: params.gapFillStrategy
+		initialCapital: params.initialCapital
 	};
 
 	// Create and start worker
@@ -66,7 +77,11 @@ export async function executeOptimization(
 			switch (type) {
 				case 'progress':
 					if (onProgress) {
-						onProgress(data.iteration, data.total);
+						const currentBest = data.currentBest ? {
+							value: data.currentBest.value,
+							params: data.currentBest.params
+						} : undefined;
+						onProgress(data.iteration, data.total, currentBest);
 					}
 					break;
 
@@ -90,19 +105,25 @@ export async function executeOptimization(
 			reject(new Error(`Worker error: ${error.message}`));
 		};
 
-		// Start optimization
-		currentWorker.postMessage({
-			type: 'start',
-			data: {
-				method: params.method,
-				objective: params.objective,
-				paramRanges: params.paramRanges,
-				iterations: params.iterations,
-				strategy: params.strategy,
-				backtestConfig,
-				historicalData
+		// Build message with serialized data (use deepSerialize to strip Svelte proxies)
+		const messageData = {
+			method: params.method,
+			objective: params.objective,
+			paramRanges: deepSerialize(params.paramRanges),
+			iterations: params.iterations,
+			strategyId: params.strategyId,
+			strategyParams: deepSerialize(params.strategyParams),
+			backtestConfig: deepSerialize(backtestConfig),
+			historicalData: {
+				symbols: deepSerialize(historicalData.symbols),
+				bars: deepSerialize(historicalData.bars),
+				startDate: historicalData.startDate.getTime(),
+				endDate: historicalData.endDate.getTime(),
 			}
-		});
+		};
+
+		// Start optimization - pass strategyId and params (serializable), not Strategy object
+		currentWorker.postMessage({ type: 'start', data: messageData });
 	});
 }
 

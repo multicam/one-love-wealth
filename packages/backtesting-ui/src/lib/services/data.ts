@@ -69,7 +69,7 @@ export interface DataLoadConfig {
   /** Data interval */
   interval?: '1d' | '1wk' | '1mo';
   /** Gap fill strategy */
-  gapFillStrategy?: 'forward-fill' | 'backward-fill' | 'drop';
+  gapFillStrategy?: 'forward-fill' | 'backward-fill' | 'drop' | 'interpolate';
 }
 
 /**
@@ -117,7 +117,7 @@ export async function loadStrategyData(
     startDate?: Date;
     endDate?: Date;
     interval?: '1d' | '1wk' | '1mo';
-    gapFillStrategy?: 'forward-fill' | 'backward-fill' | 'drop';
+    gapFillStrategy?: 'forward-fill' | 'backward-fill' | 'drop' | 'interpolate';
   } = {}
 ): Promise<DataLoadResult> {
   // Extract required symbols from params

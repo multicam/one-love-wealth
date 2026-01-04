@@ -138,11 +138,7 @@ export class CacheManager {
       return true;
     }
 
-    if (this.config.enableStorageCache && this.storageCache.has(keyStr)) {
-      return true;
-    }
-
-    return false;
+    return this.config.enableStorageCache && this.storageCache.has(keyStr);
   }
 
   /**

@@ -5,6 +5,7 @@
 	import { config } from "$lib/stores/config.svelte";
 	import { optimization } from "$lib/stores/optimization.svelte";
 	import ParameterRanges from "./ParameterRanges.svelte";
+	import OptimizationProgress from "./OptimizationProgress.svelte";
 	import {
 		executeOptimization,
 		cancelOptimization,
@@ -18,32 +19,6 @@
 	let method = $state<OptimizationMethod>("grid");
 	let objective = $state<OptimizationObjective>("sharpeRatio");
 	let iterations = $state(100); // For random/genetic
-
-	// ETA calculation
-	let startTime = $state<number>(0);
-
-	const estimatedTimeRemaining = $derived.by(() => {
-		if (!optimization.isRunning || optimization.currentIteration === 0)
-			return null;
-
-		const elapsed = Date.now() - startTime;
-		const avgTimePerIteration = elapsed / optimization.currentIteration;
-		const remaining =
-			optimization.totalIterations - optimization.currentIteration;
-		const eta = avgTimePerIteration * remaining;
-
-		return eta;
-	});
-
-	// Format ETA
-	function formatETA(ms: number | null): string {
-		if (ms === null) return "";
-		const seconds = Math.floor(ms / 1000);
-		if (seconds < 60) return `${seconds}s`;
-		const minutes = Math.floor(seconds / 60);
-		const remainingSeconds = seconds % 60;
-		return `${minutes}m ${remainingSeconds}s`;
-	}
 
 	// Method options
 	const methodOptions: {
@@ -121,12 +96,16 @@
 				totalIterations = iterations;
 			}
 
-			// Start optimization and track start time
-			startTime = Date.now();
+			// Start optimization with method and objective info
 			optimization.startOptimization(
 				optimization.paramRanges,
 				totalIterations,
+				method,
+				objective
 			);
+
+			// Set phase to optimizing once data is loaded
+			optimization.setPhase('optimizing', 'Running optimization...');
 
 			// Execute optimization with progress callback
 			const result = await executeOptimization(
@@ -135,7 +114,7 @@
 					objective,
 					paramRanges: optimization.paramRanges,
 					iterations: method !== "grid" ? iterations : undefined,
-					strategy: currentStrategy,
+					strategyId: strategy.selectedStrategyId!,
 					strategyParams: strategy.params,
 					dateRange: config.dateRange,
 					interval: config.interval,
@@ -143,8 +122,8 @@
 					gapFillStrategy: config.gapFillStrategy as any,
 					symbols: config.symbols,
 				},
-				(iteration) => {
-					optimization.updateProgress(iteration);
+				(iteration, total, currentBest) => {
+					optimization.updateProgress(iteration, currentBest);
 				},
 			);
 
@@ -313,31 +292,7 @@
 			</button>
 		{/if}
 
-		<!-- Progress Bar -->
-		{#if optimization.isRunning}
-			<div class="space-y-2">
-				<div class="flex justify-between text-xs text-text-secondary">
-					<span>Progress</span>
-					<span
-						>{optimization.currentIteration} / {optimization.totalIterations}</span
-					>
-				</div>
-				<div
-					class="w-full bg-background rounded-full h-2 overflow-hidden"
-				>
-					<div
-						class="h-full bg-primary transition-all duration-300"
-						style="width: {optimization.progress}%"
-					></div>
-				</div>
-				{#if estimatedTimeRemaining}
-					<div class="text-xs text-text-secondary text-center">
-						Estimated time remaining: {formatETA(
-							estimatedTimeRemaining,
-						)}
-					</div>
-				{/if}
-			</div>
-		{/if}
+		<!-- Comprehensive Progress Report -->
+		<OptimizationProgress />
 	</div>
 </div>

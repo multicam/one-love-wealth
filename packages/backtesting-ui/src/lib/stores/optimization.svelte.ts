@@ -10,6 +10,19 @@ import type { OptimizationOutput } from '@one-love-wealth/backtesting';
 const STORAGE_KEY = 'optimization-history';
 const MAX_HISTORY = 10;
 
+export type OptimizationPhase = 'idle' | 'loading-data' | 'optimizing' | 'finalizing' | 'complete' | 'error' | 'cancelled';
+
+export interface ProgressStats {
+	startTime: number;
+	currentIteration: number;
+	totalIterations: number;
+	iterationTimes: number[]; // Last N iteration durations for averaging
+	currentBestValue: number | null;
+	currentBestParams: Record<string, number> | null;
+	phase: OptimizationPhase;
+	phaseMessage: string;
+}
+
 interface CompressedOptimization {
 	id: string;
 	timestamp: number;
@@ -31,6 +44,17 @@ class OptimizationStore {
 	#totalIterations = $state<number>(0);
 	#paramRanges = $state<Record<string, { min: number; max: number; step: number }>>({});
 	#history = $state<CompressedOptimization[]>([]);
+	
+	// Enhanced progress tracking
+	#phase = $state<OptimizationPhase>('idle');
+	#phaseMessage = $state<string>('');
+	#startTime = $state<number>(0);
+	#lastIterationTime = $state<number>(0);
+	#iterationTimes = $state<number[]>([]);
+	#currentBestValue = $state<number | null>(null);
+	#currentBestParams = $state<Record<string, number> | null>(null);
+	#method = $state<string>('');
+	#objective = $state<string>('');
 
 	constructor() {
 		this.loadHistory();
@@ -45,6 +69,15 @@ class OptimizationStore {
 	get totalIterations() { return this.#totalIterations; }
 	get paramRanges() { return this.#paramRanges; }
 	get history() { return this.#history; }
+	
+	// Enhanced progress getters
+	get phase() { return this.#phase; }
+	get phaseMessage() { return this.#phaseMessage; }
+	get startTime() { return this.#startTime; }
+	get currentBestValue() { return this.#currentBestValue; }
+	get currentBestParams() { return this.#currentBestParams; }
+	get method() { return this.#method; }
+	get objective() { return this.#objective; }
 
 	// Derived state
 	get hasResult() { return this.#result !== null; }
@@ -56,11 +89,45 @@ class OptimizationStore {
 			? Math.round((this.#currentIteration / this.#totalIterations) * 100)
 			: 0;
 	}
+	
+	// Enhanced derived state
+	get elapsedTime() {
+		if (this.#startTime === 0) return 0;
+		return Date.now() - this.#startTime;
+	}
+	
+	get estimatedTimeRemaining() {
+		if (this.#currentIteration === 0 || this.#iterationTimes.length === 0) return null;
+		const avgTime = this.#iterationTimes.reduce((a, b) => a + b, 0) / this.#iterationTimes.length;
+		const remaining = this.#totalIterations - this.#currentIteration;
+		return avgTime * remaining;
+	}
+	
+	get iterationsPerSecond() {
+		if (this.#iterationTimes.length === 0) return 0;
+		const avgTime = this.#iterationTimes.reduce((a, b) => a + b, 0) / this.#iterationTimes.length;
+		return avgTime > 0 ? 1000 / avgTime : 0;
+	}
+	
+	get progressStats(): ProgressStats {
+		return {
+			startTime: this.#startTime,
+			currentIteration: this.#currentIteration,
+			totalIterations: this.#totalIterations,
+			iterationTimes: [...this.#iterationTimes],
+			currentBestValue: this.#currentBestValue,
+			currentBestParams: this.#currentBestParams,
+			phase: this.#phase,
+			phaseMessage: this.#phaseMessage
+		};
+	}
 
 	// Actions
 	startOptimization(
 		ranges: Record<string, { min: number; max: number; step: number }>,
-		iterations: number
+		iterations: number,
+		method: string = '',
+		objective: string = ''
 	) {
 		this.#isRunning = true;
 		this.#error = null;
@@ -68,13 +135,67 @@ class OptimizationStore {
 		this.#currentIteration = 0;
 		this.#totalIterations = iterations;
 		this.#paramRanges = ranges;
+		
+		// Enhanced tracking
+		this.#phase = 'loading-data';
+		this.#phaseMessage = 'Loading historical data...';
+		this.#startTime = Date.now();
+		this.#lastIterationTime = Date.now();
+		this.#iterationTimes = [];
+		this.#currentBestValue = null;
+		this.#currentBestParams = null;
+		this.#method = method;
+		this.#objective = objective;
+	}
+	
+	setPhase(phase: OptimizationPhase, message: string = '') {
+		this.#phase = phase;
+		this.#phaseMessage = message || this.getDefaultPhaseMessage(phase);
+	}
+	
+	private getDefaultPhaseMessage(phase: OptimizationPhase): string {
+		switch (phase) {
+			case 'idle': return '';
+			case 'loading-data': return 'Loading historical data...';
+			case 'optimizing': return 'Running optimization...';
+			case 'finalizing': return 'Finalizing results...';
+			case 'complete': return 'Optimization complete!';
+			case 'error': return 'Optimization failed';
+			case 'cancelled': return 'Optimization cancelled';
+			default: return '';
+		}
 	}
 
-	updateProgress(iteration: number) {
+	updateProgress(
+		iteration: number,
+		currentBest?: { value: number; params: Record<string, number> }
+	) {
+		// Track iteration timing (keep last 20 for averaging)
+		const now = Date.now();
+		if (this.#lastIterationTime > 0 && iteration > 1) {
+			const iterationTime = now - this.#lastIterationTime;
+			this.#iterationTimes = [...this.#iterationTimes.slice(-19), iterationTime];
+		}
+		this.#lastIterationTime = now;
+		
 		this.#currentIteration = iteration;
 		this.#progress = this.#totalIterations > 0
 			? Math.round((iteration / this.#totalIterations) * 100)
 			: 0;
+		
+		// Update current best if provided
+		if (currentBest) {
+			if (this.#currentBestValue === null || currentBest.value > this.#currentBestValue) {
+				this.#currentBestValue = currentBest.value;
+				this.#currentBestParams = currentBest.params;
+			}
+		}
+		
+		// Update phase if needed
+		if (this.#phase === 'loading-data' && iteration > 0) {
+			this.#phase = 'optimizing';
+			this.#phaseMessage = `Testing parameter combinations...`;
+		}
 	}
 
 	setResult(
@@ -86,6 +207,8 @@ class OptimizationStore {
 		this.#isRunning = false;
 		this.#error = null;
 		this.#progress = 100;
+		this.#phase = 'complete';
+		this.#phaseMessage = `Found best ${this.#objective}: ${newResult.bestResult.objectiveValue.toFixed(2)}`;
 
 		// Add to history if strategy info provided
 		if (strategyId && strategyName) {
@@ -110,6 +233,8 @@ class OptimizationStore {
 		this.#error = errorMessage;
 		this.#isRunning = false;
 		this.#progress = 0;
+		this.#phase = 'error';
+		this.#phaseMessage = errorMessage;
 	}
 
 	clearResult() {
@@ -119,6 +244,10 @@ class OptimizationStore {
 		this.#currentIteration = 0;
 		this.#totalIterations = 0;
 		this.#paramRanges = {};
+		this.#phase = 'idle';
+		this.#phaseMessage = '';
+		this.#currentBestValue = null;
+		this.#currentBestParams = null;
 	}
 
 	clearError() {
@@ -128,6 +257,8 @@ class OptimizationStore {
 	cancelOptimization() {
 		this.#isRunning = false;
 		this.#progress = 0;
+		this.#phase = 'cancelled';
+		this.#phaseMessage = 'Optimization cancelled by user';
 	}
 
 	updateParamRanges(ranges: Record<string, { min: number; max: number; step: number }>) {
