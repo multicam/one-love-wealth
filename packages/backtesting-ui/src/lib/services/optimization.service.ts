@@ -1,6 +1,15 @@
 /**
  * Optimization Service
  * Manages optimization worker lifecycle and data loading
+ * 
+ * ## Worker Communication
+ * Data sent to web workers via postMessage must be serializable using the
+ * structured clone algorithm. This service handles serialization of:
+ * - Date objects → timestamps (numbers)
+ * - Svelte 5 reactive proxies ($state) → plain objects
+ * - Functions → removed
+ * 
+ * The worker reconstructs Date objects from timestamps on its end.
  */
 
 import type {
@@ -38,13 +47,19 @@ export type ProgressCallback = (iteration: number, total: number, currentBest?: 
 
 let currentWorker: Worker | null = null;
 
-// Deep clone and serialize an object to plain JSON-safe data
-// Handles: Date objects, Svelte proxies, and any non-serializable objects
+/**
+ * Deep clone and serialize an object to plain JSON-safe data.
+ * Required for postMessage to web workers.
+ * 
+ * Handles:
+ * - Date objects → converted to timestamps
+ * - Svelte 5 proxies → stripped via JSON round-trip
+ * - Functions → removed
+ */
 function deepSerialize(obj: any): any {
-	// Use JSON round-trip to strip proxies and non-serializable data
 	return JSON.parse(JSON.stringify(obj, (key, value) => {
 		if (value instanceof Date) return value.getTime();
-		if (typeof value === 'function') return undefined; // Skip functions
+		if (typeof value === 'function') return undefined;
 		return value;
 	}));
 }

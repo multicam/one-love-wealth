@@ -2,6 +2,11 @@
  * Optimization Worker
  * Runs parameter optimization algorithms in a separate thread
  * Supports: Grid Search, Random Search, Genetic Algorithm
+ * 
+ * ## Serialization
+ * Data received from main thread has Date objects serialized as timestamps.
+ * Results sent back also serialize Date objects to avoid postMessage errors.
+ * See: optimization.service.ts for the main thread serialization logic.
  */
 
 import {
@@ -75,7 +80,10 @@ function serializeParams(params: Record<string, any>): Record<string, number> {
 	return result;
 }
 
-// Helper to serialize optimization output for postMessage (convert Date objects to timestamps)
+/**
+ * Serialize optimization output for postMessage.
+ * Converts Date objects in BacktestResult to timestamps.
+ */
 function serializeOutput(output: OptimizationOutput): any {
 	const serializeResult = (r: OptimizationResult) => ({
 		...r,
