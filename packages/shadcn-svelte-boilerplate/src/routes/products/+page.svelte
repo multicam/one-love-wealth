@@ -1,6 +1,5 @@
 <script lang="ts">
-    import Sidebar from '$lib/components/layout/Sidebar.svelte';
-    import PageHeader from '$lib/components/layout/PageHeader.svelte';
+    import { DashboardLayout, PageHeader } from '$lib/components/layout';
     import * as Card from '$lib/components/ui/card';
     import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
     import { Button } from '$lib/components/ui/button';
@@ -19,7 +18,7 @@
         Trash2,
         Eye,
         Package
-    } from 'lucide-svelte';
+    } from '@lucide/svelte';
 
     const products = [
         {
@@ -113,10 +112,7 @@
     }
 </script>
 
-<div class="flex min-h-screen">
-    <Sidebar />
-
-    <main class="flex-1 p-8">
+<DashboardLayout>
         <div class="flex items-center justify-between mb-8">
             <PageHeader title="Products" description="Manage your product inventory." />
             <Button>
@@ -278,5 +274,4 @@
                 </div>
             </Card.Footer>
         </Card.Root>
-    </main>
-</div>
+</DashboardLayout>

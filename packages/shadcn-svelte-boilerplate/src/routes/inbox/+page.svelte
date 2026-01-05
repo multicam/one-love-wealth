@@ -1,6 +1,5 @@
 <script lang="ts">
-    import Sidebar from '$lib/components/layout/Sidebar.svelte';
-    import PageHeader from '$lib/components/layout/PageHeader.svelte';
+    import { DashboardLayout, PageHeader } from '$lib/components/layout';
     import * as Card from '$lib/components/ui/card';
     import * as Avatar from '$lib/components/ui/avatar';
     import { Button } from '$lib/components/ui/button';
@@ -19,7 +18,7 @@
         MoreVertical,
         Paperclip,
         Clock
-    } from 'lucide-svelte';
+    } from '@lucide/svelte';
 
     const messages = [
         {
@@ -113,10 +112,7 @@
     }
 </script>
 
-<div class="flex min-h-screen">
-    <Sidebar />
-
-    <main class="flex-1 flex flex-col">
+<DashboardLayout noPadding class="flex flex-col">
         <div class="border-b p-4">
             <PageHeader title="Inbox" description="Manage your messages and communications." />
         </div>
@@ -277,5 +273,4 @@
                 {/if}
             </div>
         </div>
-    </main>
-</div>
+</DashboardLayout>

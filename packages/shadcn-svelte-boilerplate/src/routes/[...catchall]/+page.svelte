@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
-	import { Home, ArrowLeft } from 'lucide-svelte';
+	import { Home, ArrowLeft } from '@lucide/svelte';
 </script>
 
 <div class="min-h-screen flex items-center justify-center p-4">

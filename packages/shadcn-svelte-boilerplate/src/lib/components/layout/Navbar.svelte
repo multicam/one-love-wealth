@@ -1,31 +1,17 @@
 <script lang="ts">
 	import { Button } from '$lib/components/ui/button';
 	import * as Sheet from '$lib/components/ui/sheet';
-	import { Menu, Moon, Sun } from 'lucide-svelte';
+	import { Menu, Moon, Sun } from '@lucide/svelte';
 	import { toggleMode, mode } from 'mode-watcher';
-
-	const navItems = [
-		{ href: '/', label: 'Home' },
-		{ href: '/dashboard', label: 'Dashboard' },
-		{ href: '/analytics', label: 'Analytics' },
-		{ href: '/calendar', label: 'Calendar' },
-		{ href: '/inbox', label: 'Inbox' },
-		{ href: '/orders', label: 'Orders' },
-		{ href: '/products', label: 'Products' },
-		{ href: '/users', label: 'Users' },
-		{ href: '/forms', label: 'Forms' },
-		{ href: '/profile', label: 'Profile' },
-		{ href: '/settings', label: 'Settings' },
-		{ href: '/pricing', label: 'Pricing' }
-	];
+	import { mainNavItems, APP_NAME } from '$lib/config/navigation';
 </script>
 
 <header class="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
 	<div class="container flex h-16 items-center justify-between">
 		<div class="flex items-center gap-6">
-			<a href="/" class="text-xl font-bold">MyApp</a>
+			<a href="/" class="text-xl font-bold">{APP_NAME}</a>
 			<nav class="hidden md:flex gap-6">
-				{#each navItems as item}
+				{#each mainNavItems as item}
 					<a href={item.href} class="text-sm text-muted-foreground hover:text-foreground transition-colors">
 						{item.label}
 					</a>
@@ -60,7 +46,7 @@
 						<Sheet.Title>Menu</Sheet.Title>
 					</Sheet.Header>
 					<nav class="flex flex-col gap-4 mt-4">
-						{#each navItems as item}
+						{#each mainNavItems as item}
 							<a href={item.href} class="text-lg">{item.label}</a>
 						{/each}
 						<hr class="my-2" />

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import { DashboardLayout, PageHeader } from '$lib/components/layout';
 	import * as Card from '$lib/components/ui/card';
 	import * as Avatar from '$lib/components/ui/avatar';
 	import { Button } from '$lib/components/ui/button';
@@ -9,7 +8,7 @@
 	import { Textarea } from '$lib/components/ui/textarea';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Separator } from '$lib/components/ui/separator';
-	import { Camera, MapPin, Mail, Calendar } from 'lucide-svelte';
+	import { Camera, MapPin, Mail, Calendar } from '@lucide/svelte';
 
 	const user = {
 		name: 'John Doe',
@@ -22,10 +21,8 @@
 	};
 </script>
 
-<div class="flex min-h-screen">
-	<Sidebar />
-	<main class="flex-1 p-8">
-		<PageHeader title="Profile" description="Manage your public profile information." />
+<DashboardLayout>
+	<PageHeader title="Profile" description="Manage your public profile information." />
 
 		<div class="grid gap-6 lg:grid-cols-3">
 			<Card.Root class="lg:col-span-1">
@@ -98,6 +95,5 @@
 					<Button>Save Changes</Button>
 				</Card.Footer>
 			</Card.Root>
-		</div>
-	</main>
-</div>
+	</div>
+</DashboardLayout>

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import { DashboardLayout, PageHeader } from '$lib/components/layout';
 	import * as Card from '$lib/components/ui/card';
 	import * as RadioGroup from '$lib/components/ui/radio-group';
 	import * as Select from '$lib/components/ui/select';
@@ -28,10 +27,8 @@
 	}
 </script>
 
-<div class="flex min-h-screen">
-	<Sidebar />
-	<main class="flex-1 p-8">
-		<PageHeader title="Forms" description="Example form layouts and components." />
+<DashboardLayout>
+	<PageHeader title="Forms" description="Example form layouts and components." />
 
 		<div class="grid gap-6 lg:grid-cols-2">
 			<Card.Root>
@@ -124,6 +121,5 @@
 					</div>
 				</Card.Content>
 			</Card.Root>
-		</div>
-	</main>
-</div>
+	</div>
+</DashboardLayout>

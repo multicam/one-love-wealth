@@ -3,7 +3,7 @@
 	import { Button } from '$lib/components/ui/button';
 	import * as Card from '$lib/components/ui/card';
 	import { Badge } from '$lib/components/ui/badge';
-	import { ArrowRight, Zap, Shield, Sparkles } from 'lucide-svelte';
+	import { ArrowRight, Zap, Shield, Sparkles } from '@lucide/svelte';
 
 	const features = [
 		{ icon: Zap, title: 'Lightning Fast', description: 'Built on SvelteKit for optimal performance.' },

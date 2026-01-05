@@ -5,7 +5,7 @@
 	import { Badge } from '$lib/components/ui/badge';
 	import { Switch } from '$lib/components/ui/switch';
 	import { Label } from '$lib/components/ui/label';
-	import { Check } from 'lucide-svelte';
+	import { Check } from '@lucide/svelte';
 
 	let annual = $state(false);
 

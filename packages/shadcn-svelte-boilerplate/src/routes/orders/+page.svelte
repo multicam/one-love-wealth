@@ -1,6 +1,5 @@
 <script lang="ts">
-    import Sidebar from '$lib/components/layout/Sidebar.svelte';
-    import PageHeader from '$lib/components/layout/PageHeader.svelte';
+    import { DashboardLayout, PageHeader } from '$lib/components/layout';
     import * as Card from '$lib/components/ui/card';
     import * as Table from '$lib/components/ui/table';
     import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -19,7 +18,7 @@
         CheckCircle,
         XCircle,
         Clock
-    } from 'lucide-svelte';
+    } from '@lucide/svelte';
 
     const orders = [
         {
@@ -122,11 +121,8 @@
     }
 </script>
 
-<div class="flex min-h-screen">
-    <Sidebar />
-
-    <main class="flex-1 p-8">
-        <div class="flex items-center justify-between mb-8">
+<DashboardLayout>
+    <div class="flex items-center justify-between mb-8">
             <PageHeader title="Orders" description="Track and manage customer orders." />
             <Button variant="outline">
                 <Download class="mr-2 h-4 w-4" />
@@ -249,5 +245,4 @@
                 </div>
             </Card.Footer>
         </Card.Root>
-    </main>
-</div>
+</DashboardLayout>

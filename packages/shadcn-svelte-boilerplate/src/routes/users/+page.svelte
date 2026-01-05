@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import { DashboardLayout, PageHeader } from '$lib/components/layout';
 	import * as Card from '$lib/components/ui/card';
 	import * as Table from '$lib/components/ui/table';
 	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
@@ -9,7 +8,7 @@
 	import { Input } from '$lib/components/ui/input';
 	import { Badge } from '$lib/components/ui/badge';
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import { MoreHorizontal, Plus, Search, Download, Filter } from 'lucide-svelte';
+	import { MoreHorizontal, Plus, Search, Download, Filter } from '@lucide/svelte';
 
 	const users = [
 		{ id: 1, name: 'Alice Johnson', email: 'alice@example.com', role: 'Admin', status: 'Active', lastActive: '2 min ago' },
@@ -39,9 +38,7 @@
 	}
 </script>
 
-<div class="flex min-h-screen">
-	<Sidebar />
-	<main class="flex-1 p-8">
+<DashboardLayout>
 		<PageHeader title="Users" description="Manage user accounts and permissions." />
 
 		<Card.Root>
@@ -121,5 +118,4 @@
 				</div>
 			</Card.Footer>
 		</Card.Root>
-	</main>
-</div>
+</DashboardLayout>

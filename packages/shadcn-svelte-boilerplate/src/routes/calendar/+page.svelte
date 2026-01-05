@@ -1,11 +1,10 @@
 <script lang="ts">
-    import Sidebar from '$lib/components/layout/Sidebar.svelte';
-    import PageHeader from '$lib/components/layout/PageHeader.svelte';
+    import { DashboardLayout, PageHeader } from '$lib/components/layout';
     import * as Card from '$lib/components/ui/card';
     import { Button } from '$lib/components/ui/button';
     import { Badge } from '$lib/components/ui/badge';
     import { cn } from '$lib/utils';
-    import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, Users } from 'lucide-svelte';
+    import { ChevronLeft, ChevronRight, Plus, Clock, MapPin, Users } from '@lucide/svelte';
 
     const today = new Date();
     let currentMonth = $state(today.getMonth());
@@ -103,11 +102,8 @@
     }
 </script>
 
-<div class="flex min-h-screen">
-    <Sidebar />
-
-    <main class="flex-1 p-8">
-        <div class="flex items-center justify-between mb-8">
+<DashboardLayout>
+    <div class="flex items-center justify-between mb-8">
             <PageHeader title="Calendar" description="Schedule and manage your events." />
             <Button>
                 <Plus class="mr-2 h-4 w-4" />
@@ -228,5 +224,4 @@
                 </Card.Root>
             </div>
         </div>
-    </main>
-</div>
+</DashboardLayout>

@@ -1,6 +1,5 @@
 <script lang="ts">
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import { DashboardLayout, PageHeader } from '$lib/components/layout';
 	import * as Card from '$lib/components/ui/card';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import * as Select from '$lib/components/ui/select';
@@ -20,10 +19,8 @@
 	let language = $state('en');
 </script>
 
-<div class="flex min-h-screen">
-	<Sidebar />
-	<main class="flex-1 p-8">
-		<PageHeader title="Settings" description="Manage your account settings and preferences." />
+<DashboardLayout>
+	<PageHeader title="Settings" description="Manage your account settings and preferences." />
 
 		<Tabs.Root value="general" class="space-y-6">
 			<Tabs.List>
@@ -125,6 +122,5 @@
 					</Card.Footer>
 				</Card.Root>
 			</Tabs.Content>
-		</Tabs.Root>
-	</main>
-</div>
+	</Tabs.Root>
+</DashboardLayout>

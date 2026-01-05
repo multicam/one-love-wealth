@@ -1,9 +1,8 @@
 <script lang="ts">
-	import Sidebar from '$lib/components/layout/Sidebar.svelte';
-	import PageHeader from '$lib/components/layout/PageHeader.svelte';
+	import { DashboardLayout, PageHeader } from '$lib/components/layout';
 	import * as Card from '$lib/components/ui/card';
 	import { Progress } from '$lib/components/ui/progress';
-	import { TrendingUp, TrendingDown, Users, DollarSign, Activity, ShoppingCart } from 'lucide-svelte';
+	import { TrendingUp, TrendingDown, Users, DollarSign, Activity, ShoppingCart } from '@lucide/svelte';
 
 	const stats = [
 		{ title: 'Total Revenue', value: '$45,231.89', change: '+20.1%', trend: 'up', icon: DollarSign },
@@ -20,10 +19,8 @@
 	];
 </script>
 
-<div class="flex min-h-screen">
-	<Sidebar />
-	<main class="flex-1 p-8">
-		<PageHeader title="Dashboard" description="Welcome back! Here's an overview of your metrics." />
+<DashboardLayout>
+	<PageHeader title="Dashboard" description="Welcome back! Here's an overview of your metrics." />
 
 		<div class="grid gap-4 md:grid-cols-2 lg:grid-cols-4 mb-8">
 			{#each stats as stat}
@@ -102,5 +99,4 @@
 				</div>
 			</Card.Content>
 		</Card.Root>
-	</main>
-</div>
+</DashboardLayout>

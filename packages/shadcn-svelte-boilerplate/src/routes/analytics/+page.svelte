@@ -1,6 +1,5 @@
 <script lang="ts">
-    import Sidebar from '$lib/components/layout/Sidebar.svelte';
-    import PageHeader from '$lib/components/layout/PageHeader.svelte';
+    import { DashboardLayout, PageHeader } from '$lib/components/layout';
     import * as Card from '$lib/components/ui/card';
     import * as Select from '$lib/components/ui/select';
     import * as Tabs from '$lib/components/ui/tabs';
@@ -16,7 +15,7 @@
         MousePointer,
         Download,
         Calendar
-    } from 'lucide-svelte';
+    } from '@lucide/svelte';
 
     const metrics = [
         { label: 'Page Views', value: '124,892', change: '+12.5%', trend: 'up', icon: Eye },
@@ -64,11 +63,8 @@
     let dateRange = $state('7d');
 </script>
 
-<div class="flex min-h-screen">
-    <Sidebar />
-
-    <main class="flex-1 p-8">
-        <div class="flex items-center justify-between mb-8">
+<DashboardLayout>
+    <div class="flex items-center justify-between mb-8">
             <PageHeader title="Analytics" description="Track your website performance and user behavior." />
             <div class="flex items-center gap-2">
                 <Select.Root type="single" bind:value={dateRange} items={dateRangeItems}>
@@ -219,5 +215,4 @@
                 </div>
             </Card.Content>
         </Card.Root>
-    </main>
-</div>
+</DashboardLayout>
