@@ -6,7 +6,7 @@
     import { Badge } from '$lib/components/ui/badge';
     import { Input } from '$lib/components/ui/input';
     import { Label } from '$lib/components/ui/label';
-    import { Upload, Play, Pause, CheckCircle, XCircle, Clock, Cpu, FileJson } from 'lucide-svelte';
+    import { Upload, Play, Pause, CheckCircle, XCircle, Clock, Cpu, FileJson } from '@lucide/svelte';
 
     const jobs = [
         { id: 1, name: 'Customer Support v2', status: 'running', progress: 67, epochs: '2/3', baseModel: 'Claude Sonnet', samples: 1250 },

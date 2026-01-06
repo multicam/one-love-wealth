@@ -3,7 +3,7 @@
     import { Button } from '$lib/components/ui/button';
     import { Input } from '$lib/components/ui/input';
     import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
-    import { Send, Paperclip, Mic, MoreVertical, Bot, User } from 'lucide-svelte';
+    import { Send, Paperclip, Mic, MoreVertical, Bot, User } from '@lucide/svelte';
 
     let message = '';
     let messages = [

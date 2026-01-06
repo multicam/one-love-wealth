@@ -4,7 +4,7 @@
     import { Card, CardContent } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
     import { Switch } from '$lib/components/ui/switch';
-    import { Plus, Code, ChevronDown, ChevronUp } from 'lucide-svelte';
+    import { Plus, Code, ChevronDown, ChevronUp } from '@lucide/svelte';
 
     const functions = [
         {

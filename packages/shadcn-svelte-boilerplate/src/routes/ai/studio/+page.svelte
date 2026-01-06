@@ -7,7 +7,7 @@
     import { Label } from '$lib/components/ui/label';
     import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
     import { Separator } from '$lib/components/ui/separator';
-    import { Play, Save, History, Wand2, Copy, RotateCcw, Sparkles, Zap } from 'lucide-svelte';
+    import { Play, Save, History, Wand2, Copy, RotateCcw, Sparkles, Zap } from '@lucide/svelte';
 
     let systemPrompt = `You are a helpful coding assistant. You:
 - Write clean, well-documented code

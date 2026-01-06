@@ -7,7 +7,7 @@
     import { Switch } from '$lib/components/ui/switch';
     import { Label } from '$lib/components/ui/label';
     import { Separator } from '$lib/components/ui/separator';
-    import { Brain, Search, Trash2, Plus, Clock, Tag, Pin, Edit2 } from 'lucide-svelte';
+    import { Brain, Search, Trash2, Plus, Clock, Tag, Pin, Edit2 } from '@lucide/svelte';
 
     const memories = [
         { id: 1, content: 'User prefers TypeScript over JavaScript for all code examples', type: 'preference', pinned: true, created: '2 days ago' },

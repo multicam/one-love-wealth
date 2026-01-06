@@ -4,7 +4,7 @@
     import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
     import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
-    import { Plus, Bot, MessageSquare } from 'lucide-svelte';
+    import { Plus, Bot, MessageSquare } from '@lucide/svelte';
 
     const agents = [
         { name: 'Code Assistant', status: 'active', messages: 1420, icon: '💻' },

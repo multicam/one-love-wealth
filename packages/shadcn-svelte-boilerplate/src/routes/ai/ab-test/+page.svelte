@@ -7,7 +7,7 @@
     import { Progress } from '$lib/components/ui/progress';
     import { Label } from '$lib/components/ui/label';
     import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
-    import { Play, ThumbsUp, BarChart, RefreshCw, Shuffle } from 'lucide-svelte';
+    import { Play, ThumbsUp, BarChart, RefreshCw, Shuffle } from '@lucide/svelte';
 
     let selectedVariant = '';
 

@@ -5,7 +5,7 @@
     import { Label } from '$lib/components/ui/label';
     import { Textarea } from '$lib/components/ui/textarea';
     import { Card, CardContent } from '$lib/components/ui/card';
-    import { Sparkles } from 'lucide-svelte';
+    import { Sparkles } from '@lucide/svelte';
 
     const models = ['Claude Opus 4.5', 'Claude Sonnet 4', 'GPT-4o', 'Gemini Pro'];
     const templates = [

@@ -7,7 +7,7 @@
     import { Input } from '$lib/components/ui/input';
     import { Textarea } from '$lib/components/ui/textarea';
     import { Badge } from '$lib/components/ui/badge';
-    import { ArrowRight, Plus, Users, MessageSquare, Zap, Settings } from 'lucide-svelte';
+    import { ArrowRight, Plus, Users, MessageSquare, Zap, Settings } from '@lucide/svelte';
 
     const handoffRules = [
         { id: 1, trigger: 'Intent: billing_question', target: 'Billing Assistant', priority: 'high' },

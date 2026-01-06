@@ -5,7 +5,7 @@
     import { Badge } from '$lib/components/ui/badge';
     import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
     import { Label } from '$lib/components/ui/label';
-    import { Zap, Brain, Sparkles, Check } from 'lucide-svelte';
+    import { Zap, Brain, Sparkles, Check } from '@lucide/svelte';
 
     let selectedModel = 'claude-opus';
 

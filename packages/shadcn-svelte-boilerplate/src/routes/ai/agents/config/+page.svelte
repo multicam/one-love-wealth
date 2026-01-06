@@ -7,7 +7,7 @@
     import { Switch } from '$lib/components/ui/switch';
     import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Separator } from '$lib/components/ui/separator';
-    import { Trash2 } from 'lucide-svelte';
+    import { Trash2 } from '@lucide/svelte';
 
     let temperature = [0.7];
     let maxTokens = [2048];

@@ -5,7 +5,7 @@
     import { Card, CardContent } from '$lib/components/ui/card';
     import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
     import { Badge } from '$lib/components/ui/badge';
-    import { Search, Filter, MessageSquare } from 'lucide-svelte';
+    import { Search, Filter, MessageSquare } from '@lucide/svelte';
 
     const conversations = [
         { id: 1, agent: 'Code Assistant', icon: '💻', preview: 'Help me refactor this React component...', time: '2 min ago', messages: 12 },

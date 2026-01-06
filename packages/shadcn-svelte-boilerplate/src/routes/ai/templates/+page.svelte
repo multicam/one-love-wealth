@@ -4,7 +4,7 @@
     import { Card, CardContent, CardFooter } from '$lib/components/ui/card';
     import { Input } from '$lib/components/ui/input';
     import { Badge } from '$lib/components/ui/badge';
-    import { Search, ArrowRight, Sparkles, Users, Clock } from 'lucide-svelte';
+    import { Search, ArrowRight, Sparkles, Users, Clock } from '@lucide/svelte';
 
     const categories = ['All', 'Productivity', 'Development', 'Writing', 'Research', 'Business', 'Creative'];
 

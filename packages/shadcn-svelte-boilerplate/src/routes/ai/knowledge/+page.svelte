@@ -4,7 +4,7 @@
     import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Progress } from '$lib/components/ui/progress';
     import { Badge } from '$lib/components/ui/badge';
-    import { Upload, FileText, Database, Globe, Trash2, RefreshCw, Plus } from 'lucide-svelte';
+    import { Upload, FileText, Database, Globe, Trash2, RefreshCw, Plus } from '@lucide/svelte';
 
     const sources = [
         { name: 'Product Documentation', type: 'files', items: 45, size: '12.3 MB', status: 'synced', icon: FileText },

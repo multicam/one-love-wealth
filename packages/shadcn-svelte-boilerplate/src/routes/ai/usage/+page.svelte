@@ -5,7 +5,7 @@
     import { Progress } from '$lib/components/ui/progress';
     import { Badge } from '$lib/components/ui/badge';
     import { Separator } from '$lib/components/ui/separator';
-    import { Calendar, CreditCard, ArrowUpRight } from 'lucide-svelte';
+    import { Calendar, CreditCard, ArrowUpRight } from '@lucide/svelte';
 </script>
 
 <DashboardLayout>

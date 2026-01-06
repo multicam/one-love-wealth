@@ -6,7 +6,7 @@
     import { Badge } from '$lib/components/ui/badge';
     import { RadioGroup, RadioGroupItem } from '$lib/components/ui/radio-group';
     import { Label } from '$lib/components/ui/label';
-    import { ThumbsUp, ThumbsDown, Flag, Send } from 'lucide-svelte';
+    import { ThumbsUp, ThumbsDown, Flag, Send } from '@lucide/svelte';
 
     let rating = '';
     let feedbackType = '';

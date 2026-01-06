@@ -5,7 +5,7 @@
     import { Badge } from '$lib/components/ui/badge';
     import { Textarea } from '$lib/components/ui/textarea';
     import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
-    import { Send, RotateCcw, ThumbsUp, Check } from 'lucide-svelte';
+    import { Send, RotateCcw, ThumbsUp, Check } from '@lucide/svelte';
 
     let prompt = '';
 

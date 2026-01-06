@@ -4,7 +4,7 @@
     import { Input } from '$lib/components/ui/input';
     import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
-    import { Search, Plus, Copy, Star, Folder, MoreVertical } from 'lucide-svelte';
+    import { Search, Plus, Copy, Star, Folder, MoreVertical } from '@lucide/svelte';
 
     const folders = ['All Prompts', 'Favorites', 'Coding', 'Writing', 'Analysis'];
     const prompts = [

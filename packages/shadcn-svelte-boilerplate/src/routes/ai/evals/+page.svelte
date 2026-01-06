@@ -5,7 +5,7 @@
     import { Badge } from '$lib/components/ui/badge';
     import { Progress } from '$lib/components/ui/progress';
     import { Tabs, TabsContent, TabsList, TabsTrigger } from '$lib/components/ui/tabs';
-    import { Play, FileText, CheckCircle, XCircle, AlertTriangle, BarChart3, Target } from 'lucide-svelte';
+    import { Play, FileText, CheckCircle, XCircle, AlertTriangle, BarChart3, Target } from '@lucide/svelte';
 
     const evalSets = [
         { name: 'Accuracy Benchmark', tests: 150, passed: 142, failed: 8, score: 94.7 },

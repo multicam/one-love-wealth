@@ -3,7 +3,7 @@
     import { Button } from '$lib/components/ui/button';
     import { Card, CardContent } from '$lib/components/ui/card';
     import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
-    import { Mic, MicOff, Phone, Volume2, Settings, Bot } from 'lucide-svelte';
+    import { Mic, MicOff, Phone, Volume2, Settings, Bot } from '@lucide/svelte';
 
     let isListening = false;
     let isMuted = false;

@@ -5,7 +5,7 @@
     import { Switch } from '$lib/components/ui/switch';
     import { Badge } from '$lib/components/ui/badge';
     import { Input } from '$lib/components/ui/input';
-    import { Search, Plus, Settings, Check, Globe, Code, Database, FileText, Calculator, Image, Terminal } from 'lucide-svelte';
+    import { Search, Plus, Settings, Check, Globe, Code, Database, FileText, Calculator, Image, Terminal } from '@lucide/svelte';
 
     const tools = [
         { name: 'Web Search', description: 'Search the internet for information', icon: Globe, enabled: true, category: 'Search' },

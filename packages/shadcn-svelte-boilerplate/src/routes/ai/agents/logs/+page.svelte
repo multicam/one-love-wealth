@@ -4,7 +4,7 @@
     import { Card, CardContent } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
     import { Input } from '$lib/components/ui/input';
-    import { Search, Filter, Download, RefreshCw, ChevronRight, AlertCircle, Info, Bug, CheckCircle } from 'lucide-svelte';
+    import { Search, Filter, Download, RefreshCw, ChevronRight, AlertCircle, Info, Bug, CheckCircle } from '@lucide/svelte';
 
     const logs = [
         { timestamp: '12:45:32.123', level: 'info', message: 'Request received', details: 'POST /v1/chat/completions', requestId: 'req_abc123' },

@@ -3,7 +3,7 @@
     import { Button } from '$lib/components/ui/button';
     import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
-    import { MessageSquare, Clock, ThumbsUp, TrendingUp, Zap } from 'lucide-svelte';
+    import { MessageSquare, Clock, ThumbsUp, TrendingUp, Zap } from '@lucide/svelte';
 </script>
 
 <DashboardLayout>

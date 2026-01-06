@@ -6,7 +6,7 @@
     import { Label } from '$lib/components/ui/label';
     import { Separator } from '$lib/components/ui/separator';
     import { Badge } from '$lib/components/ui/badge';
-    import { Shield, Globe, Database, FileText, Terminal, Mail, AlertTriangle } from 'lucide-svelte';
+    import { Shield, Globe, Database, FileText, Terminal, Mail, AlertTriangle } from '@lucide/svelte';
 </script>
 
 <DashboardLayout>

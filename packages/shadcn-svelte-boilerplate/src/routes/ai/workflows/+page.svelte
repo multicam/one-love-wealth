@@ -3,7 +3,7 @@
     import { Button } from '$lib/components/ui/button';
     import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
-    import { Plus, Play, ArrowRight, Bot, FileText, Send, Database, MoreVertical } from 'lucide-svelte';
+    import { Plus, Play, ArrowRight, Bot, FileText, Send, Database, MoreVertical } from '@lucide/svelte';
 
     const nodes = [
         { id: 1, type: 'trigger', icon: FileText, title: 'Document Upload', subtitle: 'When file is uploaded' },

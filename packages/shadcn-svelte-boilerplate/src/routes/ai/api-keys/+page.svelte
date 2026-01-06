@@ -6,7 +6,7 @@
     import { Badge } from '$lib/components/ui/badge';
     import { Label } from '$lib/components/ui/label';
     import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '$lib/components/ui/dialog';
-    import { Plus, Key, Eye, EyeOff, Copy, Trash2 } from 'lucide-svelte';
+    import { Plus, Key, Eye, EyeOff, Copy, Trash2 } from '@lucide/svelte';
 
     const keys = [
         { name: 'Production Key', key: 'sk-...abc123', created: 'Dec 15, 2025', lastUsed: '2 hours ago', status: 'active' },

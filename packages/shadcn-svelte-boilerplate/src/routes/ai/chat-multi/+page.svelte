@@ -5,7 +5,7 @@
     import { Avatar, AvatarFallback } from '$lib/components/ui/avatar';
     import { Badge } from '$lib/components/ui/badge';
     import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '$lib/components/ui/sheet';
-    import { Send, Users, Plus, X } from 'lucide-svelte';
+    import { Send, Users, Plus, X } from '@lucide/svelte';
 
     const activeAgents = [
         { id: 1, name: 'Code Assistant', icon: '💻', color: 'bg-blue-500' },

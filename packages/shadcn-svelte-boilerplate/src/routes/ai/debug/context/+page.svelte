@@ -4,7 +4,7 @@
     import { Card, CardContent, CardHeader, CardTitle } from '$lib/components/ui/card';
     import { Badge } from '$lib/components/ui/badge';
     import { Progress } from '$lib/components/ui/progress';
-    import { Eye, FileText, MessageSquare, Wrench, Brain, AlertTriangle } from 'lucide-svelte';
+    import { Eye, FileText, MessageSquare, Wrench, Brain, AlertTriangle } from '@lucide/svelte';
 
     const contextBlocks = [
         { type: 'system', label: 'System Prompt', tokens: 1250, color: 'bg-blue-500' },

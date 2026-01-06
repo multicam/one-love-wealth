@@ -7,7 +7,7 @@
     import { Textarea } from '$lib/components/ui/textarea';
     import { Badge } from '$lib/components/ui/badge';
     import { Separator } from '$lib/components/ui/separator';
-    import { Shield, AlertTriangle, Ban, Eye, FileWarning, Lock } from 'lucide-svelte';
+    import { Shield, AlertTriangle, Ban, Eye, FileWarning, Lock } from '@lucide/svelte';
 
     let toxicityThreshold = [0.7];
     let piiDetection = true;
