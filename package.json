@@ -23,8 +23,19 @@
     "test:e2e:trading-dashboards": "cd packages/trading-dashboards && playwright test",
     "playwright:install": "playwright install chromium"
   },
+  "overrides": {
+    "devalue": ">=5.8.1",
+    "flatted": ">=3.4.2",
+    "minimatch": ">=10.2.3",
+    "picomatch": ">=4.0.4",
+    "rollup": ">=4.59.0",
+    "linkify-it": ">=5.0.1 <6",
+    "ws": ">=8.21.0 <9",
+    "@vitest/browser": ">=4.1.8 <5"
+  },
   "dependencies": {
     "d3": "^7.9.0",
-    "lightweight-charts": "^5.1.0"
+    "lightweight-charts": "^5.1.0",
+    "vite": "^8.0.14"
   }
 }

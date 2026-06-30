@@ -1,0 +1,108 @@
+# .security-gate.toml — one-love-wealth repo allowlist
+# Typo-FP entries: scanner false positives reviewed 2026-05-25
+# NOTE: BLOCKs with (high)/(critical) OSV are NOT allowlisted here.
+
+[[allowlist]]
+package = "acorn"
+ecosystem = "npm"
+reason = "typo-FP: acorn is a well-known JS parser, not a typosquat of cors"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "cac"
+ecosystem = "npm"
+reason = "typo-FP: cac is a CLI argument parser used by vite, not a typosquat of swc"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "d3"
+ecosystem = "npm"
+reason = "typo-FP: d3 is a widely-used data visualisation library, not a typosquat of ws"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "deep-eql"
+ecosystem = "npm"
+reason = "typo-FP: deep-eql is the chai deep-equality library, not a typosquat of deep-equal"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "jiti"
+ecosystem = "npm"
+reason = "typo-FP: jiti is a JS/TS runtime transformer, not a typosquat of vite"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "levn"
+ecosystem = "npm"
+reason = "typo-FP: levn is a type-coercion utility (eslint dep), not a typosquat of less"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "mri"
+ecosystem = "npm"
+reason = "typo-FP: mri is a CLI argument parser, not a typosquat of joi"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "mrmime"
+ecosystem = "npm"
+reason = "typo-FP: mrmime is a MIME-type lookup package (sirv dep), not a typosquat of mime"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "obug"
+ecosystem = "npm"
+reason = "typo-FP: obug is a legitimate debug-object utility, not a typosquat of debug"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "psl"
+ecosystem = "npm"
+reason = "typo-FP: psl is a Public Suffix List parser, not a typosquat of ws"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "rw"
+ecosystem = "npm"
+reason = "typo-FP: rw is a file read/write utility (d3 dep), not a typosquat of ws"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "sade"
+ecosystem = "npm"
+reason = "typo-FP: sade is a CLI scaffolding library (rollup dep), not a typosquat of tape"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "sirv"
+ecosystem = "npm"
+reason = "typo-FP: sirv is a static file server (sveltekit dep), not a typosquat of swr"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "src"
+ecosystem = "npm"
+reason = "typo-FP: src is a local workspace package (packages/macro-view), not an external typosquat of swc"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
+
+[[allowlist]]
+package = "vitefu"
+ecosystem = "npm"
+reason = "typo-FP: vitefu is a sveltekit vite utilities package, not a typosquat of vite"
+reviewed = "2026-05-25"
+review_expires = "2026-08-26"
