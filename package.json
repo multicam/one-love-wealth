@@ -31,7 +31,8 @@
     "rollup": ">=4.59.0",
     "linkify-it": ">=5.0.1 <6",
     "ws": ">=8.21.0 <9",
-    "@vitest/browser": ">=4.1.8 <5"
+    "@vitest/browser": ">=4.1.8 <5",
+    "fast-uri": ">=3.1.4 <4"
   },
   "dependencies": {
     "d3": "^7.9.0",
